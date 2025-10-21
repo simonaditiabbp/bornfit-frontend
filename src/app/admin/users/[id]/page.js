@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+export default function UserDetailPage() {
+  const params = useParams();
   const { id } = params;
   const [user, setUser] = useState(null);
   const [membership, setMembership] = useState(null);
@@ -174,4 +176,4 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
       )}
     </div>
   );
-
+}
