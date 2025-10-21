@@ -21,6 +21,9 @@ export default function AdminLayout({ children }) {
             <li>
               <Link href="/admin/users" className="block py-2 px-4 rounded hover:bg-blue-600 font-semibold">Data User</Link>
             </li>
+            <li>
+              <Link href="/admin/users/create" className="block py-2 px-4 rounded hover:bg-blue-600 font-semibold">Buat User Baru</Link>
+            </li>
             {/* Tambah menu lain di sini */}
           </ul>
         </nav>

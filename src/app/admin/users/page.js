@@ -146,7 +146,10 @@ export default function AdminUsersPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-8 text-blue-700">Data User</h1>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold text-blue-700">Data User</h1>
+        <a href="/admin/users/create" className="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700">+ Buat User Baru</a>
+      </div>
       <div className="mb-4 flex items-center justify-between">
         <input
           type="text"
