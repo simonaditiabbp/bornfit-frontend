@@ -98,7 +98,6 @@ export default function AdminUsersPage() {
     },
     {
       name: 'Status',
-      center: true,
       cell: row => {
         const membership = getMembership(row.id);
         return membership && membership.is_active ? (
@@ -110,7 +109,6 @@ export default function AdminUsersPage() {
     },
     {
       name: 'Checkin Terakhir',
-      center: true,
       cell: row => {
         const lastCheckin = getLastCheckin(row.id);
         return lastCheckin ? formatCheckinTime(lastCheckin.checkin_time) : '-';
@@ -118,7 +116,6 @@ export default function AdminUsersPage() {
     },
     {
       name: 'Aksi',
-      center: true,
       cell: row => (
         <div className="flex gap-2 justify-center">
           <button
