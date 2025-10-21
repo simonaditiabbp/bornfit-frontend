@@ -1,10 +1,10 @@
 'use client';
+
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export default function UserDetailPage({ params }) {
   const { id } = params;
   const [user, setUser] = useState(null);
   const [membership, setMembership] = useState(null);
@@ -15,27 +15,45 @@ export default function UserDetailPage({ params }) {
   const [membershipForm, setMembershipForm] = useState({ start_date: '', end_date: '' });
   const [token, setToken] = useState('');
   const router = useRouter();
-
   useEffect(() => {
     const tokenData = localStorage.getItem('token');
     setToken(tokenData);
+    if (!tokenData) {
+      router.replace('/login');
+      return;
+    }
+    // Helper fetch with 401 handling
+    const fetchWith401 = async (url) => {
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${tokenData}` } });
+      if (res.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        router.replace('/login');
+        throw new Error('Unauthorized');
+      }
+      return res.json();
+    };
     const fetchDetail = async () => {
       setLoading(true);
-      const userRes = await fetch(`${API_URL}/api/users/${id}`, { headers: { Authorization: `Bearer ${tokenData}` } }).then(r => r.json());
-      const membershipRes = await fetch(`${API_URL}/api/memberships`, { headers: { Authorization: `Bearer ${tokenData}` } }).then(r => r.json());
-      const checkinsRes = await fetch(`${API_URL}/api/checkins/user/${id}`, { headers: { Authorization: `Bearer ${tokenData}` } }).then(r => r.json());
-      setUser(userRes);
-      setMembership(membershipRes.find(m => m.user_id == id));
-      setCheckins(checkinsRes);
-      setForm({ name: userRes.name, email: userRes.email, role: userRes.role });
-      setMembershipForm({
-        start_date: membershipRes.find(m => m.user_id == id)?.start_date?.slice(0, 10) || '',
-        end_date: membershipRes.find(m => m.user_id == id)?.end_date?.slice(0, 10) || '',
-      });
+      try {
+        const userRes = await fetchWith401(`${API_URL}/api/users/${id}`);
+        const membershipRes = await fetchWith401(`${API_URL}/api/memberships`);
+        const checkinsRes = await fetchWith401(`${API_URL}/api/checkins/user/${id}`);
+        setUser(userRes);
+        setMembership(membershipRes.find(m => m.user_id == id));
+        setCheckins(checkinsRes);
+        setForm({ name: userRes.name, email: userRes.email, role: userRes.role });
+        setMembershipForm({
+          start_date: membershipRes.find(m => m.user_id == id)?.start_date?.slice(0, 10) || '',
+          end_date: membershipRes.find(m => m.user_id == id)?.end_date?.slice(0, 10) || '',
+        });
+      } catch (err) {
+        // Sudah di-handle di fetchWith401
+      }
       setLoading(false);
     };
     fetchDetail();
-  }, [id]);
+  }, [id, router]);
 
   const handleEdit = () => setEdit(true);
   const handleCancel = () => setEdit(false);
@@ -156,4 +174,4 @@ export default function UserDetailPage({ params }) {
       )}
     </div>
   );
-}
+

@@ -42,7 +42,7 @@ export default function BarcodePage() {
             qrbox: 250,
           },
           async (decodedText) => {
-            console.log('QR decoded:', decodedText);
+            // console.log('QR decoded:', decodedText);
             setManualQr(decodedText); // tampilkan hasil scan ke input manual
             if (!loading) {
               setLoading(true);

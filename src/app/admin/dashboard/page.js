@@ -24,18 +24,33 @@ export default function AdminDashboardPage() {
     data: [],
   });
 
+  const router = require('next/navigation').useRouter();
   useEffect(() => {
     const userData = localStorage.getItem('user');
     const token = localStorage.getItem('token');
-    if (!userData || !token) return;
+    if (!userData || !token) {
+      router.replace('/login');
+      return;
+    }
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
     const fetchStats = async () => {
       setLoading(true);
       try {
+        // Helper fetch with 401 handling
+        const fetchWith401 = async (url) => {
+          const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+          if (res.status === 401) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            router.replace('/login');
+            throw new Error('Unauthorized');
+          }
+          return res.json();
+        };
         const [usersRes, membershipsRes, checkinsRes] = await Promise.all([
-          fetch(`${API_URL}/api/users`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-          fetch(`${API_URL}/api/memberships`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-          fetch(`${API_URL}/api/checkins`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+          fetchWith401(`${API_URL}/api/users`),
+          fetchWith401(`${API_URL}/api/memberships`),
+          fetchWith401(`${API_URL}/api/checkins`),
         ]);
         const totalUsers = usersRes.length;
         // Total member = user yang punya membership (user_id unik di memberships)
@@ -72,7 +87,7 @@ export default function AdminDashboardPage() {
       setLoading(false);
     };
     fetchStats();
-  }, []);
+  }, [router]);
 
   return (
     <div>

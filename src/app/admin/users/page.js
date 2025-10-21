@@ -17,13 +17,7 @@ dayjs.extend(timezone);
 // Fungsi format
 function formatCheckinTime(datetime) {
   if (!datetime) return '-';
-//   console.log("datetime:")
-//   console.log(datetime)
-//     const dayjs_format = dayjs.utc(datetime).format('DD/MM/YYYY [pukul] HH:mm');
-//   console.log("dayjs_format:")
-//   console.log(dayjs_format)
-//   return dayjs(datetime).format('DD/MM/YYYY [pukul] HH:mm');
-  return dayjs.utc(datetime).format('DD/MM/YYYY [pukul] HH:mm');
+    return dayjs.utc(datetime).format('DD/MM/YYYY [pukul] HH:mm');
 }
 
 export default function AdminUsersPage() {
@@ -40,8 +34,6 @@ export default function AdminUsersPage() {
     // Only admin can access
     const userData = localStorage.getItem('user');
     const tokenData = localStorage.getItem('token');
-    console.log("tokenData:")
-    console.log(tokenData)
     if (!userData || !tokenData) {
       router.replace('/login');
       return;
@@ -52,17 +44,32 @@ export default function AdminUsersPage() {
       router.replace('/dashboard');
       return;
     }
+    // Helper fetch with 401 handling
+    const fetchWith401 = async (url) => {
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${tokenData}` } });
+      if (res.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        router.replace('/login');
+        throw new Error('Unauthorized');
+      }
+      return res.json();
+    };
     // Fetch all data
     const fetchAll = async () => {
       setLoading(true);
-      const [usersRes, membershipsRes, checkinsRes] = await Promise.all([
-        fetch(`${API_URL}/api/users`, { headers: { Authorization: `Bearer ${tokenData}` } }).then(r => r.json()),
-        fetch(`${API_URL}/api/memberships`, { headers: { Authorization: `Bearer ${tokenData}` } }).then(r => r.json()),
-        fetch(`${API_URL}/api/checkins`, { headers: { Authorization: `Bearer ${tokenData}` } }).then(r => r.json()),
-      ]);
-      setUsers(usersRes);
-      setMemberships(membershipsRes);
-      setCheckins(checkinsRes);
+      try {
+        const [usersRes, membershipsRes, checkinsRes] = await Promise.all([
+          fetchWith401(`${API_URL}/api/users`),
+          fetchWith401(`${API_URL}/api/memberships`),
+          fetchWith401(`${API_URL}/api/checkins`),
+        ]);
+        setUsers(usersRes);
+        setMemberships(membershipsRes);
+        setCheckins(checkinsRes);
+      } catch (err) {
+        // Sudah di-handle di fetchWith401
+      }
       setLoading(false);
     };
     fetchAll();
@@ -75,11 +82,6 @@ export default function AdminUsersPage() {
     if (userCheckins.length === 0) return null;
     return userCheckins.reduce((a, b) => new Date(a.checkin_time) > new Date(b.checkin_time) ? a : b);
   };
-
-  console.log("getLastCheckin(27)")
-  const cobacba = getLastCheckin(2);
-//   console.log(cobacba.checkin_time)
-//   console.log(formatCheckinTime(lastCheckin.checkin_time))
 
   // Kolom untuk DataTable
   const columns = [
