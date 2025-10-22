@@ -18,10 +18,10 @@ export default function BarcodePage() {
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
-    if (!userData) {
-      router.replace('/login');
-      return;
-    }
+    // if (!userData) {
+    //   router.replace('/login');
+    //   return;
+    // }
     const userObj = JSON.parse(userData);
     setUser(userObj);
     // Proteksi: hanya member bisa akses barcode
@@ -93,14 +93,14 @@ export default function BarcodePage() {
     };
   }, [scanMode]);
 
-  if (!user) return null;
+  // if (!user) return null;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
-      <h1 className="text-3xl font-extrabold mb-6 text-blue-700 drop-shadow">Barcode Member</h1>
+      <h1 className="text-3xl font-extrabold mb-6 text-blue-700 drop-shadow">Scan QRCODE Member</h1>
       <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-lg text-center border border-blue-200">
-        <p className="mb-2 text-lg">Halo, <span className="font-bold text-blue-700">{user.name}</span></p>
-        <p className="mb-6 text-base">QR Code Anda: <span className="font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded">{user.qr_code}</span></p>
+        {/* <p className="mb-2 text-lg">Halo, <span className="font-bold text-blue-700">{user.name}</span></p> */}
+        {/* <p className="mb-6 text-base">QR Code Anda: <span className="font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded">{user.qr_code}</span></p> */}
         {!scanMode && (
           <>
             <button
