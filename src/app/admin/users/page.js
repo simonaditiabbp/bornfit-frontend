@@ -159,7 +159,7 @@ export default function AdminUsersPage() {
       {loading ? (
         <div className="text-center text-blue-500">Loading...</div>
       ) : (
-        <UsersDataTable columns={columns} data={filteredUsers} />
+        <UsersDataTable columns={columns} data={filteredUsers} setQrUser={setQrUser} />
       )}
       {/* Modal QR Code */}
       {qrUser && (
