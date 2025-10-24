@@ -287,9 +287,19 @@ export default function UserDetailPage() {
                   <ul className="list-disc ml-5 text-sm space-y-1">
                     {checkins.map((c) => (
                       <li key={c.id}>
-                        {new Date(c.checkin_time).toLocaleString('id-ID', {
-                          timeZone: 'Asia/Jakarta',
-                        })}
+                        {(() => {
+                          const date = new Date(c.checkin_time);
+                          const day = String(date.getUTCDate()).padStart(2, '0');
+                          const monthNames = [
+                            'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+                          ];
+                          const month = monthNames[date.getUTCMonth()];
+                          const year = date.getUTCFullYear();
+                          const hours = String(date.getUTCHours()).padStart(2, '0');
+                          const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                          return `${day} ${month} ${year} ${hours}:${minutes}`;
+                        })()}
                       </li>
                     ))}
                   </ul>
