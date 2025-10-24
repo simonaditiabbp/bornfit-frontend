@@ -287,32 +287,33 @@ export default function BarcodePage() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-6 py-10">
-      <h1 className="text-3xl font-extrabold mb-8 text-blue-700 drop-shadow">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-2 py-8">
+      <h1 className="text-4xl font-extrabold mb-8 text-blue-700 drop-shadow-lg tracking-tight text-center">
+        <span className="inline-block align-middle mr-2">
+          <svg width="40" height="40" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-camera"><rect x="3" y="7" width="34" height="26" rx="4" ry="4"/><circle cx="20" cy="22" r="7"/><path d="M8 7V5a4 4 0 0 1 4-4h4"/></svg>
+        </span>
         Scan QRCode Member
       </h1>
 
       {/* ===== TAMPILAN AWAL: belum ada hasil check-in (atau user belum scan) ===== */}
       {!message && (
-        <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-lg text-center border border-blue-200">
+        <div className="bg-white/90 p-8 rounded-3xl shadow-2xl w-full max-w-md text-center border border-blue-200 flex flex-col items-center animate-fade-in">
           {!scanMode && (
             <>
               <button
-                className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-6 py-3 rounded-xl font-bold mb-6 shadow hover:scale-105 transition-transform duration-200"
+                className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-8 py-4 rounded-2xl font-bold mb-8 shadow-lg hover:scale-105 transition-transform duration-200 text-xl flex items-center gap-2"
                 onClick={() => { setScanMode(true); setMessage(''); }}
                 disabled={loading}
               >
-                <span className="inline-block align-middle mr-2">
-                  <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-camera"><rect x="3" y="7" width="18" height="13" rx="2" ry="2"/><circle cx="12" cy="15" r="3"/><path d="M5 7V5a2 2 0 0 1 2-2h2"/></svg>
-                </span>
-                Check-in
+                <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-camera"><rect x="3" y="7" width="18" height="13" rx="2" ry="2"/><circle cx="12" cy="15" r="3"/><path d="M5 7V5a2 2 0 0 1 2-2h2"/></svg>
+                Mulai Check-in
               </button>
 
-              <div className="mb-4">
+              <div className="mb-2 w-full">
                 <input
                   type="text"
                   placeholder="Input QR code manual"
-                  className="w-full p-3 border-2 border-blue-300 rounded-xl mt-2 text-lg tracking-widest text-center focus:outline-blue-500"
+                  className="w-full p-4 border-2 border-blue-300 rounded-xl text-lg tracking-widest text-center focus:outline-blue-500 bg-blue-50 placeholder:text-blue-300 shadow"
                   value={manualQr}
                   onChange={async (e) => handleManualInput(e.target.value)}
                   disabled={loading}
@@ -326,35 +327,36 @@ export default function BarcodePage() {
           )}
 
           {scanMode && (
-            <div className="mb-6 flex flex-col items-center justify-center">
+            <div className="flex flex-col items-center justify-center w-full">
               <div
                 id="qr-reader"
                 style={{
-                  width: '340px',
-                  height: '340px',
+                  width: '320px',
+                  height: '320px',
                   margin: '0 auto',
                   borderRadius: '1.5rem',
                   border: '4px solid #3b82f6',
                   boxShadow: '0 0 24px #3b82f6a0',
                   position: 'relative',
                   overflow: 'hidden',
+                  background: '#e0e7ff',
                 }}
                 className="animate-pulse"
               />
-              <div className="flex gap-4 justify-center mt-4">
+              <div className="flex gap-4 justify-center mt-6">
                 <button
-                  className="bg-gray-400 text-white px-5 py-2 rounded-xl font-semibold shadow hover:bg-gray-500"
+                  className="bg-gray-400 text-white px-6 py-2 rounded-xl font-semibold shadow hover:bg-gray-500 transition"
                   onClick={handleCancelScan}
                   disabled={loading}
                 >
-                  Cancel
+                  Batal
                 </button>
                 <button
-                  className="bg-blue-500 text-white px-5 py-2 rounded-xl font-semibold shadow hover:bg-blue-700"
+                  className="bg-blue-500 text-white px-6 py-2 rounded-xl font-semibold shadow hover:bg-blue-700 transition"
                   onClick={handleRetryScan}
                   disabled={loading}
                 >
-                  Retry
+                  Ulangi
                 </button>
               </div>
             </div>
@@ -370,87 +372,90 @@ export default function BarcodePage() {
 
       {/* ===== Layout hasil scan (full width card, grid 3 kolom responsif) ===== */}
       {message && (
-        <div className="bg-white rounded-2xl shadow-lg min-h-screen w-full border border-blue-200 p-8 grid grid-cols-1 md:grid-cols-3 gap-6 justify-center items-center">
-          {/* <div className="min-h-screen w-full flex justify-center items-center bg-gray-50 px-6 py-10"> */}
-
+        <div className={`bg-white/90 rounded-3xl shadow-2xl min-h-[75vh] w-full max-w-[1500px] border border-blue-200 p-16 grid grid-cols-1 md:grid-cols-3 gap-20 justify-center items-center animate-fade-in ${messageType === 'success' ? 'border-green-300' : 'border-red-300'}`}
+          style={{ minHeight: '75vh', minWidth: '340px' }}
+        >
           {/* kolom kiri: foto (tampil hanya jika success) */}
           {messageType === 'success' ? (
-            <div className="flex items-center justify-center">
-              <div className="w-120 h-120 bg-gray-200 rounded-xl flex items-center justify-center text-gray-600 font-medium overflow-hidden">
+            <div className="flex items-center justify-center h-full">
+              <div className="w-96 h-96 bg-gray-100 rounded-3xl flex items-center justify-center text-gray-600 font-medium overflow-hidden border-4 border-blue-300 shadow-2xl p-2">
                 {user?.photo ? (
-                  <img src={user.photo.startsWith('http') ? user.photo : `${API_URL?.replace(/\/$/, '')}${user.photo}`} alt="Foto Member" className="w-full h-full object-cover" />
+                  <img src={user.photo.startsWith('http') ? user.photo : `${API_URL?.replace(/\/$/, '')}${user.photo}`} alt="Foto Member" className="w-full h-full object-cover scale-105 rounded-2xl" />
                 ) : (
-                  <span className="text-gray-400">Tidak ada foto</span>
+                  <span className="text-gray-400 text-lg">Tidak ada foto</span>
                 )}
               </div>
             </div>
           ) : (
-            // kalau error, kosongkan kolom kiri agar layout kanan tetap di kolom 3
-            <div />
+            <div className="flex items-center justify-center h-full">
+              <div className="w-72 h-72 flex items-center justify-center bg-gray-100 rounded-3xl border-4 border-red-200 shadow-xl">
+                <svg width="96" height="96" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-alert-triangle text-red-400"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="48" y1="36" x2="48" y2="52"/><line x1="48" y1="68" x2="48.01" y2="68"/></svg>
+              </div>
+            </div>
           )}
 
           {/* kolom tengah: detail member (hanya jika success) */}
-          <div className="text-left text-lg text-gray-700">
+          <div className="text-left text-lg text-gray-700 flex flex-col justify-center">
             {messageType === 'success' ? (
               <>
-                <p><strong>Nama:</strong> {user?.name || '-'}</p>
-                <p><strong>Email:</strong> {user?.email || '-'}</p>
-                <p>
-                  <strong>Periode membership:</strong>&nbsp;
-                  {startDate} {endDate ? ` - ${endDate}` : ""}
-                </p>                
+                <p className="font-bold text-3xl text-blue-700 mb-4 leading-tight">{user?.name || '-'}</p>
+                <p className="mb-2 text-lg"><span className="font-semibold">Email:</span> {user?.email || '-'}</p>
+                <p className="mb-2 text-lg">
+                  <span className="font-semibold whitespace-nowrap">Periode membership:</span>
+                  <span className="whitespace-nowrap"> {startDate}{endDate ? ` - ${endDate}` : ""}</span>
+                </p>
                 {diffMs > 0 && remainingDays <= 7 && (
                   <>
-                    <p className="text-red-600">
-                       <strong>Tenggat membership:</strong> {remainingText}
+                    <p className="text-red-600 font-bold text-lg mt-4">
+                       Tenggat membership: {remainingText}
                     </p>
-                    <p className="mt-2 text-orange-600">
+                    <p className="mt-2 text-orange-600 text-base">
                       Segera perpanjang membership anda dengan menghubungi admin 08123123123
                     </p>
                   </>
                 )}
               </>
             ) : (
-              // jika error, tampil area penjelasan/placeholder (atau kosong)
-              <div className="text-gray-500">
-                {/* kosongkan atau beri instruksi */}
-                {/* <p><strong>Tidak ada data member yang ditampilkan atau terjadi error</strong></p> */}
-                <p className="mt-2 text-sm text-orange-600">Silahkan Check-In kembali</p>
+              <div className="text-gray-500 text-center">
+                <p className="mt-2 text-base text-orange-600 font-semibold">{message}</p>
+                <p className="mt-2 text-sm text-gray-400">Silahkan Check-In kembali</p>
               </div>
             )}
-
-            {/* pesan hasil (tetap di tengah kolom agar readable) */}
-            {/* {message && ( */}
-              {/* // <div className={`mt-4 font-semibold ${messageType === 'error' ? 'text-red-600' : 'text-green-600'}`}> */}
-                {/* {user ? null : message} */}
-              {/* </div> */}
-            {/* // )} */}
           </div>
 
           {/* kolom kanan: tombol check-in / input manual / message */}
-          <div className="flex flex-col text-lg items-center justify-center">
+          <div className="flex flex-col text-lg items-center justify-center gap-4">
             <button
-              className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-6 py-3 rounded-xl font-bold mb-4 shadow hover:scale-105 transition-transform duration-200"
+              className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-blue-700 text-white px-6 py-3 rounded-xl font-bold shadow hover:scale-105 transition-transform duration-200 text-lg"
               onClick={() => { setScanMode(true); setMessage(''); }}
               disabled={loading}
             >
-              Check-in
+              <svg
+                width="22"
+                height="22"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="feather feather-camera"
+              >
+                <rect x="3" y="7" width="16" height="10" rx="2" ry="2" />
+                <circle cx="11" cy="12" r="3" />
+                <path d="M5 7V5a2 2 0 0 1 2-2h2" />
+              </svg>
+              Scan Ulang
             </button>
+
 
             <input
               type="text"
               placeholder="Input QR code manual"
-              className="w-full p-3 border-2 border-blue-300 rounded-xl text-center focus:outline-blue-500 mb-4"
+              className="w-full p-3 border-2 border-blue-300 rounded-xl text-center focus:outline-blue-500 mb-2 bg-blue-50 placeholder:text-blue-300 shadow"
               value={manualQr}
               onChange={(e) => handleManualInput(e.target.value)}
               disabled={loading}
             />
-
-            <div className="text-center">
-              <div className={`font-medium ${messageType === 'error' ? 'text-red-600' : 'text-green-600'}`}>
-                {message}
-              </div>
-            </div>
           </div>
         </div>
       )}
