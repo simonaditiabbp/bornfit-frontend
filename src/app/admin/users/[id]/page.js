@@ -21,10 +21,16 @@ export default function UserDetailPage() {
   const router = useRouter();
 
   useEffect(() => {
+    const userData = localStorage.getItem('user');
     const tokenData = localStorage.getItem('token');
     setToken(tokenData);
-    if (!tokenData) {
+    if (!userData || !tokenData) {
       router.replace('/login');
+      return;
+    }
+    const userObj = JSON.parse(userData);
+    if (userObj.role !== 'admin') {
+      router.replace('/barcode');
       return;
     }
 
@@ -34,7 +40,7 @@ export default function UserDetailPage() {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         router.replace('/login');
-        throw new Error('Unauthorized');
+        // throw new Error('Unauthorized');
       }
       return res.json();
     };

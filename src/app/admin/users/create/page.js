@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -23,8 +23,20 @@ export default function CreateUserPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // Only admin can access
-  // (optional: add token check/redirect here if needed)
+  useEffect(() => {
+    // Only admin can access
+    const userData = localStorage.getItem('user');
+    const tokenData = localStorage.getItem('token');
+    if (!userData || !tokenData) {
+      router.replace('/login');
+      return;
+    }
+    const userObj = JSON.parse(userData);
+    if (userObj.role !== 'admin') {
+      router.replace('/barcode');
+      return;
+    }
+  }, [router]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

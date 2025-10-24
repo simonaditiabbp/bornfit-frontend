@@ -41,7 +41,7 @@ export default function AdminUsersPage() {
     const userObj = JSON.parse(userData);
     setToken(tokenData);
     if (userObj.role !== 'admin') {
-      router.replace('/dashboard');
+      router.replace('/barcode');
       return;
     }
     // Helper fetch with 401 handling
@@ -51,7 +51,7 @@ export default function AdminUsersPage() {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         router.replace('/login');
-        throw new Error('Unauthorized');
+        // throw new Error('Unauthorized');
       }
       return res.json();
     };

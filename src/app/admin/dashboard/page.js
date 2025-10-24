@@ -32,6 +32,11 @@ export default function AdminDashboardPage() {
       router.replace('/login');
       return;
     }
+    const userObj = JSON.parse(userData);
+    if (userObj.role !== 'admin') {
+      router.replace('/barcode');
+      return;
+    }
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
     const fetchStats = async () => {
       setLoading(true);
@@ -43,7 +48,7 @@ export default function AdminDashboardPage() {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             router.replace('/login');
-            throw new Error('Unauthorized');
+            // throw new Error('Unauthorized');
           }
           return res.json();
         };
@@ -95,7 +100,7 @@ export default function AdminDashboardPage() {
       {/* Grafik checkin mingguan */}
       <div className="bg-white rounded-xl shadow p-6 mb-8">
         <div className="mb-4 flex items-center justify-between">
-          <div className="text-lg font-bold text-blue-700">User Checkin per Hari (7 Hari Terakhir)</div>
+          <div className="text-lg font-bold text-blue-700">Member Checkin per Hari (7 Hari Terakhir)</div>
         </div>
         <div className="w-full">
           {typeof window !== 'undefined' && (
@@ -105,13 +110,13 @@ export default function AdminDashboardPage() {
               options={{
                 chart: { id: 'checkin-bar', toolbar: { show: false } },
                 xaxis: { categories: chartData.categories, labels: { style: { fontSize: '14px' } } },
-                yaxis: { title: { text: 'User Checkin' }, labels: { style: { fontSize: '14px' } } },
+                yaxis: { title: { text: 'Member Checkin' }, labels: { style: { fontSize: '14px' } } },
                 plotOptions: { bar: { borderRadius: 6, columnWidth: '40%' } },
                 dataLabels: { enabled: true },
                 colors: ['#2563eb'],
                 grid: { strokeDashArray: 4 },
               }}
-              series={[{ name: 'User Checkin', data: chartData.data }]}
+              series={[{ name: 'Member Checkin', data: chartData.data }]}
             />
           )}
         </div>
@@ -144,7 +149,7 @@ export default function AdminDashboardPage() {
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-yellow-600"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" /></svg>
           </div>
           <div>
-            <div className="text-lg font-bold text-yellow-700">User Aktif Membership</div>
+            <div className="text-lg font-bold text-yellow-700">Member Aktif Membership</div>
             <div className="text-3xl font-extrabold text-yellow-900">{loading ? '-' : stats.activeMembership}</div>
           </div>
         </div>
@@ -153,7 +158,7 @@ export default function AdminDashboardPage() {
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-red-600"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" /></svg>
           </div>
           <div>
-            <div className="text-lg font-bold text-red-700">User Tidak Aktif Membership</div>
+            <div className="text-lg font-bold text-red-700">Member Tidak Aktif Membership</div>
             <div className="text-3xl font-extrabold text-red-900">{loading ? '-' : stats.inactiveMembership}</div>
           </div>
         </div>

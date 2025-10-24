@@ -11,11 +11,25 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  const [latitude, setLatitude] = useState(null);
+  const [longitude, setLongitude] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       router.replace('/admin/dashboard');
+    }
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setLatitude(pos.coords.latitude);
+          setLongitude(pos.coords.longitude);
+        },
+        (err) => {
+          setLatitude(null);
+          setLongitude(null);
+        }
+      );
     }
   }, [router]);
 
@@ -27,15 +41,20 @@ export default function LoginPage() {
       const res = await fetch(`${API_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, latitude, longitude }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Login gagal');
       // Simpan token dan user info
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-      // Redirect ke dashboard
-      router.push('/admin/dashboard');
+      console.log("data.user.role: ", data.user.role);
+      if (data.user.role == "admin") {
+        router.push('/admin/dashboard');
+      }
+      if (data.user.role == "opscan") {
+        router.push('/barcode');
+      }
     } catch (err) {
       setError(err.message);
     } finally {
