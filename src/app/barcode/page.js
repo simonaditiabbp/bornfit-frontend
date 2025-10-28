@@ -105,34 +105,43 @@ export default function BarcodePage() {
     ? format(parseISO(user.membership.end_date), "dd MMM yyyy", { locale: localeId })
     : null;
 
-  const now = new Date();
-  const rawExpiryDate = new Date(user?.membership?.end_date);
-  const expiryDate = new Date(rawExpiryDate.getTime() - 7 * 60 * 60 * 1000);
-  let diffMs = expiryDate - now;
-  let remainingDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  let remainingText = null;
+  const [remainingText, setRemainingText] = useState(null);
+  const [remainingDays, setRemainingDays] = useState(null);
+  const [diffMs, setDiffMs] = useState(null);
 
-  if (user?.membership?.end_date) {
-    // const today = new Date();
-    // remainingDays = differenceInDays(parseISO(user.membership.end_date), today);
-    if (diffMs > 0 ) {
-      const totalSeconds = Math.floor(diffMs / 1000);
-      const days = Math.floor(totalSeconds / (3600 * 24));
-      const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
-      const seconds = totalSeconds % 60;
-
-      if (days > 0) {
-        remainingText = `${days} hari ${hours} jam lagi`;
-      } else if (hours > 0) {
-        remainingText = `${hours} jam ${minutes} menit lagi`;
+  useEffect(() => {
+    if (user?.membership?.end_date) {
+      const now = new Date();
+      const rawExpiryDate = new Date(user.membership.end_date);
+      const expiryDate = new Date(rawExpiryDate.getTime() - 7 * 60 * 60 * 1000);
+      const diff = expiryDate - now;
+      setDiffMs(diff);
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      setRemainingDays(days);
+      let text = null;
+      if (diff > 0) {
+        const totalSeconds = Math.floor(diff / 1000);
+        const d = Math.floor(totalSeconds / (3600 * 24));
+        const h = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+        const m = Math.floor((totalSeconds % 3600) / 60);
+        const s = totalSeconds % 60;
+        if (d > 0) {
+          text = `${d} hari ${h} jam lagi`;
+        } else if (h > 0) {
+          text = `${h} jam ${m} menit lagi`;
+        } else {
+          text = `${m} menit ${s} detik lagi`;
+        }
       } else {
-        remainingText = `${minutes} menit ${seconds} detik lagi`;
+        text = 'Membership Anda telah berakhir.';
       }
+      setRemainingText(text);
     } else {
-      remainingText = 'Membership Anda telah berakhir.';
+      setRemainingText(null);
+      setRemainingDays(null);
+      setDiffMs(null);
     }
-  }
+  }, [user]);
 
   // Inisialisasi scanner saat scanMode true
   useEffect(() => {
