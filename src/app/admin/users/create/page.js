@@ -145,9 +145,9 @@ export default function CreateUserPage() {
             className="w-full border border-gray-300 p-2 rounded"
             required={form.role === "member"}
           />
-          {form.qr_code && (
-            <div className="text-xs text-gray-500 mt-1">akan dikirim: {form.qr_code}</div>
-          )}
+          {/* {form.qr_code && ( */}
+            {/* <div className="text-xs text-gray-500 mt-1">akan dikirim: {form.qr_code}</div> */}
+          {/* )} */}
         </div>
         <div>
           <label className="block font-medium text-gray-900 dark:text-white mb-1">Role</label>
