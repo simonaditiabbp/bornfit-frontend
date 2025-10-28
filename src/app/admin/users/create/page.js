@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import BackendErrorFallback from '../../../../components/BackendErrorFallback';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -22,6 +23,7 @@ export default function CreateUserPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [backendError, setBackendError] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -71,18 +73,17 @@ export default function CreateUserPage() {
     e.preventDefault();
     setError("");
     setSuccess("");
-
-    // Validasi sesuai role
-    if ((form.role === "admin" || form.role === "opscan") && !form.password) {
-      setError("Password wajib diisi untuk role admin & opscan");
-      return;
-    }
-    if (form.role === "member" && !form.qr_code) {
-      setError("QR Code wajib diisi untuk role member");
-      return;
-    }
     setLoading(true);
     try {
+      // Validasi sesuai role
+      if ((form.role === "admin" || form.role === "opscan") && !form.password) {
+        setError("Password wajib diisi untuk role admin & opscan");
+        return;
+      }
+      if (form.role === "member" && !form.qr_code) {
+        setError("QR Code wajib diisi untuk role member");
+        return;
+      }
       const token = localStorage.getItem("token");
       const formData = new FormData();
       Object.entries(form).forEach(([key, value]) => {
@@ -117,18 +118,22 @@ export default function CreateUserPage() {
       setPhoto(null);
       setTimeout(() => router.push("/admin/users"), 1200);
     } catch (err) {
-      setError(err.message);
+      setBackendError(true);
     } finally {
       setLoading(false);
     }
   };
 
+  if (backendError) {
+    return <BackendErrorFallback onRetry={() => { setBackendError(false); window.location.reload(); }} />;
+  }
+
   return (
     <div className="max-w-3xl mx-auto bg-white p-10 rounded-2xl shadow-lg mt-12 border border-gray-100">
-      <h1 className="text-3xl font-bold mb-8 text-blue-700 text-center">Buat User Baru</h1>
+      <h1 className="text-3xl font-bold mb-8 text-blue-700 text-center">Create New User</h1>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className="block font-medium text-gray-900 dark:text-white mb-1">Nama <span className="text-red-600">*</span></label>
+          <label className="block font-medium text-gray-900 dark:text-white mb-1">Name <span className="text-red-600">*</span></label>
           <input type="text" name="name" value={form.name} onChange={handleChange} required className="w-full border border-gray-300 p-2 rounded" />
         </div>
         <div>
@@ -213,7 +218,7 @@ export default function CreateUserPage() {
         {error && <div className="text-red-600 font-semibold">{error}</div>}
         {success && <div className="text-green-600 font-semibold">{success}</div>}
         <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700" disabled={loading}>
-          {loading ? "Menyimpan..." : "Buat User"}
+          {loading ? "Saving..." : "Create User"}
         </button>
       </form>
     </div>

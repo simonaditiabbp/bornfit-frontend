@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-
+import BackendErrorFallback from '../../components/BackendErrorFallback';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -13,6 +13,7 @@ export default function LoginPage() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
+  const [backendError, setBackendError] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -36,7 +37,7 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError(null);
     try {
       const res = await fetch(`${API_URL}/api/login`, {
         method: 'POST',
@@ -55,11 +56,14 @@ export default function LoginPage() {
         router.push('/barcode');
       }
     } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      setBackendError(true);
     }
+    setLoading(false);
   };
+
+  if (backendError) {
+    return <BackendErrorFallback onRetry={() => { setBackendError(false); window.location.reload(); }} />;
+  }
 
   return (
   <div className="bg-gray-100 flex items-center justify-center min-h-screen">
@@ -79,7 +83,7 @@ export default function LoginPage() {
           <label className="block text-gray-700 font-medium mb-1">Email</label>
           <input
             type="email"
-            placeholder="Masukkan email"
+            placeholder="Enter your email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -92,7 +96,7 @@ export default function LoginPage() {
           <label className="block text-gray-700 font-medium mb-1">Password</label>
           <input
             type="password"
-            placeholder="Masukkan password"
+            placeholder="Enter your password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required

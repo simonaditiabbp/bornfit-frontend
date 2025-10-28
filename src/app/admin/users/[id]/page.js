@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
+import BackendErrorFallback from '../../../../components/BackendErrorFallback';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -19,6 +20,7 @@ export default function UserDetailPage() {
   const [token, setToken] = useState('');
   const [photo, setPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
+  const [backendError, setBackendError] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -63,7 +65,7 @@ export default function UserDetailPage() {
           end_date: membershipRes.find((m) => m.user_id == id)?.end_date?.slice(0, 10) || '',
         });
       } catch (err) {
-        console.error(err);
+        setBackendError(true);
       }
       setLoading(false);
     };
@@ -129,11 +131,15 @@ export default function UserDetailPage() {
     }
   };
 
+  if (backendError) {
+    return <BackendErrorFallback onRetry={() => { setBackendError(false); window.location.reload(); }} />;
+  }
+
   return (
     <div className="bg-gray-50 py-10">
       <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-10 border border-gray-100">
         {loading ? (
-          <div className="text-blue-600 text-center font-medium">Memuat data...</div>
+          <div className="text-blue-600 text-center font-medium">Loading...</div>
         ) : (
           <>
             <h2 className="text-3xl font-bold mb-8 text-blue-700 border-b pb-3">

@@ -1,14 +1,16 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import { Html5Qrcode } from 'html5-qrcode';
 import { format, differenceInDays, parseISO } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import { useRouter } from 'next/navigation';
+import BackendErrorFallback from '../../components/BackendErrorFallback';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function BarcodePage() {
+  const manualQrInputRef = useRef(null);
   const [user, setUser] = useState(null); // data member jika ditemukan
   const [scanMode, setScanMode] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -18,6 +20,7 @@ export default function BarcodePage() {
   const [manualQr, setManualQr] = useState('');
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
+  const [backendError, setBackendError] = useState(false);
   const router = useRouter();
 
   // Handle response dari backend (dipakai oleh scan dan manual input)
@@ -70,6 +73,19 @@ export default function BarcodePage() {
       }
     }
   };
+
+  // Keep manual QR input always focused
+  useEffect(() => {
+    const handleGlobalClick = (e) => {
+      if (manualQrInputRef.current && document.activeElement !== manualQrInputRef.current) {
+        manualQrInputRef.current.focus();
+      }
+    };
+    window.addEventListener('click', handleGlobalClick);
+    return () => {
+      window.removeEventListener('click', handleGlobalClick);
+    };
+  }, []);
 
   // Cancel scan
   const handleCancelScan = () => {
@@ -126,14 +142,14 @@ export default function BarcodePage() {
         const m = Math.floor((totalSeconds % 3600) / 60);
         const s = totalSeconds % 60;
         if (d > 0) {
-          text = `${d} hari ${h} jam lagi`;
+          text = `${d} days ${h} hours left`;
         } else if (h > 0) {
-          text = `${h} jam ${m} menit lagi`;
+          text = `${h} hours ${m} minutes left`;
         } else {
-          text = `${m} menit ${s} detik lagi`;
+          text = `${m} minutes ${s} seconds left`;
         }
       } else {
-        text = 'Membership Anda telah berakhir.';
+  text = 'Your membership has expired.';
       }
       setRemainingText(text);
     } else {
@@ -196,11 +212,11 @@ export default function BarcodePage() {
                   const result = await res.json();
                   if (res.status === 201 && result.data) {
                     setUser(result.data.user);
-                    setMessage(result.message || 'Check-in berhasil');
+                    setMessage(result.message || 'Check-in successful');
                     setMessageType('success');
                   } else {
                     setUser(null);
-                    setMessage(result.message || 'Member tidak ditemukan');
+                    setMessage(result.message || 'Member not found');
                     setMessageType('error');
                   }
                   // Stop scanner after any check-in attempt (success or error)
@@ -209,7 +225,7 @@ export default function BarcodePage() {
                   setScanMode(false);
                 } catch (err) {
                   setUser(null);
-                  setMessage('Terjadi kesalahan saat check-in');
+              setMessage('An error occurred during check-in');
                   setMessageType('error');
                   try { await html5QrCode.stop(); } catch (e) { console.error('Error stopping scanner after error:', e); }
                   setScanner(null);
@@ -221,14 +237,15 @@ export default function BarcodePage() {
               }
             },
             (errorMessage) => {
-              // Hanya log error parse (NotFoundException) di console, jangan update state message agar tidak spam looping
-              if (typeof errorMessage === 'string' && errorMessage.includes('NotFoundException')) {
-                // QR code belum ditemukan, ini normal, jangan update state
-                // console.debug('QR read error:', errorMessage);
+              // Suppress normal parse errors and noisy library errors
+              if (
+                (typeof errorMessage === 'string' && errorMessage.includes('NotFoundException')) ||
+                (typeof errorMessage === 'string' && errorMessage.includes('No MultiFormat Readers'))
+              ) {
+                // QR code not found or no readers available, normal during scanning, do not log or update state
                 return;
               }
-              // Untuk error lain (fatal), baru tampilkan pesan ke user
-              setMessage('Gagal membaca QR code. Pastikan kamera tidak digunakan aplikasi lain, atau klik Retry.');
+              setMessage('Failed to read QR code. Make sure your camera is not used by another app, or click Retry.');
               setMessageType('error');
               console.error('QR read error:', errorMessage);
             }
@@ -267,7 +284,7 @@ export default function BarcodePage() {
       navigator.geolocation.getCurrentPosition(
         () => {},
         () => {
-          alert('Akses lokasi diperlukan! Silakan izinkan lokasi di browser Anda.');
+          alert('Location access is required! Please allow location in your browser.');
           localStorage.setItem('location_alerted', '1');
         }
       );
@@ -296,6 +313,50 @@ export default function BarcodePage() {
     setLongitude(longitude);
   }, []);
 
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userData = localStorage.getItem('user');
+        const token = localStorage.getItem('token');
+        if (!userData || !token) {
+          router.replace('/login');
+          return;
+        }
+        const userObj = JSON.parse(userData);
+        if (userObj.role !== 'opscan' && userObj.role !== 'admin') {
+          router.replace('/login');
+          return;
+        }
+
+        setLoading(true);
+        const res = await fetch(`${API_URL}/api/users`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        const result = await res.json();
+        if (res.status === 200 && result) {
+          setUser(result.data);
+        } else {
+          setUser(null);
+          // setMessage(result.message || 'User not found');
+          // setMessageType('error');
+        }
+      } catch (err) {
+        setBackendError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUser();
+  }, [router]);
+
+  if (backendError) {
+    return <BackendErrorFallback onRetry={() => { setBackendError(false); window.location.reload(); }} />;
+  }
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-2 py-8">
       <h1 className="text-4xl font-extrabold mb-8 text-blue-700 drop-shadow-lg tracking-tight text-center">
@@ -316,21 +377,22 @@ export default function BarcodePage() {
                 disabled={loading}
               >
                 <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-camera"><rect x="3" y="7" width="18" height="13" rx="2" ry="2"/><circle cx="12" cy="15" r="3"/><path d="M5 7V5a2 2 0 0 1 2-2h2"/></svg>
-                Mulai Check-in
+                Start Check-in
               </button>
 
               <div className="mb-2 w-full">
                 <input
                   type="text"
-                  placeholder="Input QR code manual"
+                  placeholder="Enter QR code manually"
                   className="w-full p-4 border-2 border-blue-300 rounded-xl text-lg tracking-widest text-center focus:outline-blue-500 bg-blue-50 placeholder:text-blue-300 shadow"
                   value={manualQr}
                   onChange={async (e) => handleManualInput(e.target.value)}
-                  disabled={loading}
+                  // disabled={loading}
                   autoFocus
+                  ref={manualQrInputRef}
                 />
                 <div className="text-xs text-blue-500 mt-1">
-                  QR code bisa diinput manual jika scanner bermasalah
+                  You can enter the QR code manually if the scanner is not working
                 </div>
               </div>
             </>
@@ -359,14 +421,14 @@ export default function BarcodePage() {
                   onClick={handleCancelScan}
                   disabled={loading}
                 >
-                  Batal
+                  Cancel
                 </button>
                 <button
                   className="bg-blue-500 text-white px-6 py-2 rounded-xl font-semibold shadow hover:bg-blue-700 transition"
                   onClick={handleRetryScan}
                   disabled={loading}
                 >
-                  Ulangi
+                  Retry
                 </button>
               </div>
             </div>
@@ -390,9 +452,9 @@ export default function BarcodePage() {
             <div className="flex items-center justify-center h-full">
               <div className="w-96 h-96 bg-gray-100 rounded-3xl flex items-center justify-center text-gray-600 font-medium overflow-hidden border-4 border-blue-300 shadow-2xl p-2">
                 {user?.photo ? (
-                  <Image src={user.photo.startsWith('http') ? user.photo : `${API_URL?.replace(/\/$/, '')}${user.photo}`} alt="Foto Member" className="w-full h-full object-cover scale-105 rounded-2xl" />
+                  <Image src={user.photo.startsWith('http') ? user.photo : `${API_URL?.replace(/\/$/, '')}${user.photo}`} alt="Foto Member" width={300} height={300} className="w-full h-full object-cover scale-105 rounded-2xl" />
                 ) : (
-                  <span className="text-gray-400 text-lg">Tidak ada foto</span>
+                  <span className="text-gray-400 text-lg">No photo available</span>
                 )}
               </div>
             </div>
@@ -417,10 +479,10 @@ export default function BarcodePage() {
                 {diffMs > 0 && remainingDays <= 7 && (
                   <>
                     <p className="text-red-600 font-bold text-lg mt-4">
-                       Tenggat membership: {remainingText}
+                       Membership deadline: {remainingText}
                     </p>
                     <p className="mt-2 text-orange-600 text-base">
-                      Segera perpanjang membership anda dengan menghubungi admin 08123123123
+                      Please renew your membership soon by contacting admin 08123123123
                     </p>
                   </>
                 )}
@@ -428,7 +490,7 @@ export default function BarcodePage() {
             ) : (
               <div className="text-gray-500 text-center">
                 <p className="mt-2 text-base text-orange-600 font-semibold">{message}</p>
-                <p className="mt-2 text-sm text-gray-400">Silahkan Check-In kembali</p>
+                <p className="mt-2 text-sm text-gray-400">Please try to check-in again</p>
               </div>
             )}
           </div>
@@ -464,7 +526,9 @@ export default function BarcodePage() {
               className="w-full p-3 border-2 border-blue-300 rounded-xl text-center focus:outline-blue-500 mb-2 bg-blue-50 placeholder:text-blue-300 shadow"
               value={manualQr}
               onChange={(e) => handleManualInput(e.target.value)}
-              disabled={loading}
+              // disabled={loading}
+              autoFocus
+              ref={manualQrInputRef}
             />
           </div>
         </div>

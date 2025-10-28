@@ -22,7 +22,7 @@ export default function AdminLayout({ children }) {
   //     }
 
   //     try {
-  //       const response = await fetch('/api/users', {
+//       const response = await fetch('/api/users', {
   //         headers: {
   //           Authorization: `Bearer ${token}`,
   //         },
@@ -57,15 +57,15 @@ export default function AdminLayout({ children }) {
               <Link href="/admin/dashboard" className="block py-2 px-4 rounded hover:bg-blue-600 font-semibold">Dashboard</Link>
             </li>
             <li>
-              <Link href="/admin/users" className="block py-2 px-4 rounded hover:bg-blue-600 font-semibold">Data User</Link>
+              <Link href="/admin/users" className="block py-2 px-4 rounded hover:bg-blue-600 font-semibold">User Data</Link>
             </li>
             <li>
-              <Link href="/admin/users/create" className="block py-2 px-4 rounded hover:bg-blue-600 font-semibold">Buat User Baru</Link>
+              <Link href="/admin/users/create" className="block py-2 px-4 rounded hover:bg-blue-600 font-semibold">Create New User</Link>
             </li>
             <li>
               <Link href="/barcode" className="block py-2 px-4 rounded hover:bg-blue-600 font-semibold">Scan Barcode</Link>
             </li>
-            {/* Tambah menu lain di sini */}
+            {/* Add more menu items here */}
           </ul>
         </nav>
         <button

@@ -9,6 +9,7 @@ import { jsPDF } from "jspdf";
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import BackendErrorFallback from '../../../components/BackendErrorFallback';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -29,6 +30,7 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [qrUser, setQrUser] = useState(null);
   const [token, setToken] = useState('');
+  const [backendError, setBackendError] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -69,6 +71,7 @@ export default function AdminUsersPage() {
         setMemberships(membershipsRes);
         setCheckins(checkinsRes);
       } catch (err) {
+        setBackendError(true);
         // Sudah di-handle di fetchWith401
       }
       setLoading(false);
@@ -142,16 +145,20 @@ export default function AdminUsersPage() {
     u.email.toLowerCase().includes(search.toLowerCase())
   );
 
+  if (backendError) {
+    return <BackendErrorFallback onRetry={() => { setBackendError(false); window.location.reload(); }} />;
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-blue-700">Data User</h1>
-            <Link href="/admin/users/create" className="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700">+ Buat User Baru</Link>
+        <h1 className="text-3xl font-bold text-blue-700">User Data</h1>
+            <Link href="/admin/users/create" className="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700">+ Create New User</Link>
       </div>
       <div className="mb-4 flex items-center justify-between">
         <input
           type="text"
-          placeholder="Cari nama/email..."
+          placeholder="Search name/email..."
           className="w-full max-w-xs p-2 border border-blue-300 rounded focus:outline-blue-500 text-base"
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -166,7 +173,7 @@ export default function AdminUsersPage() {
       {qrUser && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-2xl shadow-xl text-center relative min-w-[340px]">
-            <h2 className="text-2xl font-extrabold mb-4 text-blue-700 drop-shadow">QR Code untuk {qrUser.name}</h2>
+            <h2 className="text-2xl font-extrabold mb-4 text-blue-700 drop-shadow">QR Code for {qrUser.name}</h2>
             <div className="flex flex-col items-center justify-center">
               <div id="qr-download-area" className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200 mb-2 shadow">
                 <QRCodeCanvas id="qr-canvas" value={qrUser.qr_code || ''} size={220} level="H" includeMargin={true} />
