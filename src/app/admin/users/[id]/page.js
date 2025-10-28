@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -136,13 +137,13 @@ export default function UserDetailPage() {
         ) : (
           <>
             <h2 className="text-3xl font-bold mb-8 text-blue-700 border-b pb-3">
-              Detail Member
+              Detail User
             </h2>
 
             {/* PHOTO USER */}
             <div className="flex flex-col items-center mb-8">
   {(photoPreview || user?.photo) ? (
-    <img
+    <Image
       src={
         photoPreview ||
         (user.photo.startsWith('http')
@@ -150,6 +151,8 @@ export default function UserDetailPage() {
           : `${API_URL?.replace(/\/$/, '')}${user.photo}`)
       }
       alt="Foto User"
+      width={128}
+      height={128}
       className="w-32 h-32 object-cover rounded-full border border-gray-300 shadow mb-3"
     />
   ) : (

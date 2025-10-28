@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { Html5Qrcode } from 'html5-qrcode';
 import { format, differenceInDays, parseISO } from "date-fns";
 import { id as localeId } from "date-fns/locale";
@@ -380,7 +381,7 @@ export default function BarcodePage() {
             <div className="flex items-center justify-center h-full">
               <div className="w-96 h-96 bg-gray-100 rounded-3xl flex items-center justify-center text-gray-600 font-medium overflow-hidden border-4 border-blue-300 shadow-2xl p-2">
                 {user?.photo ? (
-                  <img src={user.photo.startsWith('http') ? user.photo : `${API_URL?.replace(/\/$/, '')}${user.photo}`} alt="Foto Member" className="w-full h-full object-cover scale-105 rounded-2xl" />
+                  <Image src={user.photo.startsWith('http') ? user.photo : `${API_URL?.replace(/\/$/, '')}${user.photo}`} alt="Foto Member" className="w-full h-full object-cover scale-105 rounded-2xl" />
                 ) : (
                   <span className="text-gray-400 text-lg">Tidak ada foto</span>
                 )}

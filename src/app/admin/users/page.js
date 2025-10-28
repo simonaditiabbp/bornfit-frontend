@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {QRCodeCanvas, QRCodeSVG } from 'qrcode.react';
+import Link from 'next/link';
 import dynamic from 'next/dynamic';
 const UsersDataTable = dynamic(() => import('./DataTable'), { ssr: false });
 import { jsPDF } from "jspdf";
@@ -145,7 +146,7 @@ export default function AdminUsersPage() {
     <div>
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold text-blue-700">Data User</h1>
-        <a href="/admin/users/create" className="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700">+ Buat User Baru</a>
+            <Link href="/admin/users/create" className="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700">+ Buat User Baru</Link>
       </div>
       <div className="mb-4 flex items-center justify-between">
         <input

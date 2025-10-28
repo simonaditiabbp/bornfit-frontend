@@ -1,12 +1,13 @@
 
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
-    // Cek user di localStorage
+    setMounted(true);
     if (typeof window !== "undefined") {
       const userData = localStorage.getItem("user");
       if (!userData) {
@@ -27,5 +28,10 @@ export default function Home() {
       }
     }
   }, [router]);
-  return null;
+  if (!mounted) return null;
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-center">
+      <div className="text-blue-600 text-lg font-semibold">Loading...</div>
+    </main>
+  );
 }

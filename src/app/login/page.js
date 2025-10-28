@@ -48,7 +48,6 @@ export default function LoginPage() {
       // Simpan token dan user info
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-      console.log("data.user.role: ", data.user.role);
       if (data.user.role == "admin") {
         router.push('/admin/dashboard');
       }

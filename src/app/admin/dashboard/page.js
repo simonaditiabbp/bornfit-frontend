@@ -77,8 +77,10 @@ export default function AdminDashboardPage() {
           const count = new Set(
             checkinsRes.filter(c => {
               if (!c.checkin_time) return false;
-              const checkinWIB = dayjs.utc(c.checkin_time).tz('Asia/Jakarta').format('YYYY-MM-DD');
-              return checkinWIB === dateStr;
+              // const checkinWIB = dayjs.utc(c.checkin_time).tz('Asia/Jakarta').format('YYYY-MM-DD');
+              // return checkinWIB === dateStr;
+              const checkinDate = dayjs(c.checkin_time).utc().format('YYYY-MM-DD');
+              return checkinDate === dateStr;
             }).map(c => c.user_id)
           ).size;
           data.push(count);

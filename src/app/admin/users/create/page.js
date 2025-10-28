@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -198,9 +199,11 @@ export default function CreateUserPage() {
           <input type="file" accept="image/*" onChange={handlePhotoChange} className="w-full border border-gray-300 p-2 rounded" />
           {photo && (
             <div className="mt-2 flex flex-col items-center">
-              <img
+              <Image
                 src={URL.createObjectURL(photo)}
                 alt="Preview Photo"
+                width={180}
+                height={180}
                 className="w-45 h-45 object-cover rounded-lg border border-gray-300 shadow"
               />
               <span className="text-xs text-gray-500 mt-1">Preview</span>
