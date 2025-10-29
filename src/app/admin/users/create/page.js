@@ -26,6 +26,18 @@ export default function CreateUserPage() {
   const [backendError, setBackendError] = useState(false);
   const router = useRouter();
 
+  const getJwtExp = () => {
+    const tokenCheck = localStorage.getItem('token');
+    if (!tokenCheck) return null;
+    try {
+      const payload = tokenCheck.split('.')[1];
+      const decoded = JSON.parse(atob(payload));
+      return decoded.exp;
+    } catch {
+      return null;
+    }
+  }
+
   useEffect(() => {
     // Only admin can access
     const userData = localStorage.getItem('user');
@@ -37,6 +49,15 @@ export default function CreateUserPage() {
     const userObj = JSON.parse(userData);
     if (userObj.role !== 'admin') {
       router.replace('/barcode');
+      return;
+    }
+
+    const currentTime = Math.floor(Date.now() / 1000); // waktu sekarang dalam detik
+    const exp = getJwtExp(tokenData);
+    if (exp && currentTime >= exp) {
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      router.replace('/login');
       return;
     }
   }, [router]);

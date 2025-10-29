@@ -345,13 +345,11 @@ export default function BarcodePage() {
             'Authorization': `Bearer ${token}`,
           },
         });
-        const result = await res.json();
-        if (res.status === 200 && result) {
-          setUser(result.data);
-        } else {
-          setUser(null);
-          // setMessage(result.message || 'User not found');
-          // setMessageType('error');
+        // const result = await res.json();
+        if (res.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          router.replace('/login');
         }
       } catch (err) {
         setBackendError(true);

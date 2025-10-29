@@ -51,6 +51,7 @@ export default function AdminUsersPage() {
     const fetchWith401 = async (url) => {
       const res = await fetch(url, { headers: { Authorization: `Bearer ${tokenData}` } });
       if (res.status === 401) {
+        setUsers([]);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         router.replace('/login');
@@ -67,10 +68,11 @@ export default function AdminUsersPage() {
           fetchWith401(`${API_URL}/api/memberships`),
           fetchWith401(`${API_URL}/api/checkins`),
         ]);
-        setUsers(usersRes);
+        setUsers(Array.isArray(usersRes) ? usersRes : []);
         setMemberships(membershipsRes);
         setCheckins(checkinsRes);
       } catch (err) {
+        setUsers([]);
         setBackendError(true);
         // Sudah di-handle di fetchWith401
       }
