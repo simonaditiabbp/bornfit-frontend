@@ -74,6 +74,15 @@ export default function BarcodePage() {
     }
   };
 
+  const handleLogout = () => {
+    if (confirm('Yakin ingin logout?')) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      router.push('/login');
+    }
+  };
+
+
   // Keep manual QR input always focused
   useEffect(() => {
     const handleGlobalClick = (e) => {
@@ -359,6 +368,31 @@ export default function BarcodePage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-2 py-8">
+      {/* 🔴 Tombol Logout pojok kanan atas */}
+      <div className="absolute top-4 right-6">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 bg-gradient-to-r from-blue-400 to-blue-600 text-white px-4 py-2 rounded-xl font-semibold shadow hover:scale-105 transition-transform duration-200"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="feather feather-log-out"
+          >
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          Logout
+        </button>
+      </div>
+
       <h1 className="text-4xl font-extrabold mb-8 text-blue-700 drop-shadow-lg tracking-tight text-center">
         <span className="inline-block align-middle mr-2">
           <svg width="40" height="40" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-camera"><rect x="3" y="7" width="34" height="26" rx="4" ry="4"/><circle cx="20" cy="22" r="7"/><path d="M8 7V5a4 4 0 0 1 4-4h4"/></svg>
@@ -516,10 +550,8 @@ export default function BarcodePage() {
                 <circle cx="11" cy="12" r="3" />
                 <path d="M5 7V5a2 2 0 0 1 2-2h2" />
               </svg>
-              Scan Ulang
+              Scan Again
             </button>
-
-
             <input
               type="text"
               placeholder="Input QR code manual"
