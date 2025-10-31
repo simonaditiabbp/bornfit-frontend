@@ -98,11 +98,11 @@ export default function CreateUserPage() {
     try {
       // Validasi sesuai role
       if ((form.role === "admin" || form.role === "opscan") && !form.password) {
-        setError("Password wajib diisi untuk role admin & opscan");
+        setError("Password is required for admin & opscan role");
         return;
       }
       if (form.role === "member" && !form.qr_code) {
-        setError("QR Code wajib diisi untuk role member");
+        setError("QR Code is required for member role");
         return;
       }
       const token = localStorage.getItem("token");
@@ -126,8 +126,14 @@ export default function CreateUserPage() {
         body: formData,
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Gagal membuat user");
-      setSuccess("User berhasil dibuat!");
+      if (!res.ok) {
+        if (res.status === 409 && data.code === "EMAIL_EXISTS") {
+          setError("Email is already registered");
+          return;
+        }
+        throw new Error(data.message || "Failed to create user");
+      }
+      setSuccess("User created successfully!");
       setForm({
         name: "",
         email: "",
@@ -139,7 +145,11 @@ export default function CreateUserPage() {
       setPhoto(null);
       setTimeout(() => router.push("/admin/users"), 1200);
     } catch (err) {
-      setBackendError(true);
+      if (err.message === "Email is already registered") {
+        setError(err.message);
+      } else {
+        setBackendError(true);
+      }
     } finally {
       setLoading(false);
     }

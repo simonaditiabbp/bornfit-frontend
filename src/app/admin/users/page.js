@@ -31,6 +31,11 @@ export default function AdminUsersPage() {
   const [qrUser, setQrUser] = useState(null);
   const [token, setToken] = useState('');
   const [backendError, setBackendError] = useState(false);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [total, setTotal] = useState(0);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrev, setHasPrev] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -59,27 +64,30 @@ export default function AdminUsersPage() {
       }
       return res.json();
     };
-    // Fetch all data
+    // Fetch paginated users and other data
     const fetchAll = async () => {
       setLoading(true);
       try {
-        const [usersRes, membershipsRes, checkinsRes] = await Promise.all([
-          fetchWith401(`${API_URL}/api/users`),
+        const usersRes = await fetchWith401(`${API_URL}/api/users/paginated?page=${page}&limit=${limit}`);
+        setUsers(Array.isArray(usersRes.users) ? usersRes.users : []);
+        setTotal(usersRes.total || 0);
+        setHasNext(usersRes.hasNext || false);
+        setHasPrev(usersRes.hasPrev || false);
+        // memberships and checkins can still be fetched all at once (or paginated if needed)
+        const [membershipsRes, checkinsRes] = await Promise.all([
           fetchWith401(`${API_URL}/api/memberships`),
           fetchWith401(`${API_URL}/api/checkins`),
         ]);
-        setUsers(Array.isArray(usersRes) ? usersRes : []);
         setMemberships(membershipsRes);
         setCheckins(checkinsRes);
       } catch (err) {
         setUsers([]);
         setBackendError(true);
-        // Sudah di-handle di fetchWith401
       }
       setLoading(false);
     };
     fetchAll();
-  }, [router]);
+  }, [router, page, limit]);
 
   // Helper: get membership status & last checkin
   const getMembership = userId => memberships.find(m => m.user_id === userId);
@@ -92,7 +100,7 @@ export default function AdminUsersPage() {
   // Kolom untuk DataTable
   const columns = [
     {
-      name: 'Nama',
+  name: 'Name',
       selector: row => row.name,
       sortable: true,
       cell: row => <span className="font-semibold">{row.name}</span>,
@@ -114,14 +122,14 @@ export default function AdminUsersPage() {
       },
     },
     {
-      name: 'Checkin Terakhir',
+  name: 'Last Check-in',
       cell: row => {
         const lastCheckin = getLastCheckin(row.id);
         return lastCheckin ? formatCheckinTime(lastCheckin.checkin_time) : '-';
       },
     },
     {
-      name: 'Aksi',
+  name: 'Actions',
       cell: row => (
         <div className="flex gap-2 justify-center">
           <button
@@ -141,7 +149,7 @@ export default function AdminUsersPage() {
     },
   ];
 
-  // Filter data by search
+  // Filter data by search (client-side for current page)
   const filteredUsers = users.filter(u =>
     u.name.toLowerCase().includes(search.toLowerCase()) ||
     u.email.toLowerCase().includes(search.toLowerCase())
@@ -169,7 +177,19 @@ export default function AdminUsersPage() {
       {loading ? (
         <div className="text-center text-blue-500">Loading...</div>
       ) : (
-        <UsersDataTable columns={columns} data={filteredUsers} setQrUser={setQrUser} />
+        <>
+          <UsersDataTable
+            columns={columns}
+            data={filteredUsers}
+            setQrUser={setQrUser}
+            pagination
+            paginationServer
+            paginationTotalRows={total}
+            paginationPerPage={limit}
+            currentPage={page}
+            onChangePage={setPage}
+          />
+        </>
       )}
       {/* Modal QR Code */}
       {qrUser && (
@@ -203,7 +223,7 @@ export default function AdminUsersPage() {
                         // Download SVG
                         const svgElem = document.querySelector("#qr-download-area svg");
                         if (!svgElem) {
-                        alert("Elemen SVG tidak ditemukan");
+                        alert("SVG element not found");
                         return;
                         }
 
@@ -237,7 +257,7 @@ export default function AdminUsersPage() {
                     onClick={async () => {
                         const canvas = document.getElementById("qr-canvas");
                         if (!canvas) {
-                        alert("QR canvas tidak ditemukan");
+                        alert("QR canvas not found");
                         return;
                         }
 
@@ -245,7 +265,7 @@ export default function AdminUsersPage() {
                         const pdf = new jsPDF({
                         orientation: "portrait",
                         unit: "mm",
-                        format: [80, 100], // ukuran kecil seperti label
+                        format: [80, 100], // small size like label
                         });
 
                         // Header
@@ -259,7 +279,7 @@ export default function AdminUsersPage() {
                         // Kode QR di bawah gambar
                         pdf.setFont("courier", "normal");
                         pdf.setFontSize(12);
-                        pdf.setTextColor(37, 99, 235); // warna biru (#2563eb)
+                        pdf.setTextColor(37, 99, 235); // blue color (#2563eb)
                         pdf.text(qrUser.qr_code, 40, 80, { align: "center" });
 
                         // Simpan PDF
@@ -273,7 +293,7 @@ export default function AdminUsersPage() {
                 className="mt-8 bg-gray-400 text-white px-4 py-2 rounded font-semibold hover:bg-gray-500"
                 onClick={() => setQrUser(null)}
               >
-                Tutup
+                Close
               </button>
             </div>
           </div>

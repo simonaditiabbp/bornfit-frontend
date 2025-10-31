@@ -8,6 +8,8 @@ import BackendErrorFallback from '../../../../components/BackendErrorFallback';
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function UserDetailPage() {
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const params = useParams();
   const { id } = params;
   const [user, setUser] = useState(null);
@@ -81,43 +83,63 @@ export default function UserDetailPage() {
   };
 
   const handleSave = async () => {
+    setError("");
+    setSuccess("");
     let userUpdateSuccess = false;
-    if (photo) {
-      const formData = new FormData();
-      formData.append('name', form.name);
-      formData.append('email', form.email);
-      formData.append('role', form.role);
-      formData.append('photo', photo);
-      await fetch(`${API_URL}/api/users/${id}`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
+    try {
+      let res, data;
+      if (photo) {
+        const formData = new FormData();
+        formData.append('name', form.name);
+        formData.append('email', form.email);
+        formData.append('role', form.role);
+        formData.append('photo', photo);
+        res = await fetch(`${API_URL}/api/users/${id}`, {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        });
+        data = await res.json();
+      } else {
+        res = await fetch(`${API_URL}/api/users/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify(form),
+        });
+        data = await res.json();
+      }
+      if (!res.ok) {
+        if (res.status === 409 && data.code === "EMAIL_EXISTS") {
+          setError("Email is already registered!");
+          return;
+        }
+        throw new Error(data.message || "Failed to update user");
+      }
       userUpdateSuccess = true;
-    } else {
-      await fetch(`${API_URL}/api/users/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(form),
-      });
-      userUpdateSuccess = true;
-    }
-    if (membership) {
-      await fetch(`${API_URL}/api/memberships/${membership.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(membershipForm),
-      });
-    }
-    setEdit(false);
-    setPhoto(null);
-    setPhotoPreview(null);
-    if (userUpdateSuccess) {
-      // Ambil ulang data user terbaru agar preview langsung update
-      const tokenData = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/users/${id}`, { headers: { Authorization: `Bearer ${tokenData}` } });
-      const userRes = await res.json();
-      setUser(userRes);
+      if (membership) {
+        await fetch(`${API_URL}/api/memberships/${membership.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify(membershipForm),
+        });
+      }
+      setEdit(false);
+      setPhoto(null);
+      setPhotoPreview(null);
+      if (userUpdateSuccess) {
+        // Ambil ulang data user terbaru agar preview langsung update
+        const tokenData = localStorage.getItem('token');
+        const res = await fetch(`${API_URL}/api/users/${id}`, { headers: { Authorization: `Bearer ${tokenData}` } });
+        const userRes = await res.json();
+        setUser(userRes);
+        setSuccess("User updated successfully!");
+      }
+    } catch (err) {
+      if (err.message === "Email is already registered!") {
+        setError(err.message);
+      } else {
+        setBackendError(true);
+      }
     }
   };
 
@@ -141,9 +163,9 @@ export default function UserDetailPage() {
         {loading ? (
           <div className="text-blue-600 text-center font-medium">Loading...</div>
         ) : (
-          <>
+          <>            
             <h2 className="text-3xl font-bold mb-8 text-blue-700 border-b pb-3">
-              Detail User
+              User Details
             </h2>
 
             {/* PHOTO USER */}
@@ -156,22 +178,22 @@ export default function UserDetailPage() {
           ? user.photo
           : `${API_URL?.replace(/\/$/, '')}${user.photo}`)
       }
-      alt="Foto User"
+  alt="User Photo"
       width={128}
       height={128}
       className="w-32 h-32 object-cover rounded-full border border-gray-300 shadow mb-3"
     />
   ) : (
     <div className="w-32 h-32 flex items-center justify-center bg-gray-200 rounded-full text-gray-400 mb-3">
-      Tidak ada foto
+  No photo available
     </div>
   )}
 
-  <span className="text-sm text-gray-600 font-medium">Foto</span>
+  <span className="text-sm text-gray-600 font-medium">Photo</span>
 
   {edit && (
     <label className="mt-3 px-4 py-2 bg-blue-500 text-white rounded-lg cursor-pointer hover:bg-blue-600 transition">
-      Pilih Foto
+  Choose Photo
       <input
         type="file"
         accept="image/*"
@@ -196,7 +218,7 @@ export default function UserDetailPage() {
       }}
       className="mt-2 text-xs text-red-500 hover:underline"
     >
-      Hapus foto
+  Remove photo
     </button>
   )}
 </div>
@@ -205,7 +227,7 @@ export default function UserDetailPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-semibold mb-1 text-gray-700">
-                  Nama
+                  Name
                 </label>
                 <input
                   type="text"
@@ -286,12 +308,12 @@ export default function UserDetailPage() {
 
             {/* CHECKIN HISTORY */}
             <div className="mt-8">
-              <label className="block text-sm font-semibold mb-2 text-gray-700">
-                Riwayat Checkin
+                <label className="block text-sm font-semibold mb-2 text-gray-700">
+                Check-in History
               </label>
               <div className="max-h-56 overflow-y-auto border rounded-lg bg-gray-50 p-4">
                 {checkins.length === 0 ? (
-                  <p className="text-gray-500 text-sm italic">Belum ada data checkin.</p>
+                  <p className="text-gray-500 text-sm italic">No check-in data yet.</p>
                 ) : (
                   <ul className="list-disc ml-5 text-sm space-y-1">
                     {checkins.map((c) => (
@@ -300,8 +322,8 @@ export default function UserDetailPage() {
                           const date = new Date(c.checkin_time);
                           const day = String(date.getUTCDate()).padStart(2, '0');
                           const monthNames = [
-                            'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-                            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+                            'January', 'February', 'March', 'April', 'May', 'June',
+                            'July', 'August', 'September', 'October', 'November', 'December'
                           ];
                           const month = monthNames[date.getUTCMonth()];
                           const year = date.getUTCFullYear();
@@ -315,7 +337,8 @@ export default function UserDetailPage() {
                 )}
               </div>
             </div>
-
+            {error && <div className="text-red-600 font-semibold mt-2">{error}</div>}
+            {success && <div className="text-green-600 font-semibold mt-2">{success}</div>}
             {/* ACTION BUTTONS */}
             <div className="flex gap-3 mt-8">
               {!edit ? (
@@ -330,7 +353,7 @@ export default function UserDetailPage() {
                     className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition"
                     onClick={handleDelete}
                   >
-                    Hapus
+                    Delete
                   </button>
                 </>
               ) : (
@@ -339,13 +362,13 @@ export default function UserDetailPage() {
                     className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition"
                     onClick={handleSave}
                   >
-                    Simpan
+                    Save
                   </button>
                   <button
                     className="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold transition"
                     onClick={handleCancel}
                   >
-                    Batal
+                    Cancel
                   </button>
                 </>
               )}

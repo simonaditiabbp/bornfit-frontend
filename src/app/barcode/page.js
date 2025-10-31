@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import { Html5Qrcode } from 'html5-qrcode';
 import { format, differenceInDays, parseISO } from "date-fns";
-import { id as localeId } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 import { useRouter } from 'next/navigation';
 import BackendErrorFallback from '../../components/BackendErrorFallback';
 
@@ -123,11 +123,11 @@ export default function BarcodePage() {
   };
 
   const startDate = user?.membership?.start_date
-    ? format(parseISO(user.membership.start_date), "dd MMM yyyy", { locale: localeId })
+    ? format(parseISO(user.membership.start_date), "dd MMM yyyy", { locale: enUS })
     : "–";
 
   const endDate = user?.membership?.end_date
-    ? format(parseISO(user.membership.end_date), "dd MMM yyyy", { locale: localeId })
+    ? format(parseISO(user.membership.end_date), "dd MMM yyyy", { locale: enUS })
     : null;
 
   const [remainingText, setRemainingText] = useState(null);
@@ -505,7 +505,7 @@ export default function BarcodePage() {
                 <p className="font-bold text-3xl text-blue-700 mb-4 leading-tight">{user?.name || '-'}</p>
                 <p className="mb-2 text-lg"><span className="font-semibold">Email:</span> {user?.email || '-'}</p>
                 <p className="mb-2 text-lg">
-                  <span className="font-semibold whitespace-nowrap">Periode membership:</span>
+                  <span className="font-semibold whitespace-nowrap">Membership period:</span>
                   <span className="whitespace-nowrap"> {startDate}{endDate ? ` - ${endDate}` : ""}</span>
                 </p>
                 {diffMs > 0 && remainingDays <= 7 && (
