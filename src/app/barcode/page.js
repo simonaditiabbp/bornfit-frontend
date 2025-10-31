@@ -23,6 +23,9 @@ export default function BarcodePage() {
   const [backendError, setBackendError] = useState(false);
   const router = useRouter();
 
+  const [buffer, setBuffer] = useState("");
+  const timerRef = useRef(null);
+
   // Handle response dari backend (dipakai oleh scan dan manual input)
   const handleQrResponse = async (qr_code) => {
     setLoading(true);
@@ -81,7 +84,6 @@ export default function BarcodePage() {
       router.push('/login');
     }
   };
-
 
   // Keep manual QR input always focused
   useEffect(() => {
@@ -360,6 +362,21 @@ export default function BarcodePage() {
     fetchUser();
   }, [router]);
 
+  const handleBufferedInput = (value) => {
+    setBuffer(value); // Directly set the full input value
+  };
+
+useEffect(() => {
+  if (buffer.length >= 6) { // Adjust minimum length for a valid QR code
+    const timer = setTimeout(() => {
+      handleManualInput(buffer); // Process the full input
+      setBuffer(""); // Clear the buffer
+    }, 300); // Debounce threshold
+
+    return () => clearTimeout(timer); // Cleanup timeout on buffer change
+  }
+}, [buffer]);
+
   if (backendError) {
     return <BackendErrorFallback onRetry={() => { setBackendError(false); window.location.reload(); }} />;
   }
@@ -417,9 +434,8 @@ export default function BarcodePage() {
                   type="text"
                   placeholder="Enter QR code manually"
                   className="w-full p-4 border-2 border-blue-300 rounded-xl text-lg tracking-widest text-center focus:outline-blue-500 bg-blue-50 placeholder:text-blue-300 shadow"
-                  value={manualQr}
-                  onChange={async (e) => handleManualInput(e.target.value)}
-                  // disabled={loading}
+                  value={buffer} // Show buffered input
+                  onChange={(e) => handleBufferedInput(e.target.value)} // Pass the full input value
                   autoFocus
                   ref={manualQrInputRef}
                 />
@@ -554,8 +570,10 @@ export default function BarcodePage() {
               type="text"
               placeholder="Input QR code manual"
               className="w-full p-3 border-2 border-blue-300 rounded-xl text-center focus:outline-blue-500 mb-2 bg-blue-50 placeholder:text-blue-300 shadow"
-              value={manualQr}
-              onChange={(e) => handleManualInput(e.target.value)}
+              // value={manualQr}
+              value={buffer} // Show buffered input
+              onChange={(e) => handleBufferedInput(e.target.value)} // Pass the full input value
+              // onChange={(e) => handleManualInput(e.target.value)}
               // disabled={loading}
               autoFocus
               ref={manualQrInputRef}
