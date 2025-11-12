@@ -3,7 +3,7 @@ import DataTable from 'react-data-table-component';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function UsersDataTable({ columns, data, setQrUser, pagination, paginationServer, paginationTotalRows, paginationPerPage, currentPage, onChangePage }) {
+export default function UsersDataTable({ columns, data, setQrUser, pagination, paginationServer, paginationTotalRows, paginationPerPage, currentPage, onChangePage, onChangeRowsPerPage, paginationRowsPerPageOptions }) {
   const router = useRouter();
   const [loadingRow, setLoadingRow] = useState(null); // Track loading state for each row
 
@@ -49,6 +49,8 @@ export default function UsersDataTable({ columns, data, setQrUser, pagination, p
       paginationPerPage={paginationPerPage}
       paginationDefaultPage={currentPage}
       onChangePage={onChangePage}
+  onChangeRowsPerPage={onChangeRowsPerPage}
+  paginationRowsPerPageOptions={paginationRowsPerPageOptions}
       highlightOnHover
       responsive={true}
       fixedHeaderScrollHeight="300px"

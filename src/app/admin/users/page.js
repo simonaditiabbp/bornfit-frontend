@@ -24,6 +24,7 @@ function formatCheckinTime(datetime) {
 
 export default function AdminUsersPage() {
   const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [users, setUsers] = useState([]);
   const [memberships, setMemberships] = useState([]);
   const [checkins, setCheckins] = useState([]);
@@ -32,14 +33,29 @@ export default function AdminUsersPage() {
   const [token, setToken] = useState('');
   const [backendError, setBackendError] = useState(false);
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
   const [hasNext, setHasNext] = useState(false);
   const [hasPrev, setHasPrev] = useState(false);
   const router = useRouter();
 
+  const handleChangePage = (newPage) => {
+    const pageNum = typeof newPage === 'number' ? newPage : (Array.isArray(newPage) ? newPage[0] : Number(newPage));
+    if (!pageNum || pageNum === page) return;
+    if (process.env.NODE_ENV !== 'production') console.debug('[UsersPage] handleChangePage ->', pageNum);
+    setPage(pageNum);
+  };
+
+  const handleChangeRowsPerPage = (newPerPage, currentPageArg) => {
+    const perPage = typeof newPerPage === 'number' ? newPerPage : (Array.isArray(newPerPage) ? newPerPage[0] : Number(newPerPage));
+    if (!perPage) return;
+    if (perPage === limit) return;
+    if (process.env.NODE_ENV !== 'production') console.debug('[UsersPage] handleChangeRowsPerPage ->', perPage, 'currentPageArg=', currentPageArg);
+    setLimit(perPage);
+    if (page !== 1) setPage(1);
+  };
+
   useEffect(() => {
-    // Only admin can access
     const userData = localStorage.getItem('user');
     const tokenData = localStorage.getItem('token');
     if (!userData || !tokenData) {
@@ -64,15 +80,50 @@ export default function AdminUsersPage() {
       }
       return res.json();
     };
-    // Fetch paginated users and other data
+    
     const fetchAll = async () => {
       setLoading(true);
       try {
-        const usersRes = await fetchWith401(`${API_URL}/api/users/paginated?page=${page}&limit=${limit}`);
-        setUsers(Array.isArray(usersRes.users) ? usersRes.users : []);
-        setTotal(usersRes.total || 0);
-        setHasNext(usersRes.hasNext || false);
-        setHasPrev(usersRes.hasPrev || false);
+        if (search && search.trim() !== '') {
+          let allMatches = null;
+          try {
+            // Try endpoint that may support searching and return an array
+            const usersSearchRes = await fetchWith401(`${API_URL}/api/users?search=${encodeURIComponent(search)}`);
+            if (Array.isArray(usersSearchRes)) {
+              allMatches = usersSearchRes;
+            }
+          } catch (e) {
+            // ignore and fallback
+          }
+
+          if (!allMatches) {
+            // fallback: fetch all users and filter client-side
+            const allRes = await fetchWith401(`${API_URL}/api/users`);
+            if (Array.isArray(allRes)) {
+              allMatches = allRes.filter(u =>
+                (u.name || '').toLowerCase().includes(search.toLowerCase()) ||
+                (u.email || '').toLowerCase().includes(search.toLowerCase())
+              );
+            } else {
+              allMatches = [];
+            }
+          }
+
+          // Paginate matches for the table UI
+          const start = (page - 1) * limit;
+          const pageSlice = allMatches.slice(start, start + limit);
+          setUsers(pageSlice);
+          setTotal(allMatches.length);
+          setHasNext(start + limit < allMatches.length);
+          setHasPrev(page > 1);
+        } else {
+          const searchQuery = '';
+          const usersRes = await fetchWith401(`${API_URL}/api/users/paginated?page=${page}&limit=${limit}${searchQuery}`);
+              setUsers(Array.isArray(usersRes.users) ? usersRes.users : []);
+              setTotal(usersRes.total || 0);
+              setHasNext(usersRes.hasNext || false);
+              setHasPrev(usersRes.hasPrev || false);
+        }
         // memberships and checkins can still be fetched all at once (or paginated if needed)
         const [membershipsRes, checkinsRes] = await Promise.all([
           fetchWith401(`${API_URL}/api/memberships`),
@@ -87,7 +138,16 @@ export default function AdminUsersPage() {
       setLoading(false);
     };
     fetchAll();
-  }, [router, page, limit]);
+  }, [router, page, limit, search]);
+
+  // Debounce search input to avoid spamming the API
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearch(searchInput);
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(handler);
+  }, [searchInput]);
 
   // Helper: get membership status & last checkin
   const getMembership = userId => memberships.find(m => m.user_id === userId);
@@ -170,8 +230,8 @@ export default function AdminUsersPage() {
           type="text"
           placeholder="Search name/email..."
           className="w-full max-w-xs p-2 border border-blue-300 rounded focus:outline-blue-500 text-base"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
+          value={searchInput}
+          onChange={e => { setSearchInput(e.target.value); setPage(1); }}
         />
       </div>
       {loading ? (
@@ -187,7 +247,9 @@ export default function AdminUsersPage() {
             paginationTotalRows={total}
             paginationPerPage={limit}
             currentPage={page}
-            onChangePage={setPage}
+            onChangePage={handleChangePage}
+            onChangeRowsPerPage={handleChangeRowsPerPage}
+            paginationRowsPerPageOptions={[10,25,50]}
           />
         </>
       )}
