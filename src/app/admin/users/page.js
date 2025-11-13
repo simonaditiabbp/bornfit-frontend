@@ -158,9 +158,11 @@ export default function AdminUsersPage() {
   };
 
   // Kolom untuk DataTable
+  const startNo = (page - 1) * limit;
   const columns = [
+    { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px', center: true },
     {
-  name: 'Name',
+      name: 'Name',
       selector: row => row.name,
       sortable: true,
       cell: row => <span className="font-semibold">{row.name}</span>,
@@ -182,14 +184,14 @@ export default function AdminUsersPage() {
       },
     },
     {
-  name: 'Last Check-in',
+      name: 'Last Check-in',
       cell: row => {
         const lastCheckin = getLastCheckin(row.id);
         return lastCheckin ? formatCheckinTime(lastCheckin.checkin_time) : '-';
       },
     },
     {
-  name: 'Actions',
+      name: 'Actions',
       cell: row => (
         <div className="flex gap-2 justify-center">
           <button

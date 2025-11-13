@@ -191,6 +191,7 @@ export default function CreateUserPage() {
             <option value="member">Member</option>
             <option value="opscan">Opscan</option>
             <option value="admin">Admin</option>
+            <option value="trainner">Trainner</option>
           </select>
         </div>
         {(form.role === "admin" || form.role === "opscan") && (

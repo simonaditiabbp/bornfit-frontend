@@ -6,6 +6,7 @@ export default function PTSessionDataTable({
   plans = [],
   members = [],
   trainners = [],
+  setQrSession,
   pagination = false,
   paginationServer = false,
   paginationTotalRows = 0,
@@ -15,11 +16,12 @@ export default function PTSessionDataTable({
   onChangeRowsPerPage = () => {},
   paginationRowsPerPageOptions = [10, 25, 50],
 }) {
+  const startNo = (currentPage - 1) * paginationPerPage;
   const columns = [
-    { name: 'ID', selector: row => row.id, sortable: true },
+  { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px',  },
+    { name: 'Name', selector: row => row.name, sortable: true },
     { name: 'Plan', selector: row => {
       const plan = plans.find(p => p.id === row.pt_session_plan_id);
-      console.log('plan', plan, row.pt_session_plan_id);
       return plan ? (plan.name || `Plan #${plan.id}`) : row.pt_session_plan_id;
     }, sortable: true },
     { name: 'Member', selector: row => {
@@ -35,26 +37,17 @@ export default function PTSessionDataTable({
     {
       name: 'Aksi',
       cell: row => (
-        <Link href={`/admin/pt/session/edit?id=${row.id}`} className="bg-gray-400 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">Detail</Link>
-        // <div className="flex gap-2">
-        //     <Link href={`/admin/pt/session/edit?id=${row.id}`} className="bg-gray-400 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">Detail</Link>
-        //   <Link
-        //     href={`/admin/pt/session/edit?id=${row.id}`}
-        //     className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded mr-2 inline-block"
-        //   >
-        //     Edit
-        //   </Link>
-        //   <button
-        //     className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded"
-        //     onClick={() => onDelete(row.id)}
-        //   >
-        //     Delete
-        //   </button>
-        // </div>
+        <div className="flex gap-2 justify-center">
+          <button
+            className="bg-blue-600 text-white px-3 py-1 rounded font-semibold hover:bg-blue-700"
+            onClick={() => setQrSession && setQrSession(row)}
+          >
+            Generate QR
+          </button>
+          <Link href={`/admin/pt/session/edit?id=${row.id}`} className="bg-gray-400 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">Detail</Link>
+        </div>
       ),
       ignoreRowClick: true,
-      allowOverflow: true,
-      button: true,
     },
   ];
 

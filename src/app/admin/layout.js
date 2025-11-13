@@ -100,10 +100,13 @@ export default function AdminLayout({ children }) {
               <Link href="/admin/users/create" className="block py-2 px-4 rounded hover:bg-gray-100 text-gray-700 font-semibold">Create New User</Link>
             </li> */}
             <li>
-              <Link href="/admin/pt/plans" className="block py-2 px-4 rounded hover:bg-gray-100 text-gray-700 font-semibold">PT Plans</Link>
+              <Link href="/admin/pt/plans" className="block py-2 px-4 rounded hover:bg-gray-100 text-gray-700 font-semibold">PT Plan</Link>
             </li>
             <li>
-              <Link href="/admin/pt/session" className="block py-2 px-4 rounded hover:bg-gray-100 text-gray-700 font-semibold">PT Sessions</Link>
+              <Link href="/admin/pt/session" className="block py-2 px-4 rounded hover:bg-gray-100 text-gray-700 font-semibold">PT Session</Link>
+            </li>
+            <li>
+              <Link href="/admin/pt/booking" className="block py-2 px-4 rounded hover:bg-gray-100 text-gray-700 font-semibold">PT Booking</Link>
             </li>
             <li>
               <Link href="/barcode" className="block py-2 px-4 rounded hover:bg-gray-100 text-gray-700 font-semibold">Scan Barcode</Link>
