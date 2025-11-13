@@ -1,0 +1,85 @@
+import Link from "next/link";
+import DataTable from 'react-data-table-component';
+
+export default function PTSessionDataTable({
+  data,
+  plans = [],
+  members = [],
+  trainners = [],
+  pagination = false,
+  paginationServer = false,
+  paginationTotalRows = 0,
+  paginationPerPage = 10,
+  currentPage = 1,
+  onChangePage = () => {},
+  onChangeRowsPerPage = () => {},
+  paginationRowsPerPageOptions = [10, 25, 50],
+}) {
+  const columns = [
+    { name: 'ID', selector: row => row.id, sortable: true },
+    { name: 'Plan', selector: row => {
+      const plan = plans.find(p => p.id === row.pt_session_plan_id);
+      console.log('plan', plan, row.pt_session_plan_id);
+      return plan ? (plan.name || `Plan #${plan.id}`) : row.pt_session_plan_id;
+    }, sortable: true },
+    { name: 'Member', selector: row => {
+      const member = members.find(m => m.id === row.user_member_id);
+      return member ? member.name : row.user_member_id;
+    }, sortable: true },
+    { name: 'Personal Trainer', selector: row => {
+      const pt = trainners.find(t => t.id === row.user_pt_id);
+      return pt ? pt.name : row.user_pt_id;
+    }, sortable: true },
+    { name: 'Join Date', selector: row => row.join_date?.slice(0,10), sortable: true },
+    { name: 'Status', selector: row => row.status, sortable: true },
+    {
+      name: 'Aksi',
+      cell: row => (
+        <Link href={`/admin/pt/session/edit?id=${row.id}`} className="bg-gray-400 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">Detail</Link>
+        // <div className="flex gap-2">
+        //     <Link href={`/admin/pt/session/edit?id=${row.id}`} className="bg-gray-400 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">Detail</Link>
+        //   <Link
+        //     href={`/admin/pt/session/edit?id=${row.id}`}
+        //     className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded mr-2 inline-block"
+        //   >
+        //     Edit
+        //   </Link>
+        //   <button
+        //     className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded"
+        //     onClick={() => onDelete(row.id)}
+        //   >
+        //     Delete
+        //   </button>
+        // </div>
+      ),
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+    },
+  ];
+
+  return (
+    <DataTable
+      columns={columns}
+      data={data.map(item => ({ ...item }))}
+      pagination={pagination}
+      paginationServer={paginationServer}
+      paginationTotalRows={paginationTotalRows}
+      paginationPerPage={paginationPerPage}
+      paginationDefaultPage={currentPage}
+      onChangePage={onChangePage}
+      onChangeRowsPerPage={onChangeRowsPerPage}
+      paginationRowsPerPageOptions={paginationRowsPerPageOptions}
+      highlightOnHover
+      responsive={true}
+      noHeader
+      fixedHeaderScrollHeight="300px"
+      direction="auto"
+      subHeaderWrap
+      customStyles={{
+        headCells: { style: { fontWeight: 'bold', fontSize: '1rem', background: '#eff6ff', color: '#2563eb' } },
+        rows: { style: { fontSize: '1rem' } },
+      }}
+    />
+  );
+}

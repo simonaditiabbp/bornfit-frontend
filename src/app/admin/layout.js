@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-// import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function AdminLayout({ children }) {
   const router = useRouter();
@@ -26,7 +26,6 @@ export default function AdminLayout({ children }) {
   //         headers: {
   //           Authorization: `Bearer ${token}`,
   //         },
-  //       });
 
   //       if (response.status === 401) {
   //         localStorage.removeItem('token');
@@ -47,35 +46,90 @@ export default function AdminLayout({ children }) {
     localStorage.removeItem('location_alerted');
     router.replace('/login');
   };
+  // Sidebar toggle state
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Handle responsive sidebar
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setSidebarOpen(false);
+      } else {
+        setSidebarOpen(true);
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    const checkWidth = () => setIsMobile(window.innerWidth < 767);
+    checkWidth(); // cek saat pertama kali
+    window.addEventListener("resize", checkWidth);
+
+    return () => window.removeEventListener("resize", checkWidth);
+  }, []);
+
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <aside className="w-64 bg-blue-700 text-white flex flex-col py-8 px-4 shadow-lg">
-        <div className="mb-8 text-2xl font-extrabold tracking-wide text-center">BornFit Admin</div>
+  <div className="min-h-screen bg-white flex">
+      {/* Sidebar */}
+      <aside
+        className={`h-screen w-72 bg-white border-r border-gray-200 shadow-md z-30 transition-transform duration-300
+          ${sidebarOpen ? 'block' : 'hidden'} relative flex flex-col py-6 px-6`}
+      >
+        {/* Tombol hide sidebar di semua layar */}
+        <button
+          className="absolute top-4 right-4 bg-white text-gray-900 p-2 rounded shadow hover:bg-gray-100 transition"
+          onClick={() => setSidebarOpen(false)}
+          aria-label="Hide sidebar"
+        >
+          ✕
+        </button>
+  <div className={`${isMobile ? 'pt-12' : 'pt-9'} mb-8 text-2xl font-extrabold tracking-wide text-center text-gray-800`}>BornFit Admin</div>
         <nav className="flex-1">
           <ul className="space-y-2">
             <li>
-              <Link href="/admin/dashboard" className="block py-2 px-4 rounded hover:bg-blue-600 font-semibold">Dashboard</Link>
+              <Link href="/admin/dashboard" className="block py-2 px-4 rounded hover:bg-gray-100 text-gray-700 font-semibold">Dashboard</Link>
             </li>
             <li>
-              <Link href="/admin/users" className="block py-2 px-4 rounded hover:bg-blue-600 font-semibold">User Data</Link>
+              <Link href="/admin/users" className="block py-2 px-4 rounded hover:bg-gray-100 text-gray-700 font-semibold">User Data</Link>
+            </li>
+            {/* <li>
+              <Link href="/admin/users/create" className="block py-2 px-4 rounded hover:bg-gray-100 text-gray-700 font-semibold">Create New User</Link>
+            </li> */}
+            <li>
+              <Link href="/admin/pt/plans" className="block py-2 px-4 rounded hover:bg-gray-100 text-gray-700 font-semibold">PT Plans</Link>
             </li>
             <li>
-              <Link href="/admin/users/create" className="block py-2 px-4 rounded hover:bg-blue-600 font-semibold">Create New User</Link>
+              <Link href="/admin/pt/session" className="block py-2 px-4 rounded hover:bg-gray-100 text-gray-700 font-semibold">PT Sessions</Link>
             </li>
             <li>
-              <Link href="/barcode" className="block py-2 px-4 rounded hover:bg-blue-600 font-semibold">Scan Barcode</Link>
+              <Link href="/barcode" className="block py-2 px-4 rounded hover:bg-gray-100 text-gray-700 font-semibold">Scan Barcode</Link>
             </li>
-            {/* Add more menu items here */}
           </ul>
         </nav>
         <button
-          className="mt-8 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded font-bold shadow"
+          className="mt-8 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded font-bold shadow"
           onClick={handleLogout}
         >
           Logout
         </button>
       </aside>
-      <main className="flex-1 p-8">{children}</main>
+      {/* Tombol show sidebar di semua layar saat sidebar tertutup */}
+      {!sidebarOpen && (
+        <button
+          className="fixed top-4 left-4 z-40 bg-white text-gray-900 p-2 rounded shadow hover:bg-gray-100 transition"
+          onClick={() => setSidebarOpen(true)}
+          aria-label="Show sidebar"
+        >
+          ☰
+        </button>
+
+      )}
+      {/* Main content */}
+  <main className="flex-1 p-6 md:p-8 ml-8 bg-white">{children}</main>
     </div>
   );
 }
