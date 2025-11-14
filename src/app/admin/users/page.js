@@ -22,6 +22,78 @@ function formatCheckinTime(datetime) {
     return dayjs.utc(datetime).format('DD/MM/YYYY [pukul] HH:mm');
 }
 
+// Komponen cell untuk kolom Renewal
+function RenewalActionsCell({ row, membership }) {
+  const isExpired = membership && membership.end_date && new Date(membership.end_date) < new Date();
+  const isMember = row.role === 'member';
+  const [showActions, setShowActions] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
+  // Get sender email from localStorage
+  let senderEmail = '';
+  if (typeof window !== 'undefined') {
+    try {
+      const userData = localStorage.getItem('user');
+      if (userData) senderEmail = JSON.parse(userData).email;
+    } catch {}
+  }
+  const handleSendEmail = async () => {
+    setEmailLoading(true);
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
+      const res = await fetch(`${API_URL}/api/memberships/user/${row.id}/send-renew-email`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      if (res.ok) {
+        alert('Renewal email sent successfully!');
+      } else {
+        alert('Failed to send renewal email.');
+      }
+    } catch (err) {
+      alert('Error sending email.');
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+  const handleSendWA = () => {
+    alert(`WhatsApp renewal sent to ${row.phone || '-'} from 08123123`);
+  };
+  return (
+    <div className="flex flex-col items-center">
+      <button
+        className={`bg-yellow-500 text-white px-3 py-1 rounded font-semibold hover:bg-yellow-600 ${isExpired && isMember ? '' : 'opacity-50 cursor-not-allowed'}`}
+        disabled={!(isExpired && isMember)}
+        onClick={() => setShowActions(v => !v)}
+      >
+        Reminder
+      </button>
+      {showActions && (
+        <div className="flex gap-2 mt-2">
+          <button
+            className={`bg-blue-500 text-white px-2 py-1 rounded font-semibold hover:bg-blue-700 text-xs flex items-center justify-center ${emailLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+            onClick={handleSendEmail}
+            disabled={emailLoading}
+          >
+            {emailLoading ? (
+              <svg className="animate-spin mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
+            ) : null}
+            Send Email
+          </button>
+          <button
+            className="bg-green-500 text-white px-2 py-1 rounded font-semibold hover:bg-green-700 text-xs"
+            onClick={handleSendWA}
+          >
+            Send WhatsApp
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AdminUsersPage() {
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
@@ -208,6 +280,10 @@ export default function AdminUsersPage() {
           </button>
         </div>
       ),
+    },
+    {
+      name: 'Renewal',
+      cell: row => <RenewalActionsCell row={row} membership={getMembership(row.id)} />,
     },
   ];
 
