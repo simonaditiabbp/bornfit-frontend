@@ -1,10 +1,14 @@
 'use client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
-export default function AdminLayout({ children }) {
+export default function AdminLayout({ children }) {      
+  const [ptDropdownOpen, setPtDropdownOpen] = useState(false);
   const router = useRouter();
+
+  const pathname = usePathname();
 
   // useEffect(() => {
   //   const validateToken = async () => {
@@ -91,25 +95,58 @@ export default function AdminLayout({ children }) {
         <nav className="flex-1">
           <ul className="space-y-2">
             <li>
-              <Link href="/admin/dashboard" className="block py-2 px-4 rounded hover:bg-gray-100 text-gray-700 font-semibold">Dashboard</Link>
+              <Link
+                href="/admin/dashboard"
+                className={`block py-2 px-4 rounded font-semibold ${pathname.startsWith("/admin/dashboard") ? "bg-blue-600 text-white" : "hover:bg-gray-100 text-gray-700"}`}
+              >Dashboard</Link>
             </li>
             <li>
-              <Link href="/admin/users" className="block py-2 px-4 rounded hover:bg-gray-100 text-gray-700 font-semibold">User Data</Link>
+              <Link
+                href="/admin/users"
+                className={`block py-2 px-4 rounded font-semibold ${pathname.startsWith("/admin/users") ? "bg-blue-600 text-white" : "hover:bg-gray-100 text-gray-700"}`}
+              >User Data</Link>
             </li>
-            {/* <li>
-              <Link href="/admin/users/create" className="block py-2 px-4 rounded hover:bg-gray-100 text-gray-700 font-semibold">Create New User</Link>
-            </li> */}
-            <li>
-              <Link href="/admin/pt/plans" className="block py-2 px-4 rounded hover:bg-gray-100 text-gray-700 font-semibold">PT Plan</Link>
-            </li>
-            <li>
-              <Link href="/admin/pt/session" className="block py-2 px-4 rounded hover:bg-gray-100 text-gray-700 font-semibold">PT Session</Link>
-            </li>
-            <li>
-              <Link href="/admin/pt/booking" className="block py-2 px-4 rounded hover:bg-gray-100 text-gray-700 font-semibold">PT Booking</Link>
+            {/* PT Session Dropdown */}
+            <li className="relative">
+              <button
+                className={`w-full text-left py-2 px-4 rounded font-bold flex items-center justify-between ${ptDropdownOpen ? 'bg-blue-100 text-blue-700' : 'bg-white text-gray-700'}`}
+                type="button"
+                aria-expanded={ptDropdownOpen}
+                aria-controls="pt-session-dropdown"
+                onClick={() => setPtDropdownOpen((open) => !open)}
+                data-collapse-toggle="pt-session-dropdown"
+              >
+                PT Session
+                <span className="ml-2">{ptDropdownOpen ? '▲' : '▼'}</span>
+              </button>
+              {ptDropdownOpen && (
+                <ul id="pt-session-dropdown" className="pl-6 border-l-2 border-blue-100 mt-1">
+                  <li>
+                    <Link
+                      href="/admin/pt/session"
+                      className={`block py-2 px-2 rounded font-semibold ${pathname.startsWith("/admin/pt/session") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
+                    >Session</Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/pt/plans"
+                      className={`block py-2 px-2 rounded font-semibold ${pathname.startsWith("/admin/pt/plans") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
+                    >Plans</Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/pt/booking"
+                      className={`block py-2 px-2 rounded font-semibold ${pathname.startsWith("/admin/pt/booking") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
+                    >Booking</Link>
+                  </li>
+                </ul>
+              )}
             </li>
             <li>
               <Link href="/barcode" className="block py-2 px-4 rounded hover:bg-gray-100 text-gray-700 font-semibold">Scan Barcode</Link>
+            </li>
+            <li>
+              <Link href="/checkin" className="block py-2 px-4 rounded hover:bg-gray-100 text-gray-700 font-semibold">Checkin</Link>
             </li>
           </ul>
         </nav>

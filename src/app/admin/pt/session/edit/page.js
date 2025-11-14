@@ -209,7 +209,8 @@ export default function PTSessionEditPage() {
           <label className="block font-medium mb-1">Status</label>
           <select className={`w-full border rounded px-3 py-2 ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} required disabled={!edit}>
             <option value="aktif">Aktif</option>
-            <option value="nonaktif">Nonaktif</option>
+            <option value="selesai">Selesai</option>
+            <option value="batal">Batal</option>
           </select>
         </div>
       </div>

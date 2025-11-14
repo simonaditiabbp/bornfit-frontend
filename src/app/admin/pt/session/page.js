@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import BackendErrorFallback from "@/components/BackendErrorFallback";
 import Link from "next/link";
+import { jsPDF } from "jspdf";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -203,11 +204,46 @@ export default function PTSessionListPage() {
                 </button>
                 <button
                   className="bg-red-600 text-white px-3 py-1 rounded font-semibold hover:bg-red-700 transition-all"
+                  onClick={async () => {
+                      const canvas = document.getElementById("qr-canvas-session");
+                      if (!canvas) {
+                      alert("QR canvas not found");
+                      return;
+                      }
+
+                      const imgData = canvas.toDataURL("image/png");
+                      const pdf = new jsPDF({
+                      orientation: "portrait",
+                      unit: "mm",
+                      format: [80, 100], // small size like label
+                      });
+
+                      // Header
+                      pdf.setFont("helvetica", "bold");
+                      pdf.setFontSize(14);
+                      pdf.text("QR CODE", 40, 10, { align: "center" });
+
+                      // Gambar QR
+                      pdf.addImage(imgData, "PNG", 15, 20, 50, 50);
+
+                      // Kode QR di bawah gambar
+                      pdf.setFont("courier", "normal");
+                      pdf.setFontSize(12);
+                      pdf.setTextColor(37, 99, 235); // blue color (#2563eb)
+                      pdf.text(qrSession.qr_code, 40, 80, { align: "center" });
+
+                      // Simpan PDF
+                      pdf.save(`${qrSession.qr_code}.pdf`);
+                  }}
+                  >Download PDF
+                </button>                
+              </div>
+              <button
+                  className="mt-8 bg-gray-400 text-white px-4 py-2 rounded font-semibold hover:bg-gray-500"
                   onClick={() => setQrSession(null)}
                 >
                   Close
                 </button>
-              </div>
             </div>
           </div>
         </div>
