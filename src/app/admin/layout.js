@@ -1,11 +1,14 @@
 'use client';
 import Link from 'next/link';
+import { FaTachometerAlt, FaUsers, FaDumbbell, FaClipboardList, FaCalendarCheck, FaBarcode, FaCheckCircle, FaSignOutAlt } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
-export default function AdminLayout({ children }) {      
+export default function AdminLayout({ children }) {
+  const [userEmail, setUserEmail] = useState("");
   const [ptDropdownOpen, setPtDropdownOpen] = useState(false);
+  const [classDropdownOpen, setClassDropdownOpen] = useState(false);
   const router = useRouter();
 
   const pathname = usePathname();
@@ -69,6 +72,19 @@ export default function AdminLayout({ children }) {
   }, []);
 
   useEffect(() => {
+    // Ambil email user dari localStorage
+    if (typeof window !== 'undefined') {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          const userObj = JSON.parse(userStr);
+          setUserEmail(userObj.email || "");
+        } catch {}
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     const checkWidth = () => setIsMobile(window.innerWidth < 767);
     checkWidth(); // cek saat pertama kali
     window.addEventListener("resize", checkWidth);
@@ -91,20 +107,23 @@ export default function AdminLayout({ children }) {
         >
           ✕
         </button>
-  <div className={`${isMobile ? 'pt-12' : 'pt-9'} mb-8 text-2xl font-extrabold tracking-wide text-center text-gray-800`}>BornFit Admin</div>
+  <div className={`${isMobile ? 'pt-12' : 'pt-9'} mb-2 text-2xl font-extrabold tracking-wide text-center text-gray-800`}>BornFit Admin</div>
+  {userEmail && (
+    <div className="mb-8 text-center text-sm text-gray-500 font-medium">{userEmail}</div>
+  )}
         <nav className="flex-1">
           <ul className="space-y-2">
             <li>
               <Link
                 href="/admin/dashboard"
-                className={`block py-2 px-4 rounded font-semibold ${pathname.startsWith("/admin/dashboard") ? "bg-blue-600 text-white" : "hover:bg-gray-100 text-gray-700"}`}
-              >Dashboard</Link>
+                className={`block py-2 px-4 rounded font-semibold flex items-center gap-2 ${pathname.startsWith("/admin/dashboard") ? "bg-blue-600 text-white" : "hover:bg-gray-100 text-gray-700"}`}
+              ><FaTachometerAlt className="inline-block" /> Dashboard</Link>
             </li>
             <li>
               <Link
                 href="/admin/users"
-                className={`block py-2 px-4 rounded font-semibold ${pathname.startsWith("/admin/users") ? "bg-blue-600 text-white" : "hover:bg-gray-100 text-gray-700"}`}
-              >User Data</Link>
+                className={`block py-2 px-4 rounded font-semibold flex items-center gap-2 ${pathname.startsWith("/admin/users") ? "bg-blue-600 text-white" : "hover:bg-gray-100 text-gray-700"}`}
+              ><FaUsers className="inline-block" /> User Data</Link>
             </li>
             {/* PT Session Dropdown */}
             <li className="relative">
@@ -116,7 +135,7 @@ export default function AdminLayout({ children }) {
                 onClick={() => setPtDropdownOpen((open) => !open)}
                 data-collapse-toggle="pt-session-dropdown"
               >
-                PT Session
+                <span className="flex items-center gap-2"><FaDumbbell className="inline-block" /> PT Session</span>
                 <span className="ml-2">{ptDropdownOpen ? '▲' : '▼'}</span>
               </button>
               {ptDropdownOpen && (
@@ -124,38 +143,76 @@ export default function AdminLayout({ children }) {
                   <li>
                     <Link
                       href="/admin/pt/session"
-                      className={`block py-2 px-2 rounded font-semibold ${pathname.startsWith("/admin/pt/session") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
-                    >Session</Link>
+                      className={`block py-2 px-2 rounded font-semibold flex items-center gap-2 ${pathname.startsWith("/admin/pt/session") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
+                    ><FaCalendarCheck className="inline-block" /> Session</Link>
                   </li>
                   <li>
                     <Link
                       href="/admin/pt/plans"
-                      className={`block py-2 px-2 rounded font-semibold ${pathname.startsWith("/admin/pt/plans") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
-                    >Plans</Link>
+                      className={`block py-2 px-2 rounded font-semibold flex items-center gap-2 ${pathname.startsWith("/admin/pt/plans") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
+                    ><FaClipboardList className="inline-block" /> Plans</Link>
                   </li>
                   <li>
                     <Link
                       href="/admin/pt/booking"
-                      className={`block py-2 px-2 rounded font-semibold ${pathname.startsWith("/admin/pt/booking") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
-                    >Booking</Link>
+                      className={`block py-2 px-2 rounded font-semibold flex items-center gap-2 ${pathname.startsWith("/admin/pt/booking") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
+                    ><FaCheckCircle className="inline-block" /> Booking</Link>
+                  </li>
+                </ul>
+              )}
+            </li>
+            {/* Class Session Dropdown */}
+            <li className="relative">
+              <button
+                className={`w-full text-left py-2 px-4 rounded font-bold flex items-center justify-between ${classDropdownOpen ? 'bg-blue-100 text-blue-700' : 'bg-white text-gray-700'}`}
+                type="button"
+                aria-expanded={classDropdownOpen}
+                aria-controls="class-session-dropdown"
+                onClick={() => setClassDropdownOpen((open) => !open)}
+                data-collapse-toggle="class-session-dropdown"
+              >
+                <span className="flex items-center gap-2"><FaDumbbell className="inline-block" /> Class Session</span>
+                <span className="ml-2">{classDropdownOpen ? '▲' : '▼'}</span>
+              </button>
+              {classDropdownOpen && (
+                <ul id="class-session-dropdown" className="pl-6 border-l-2 border-blue-100 mt-1">
+                  <li>
+                    <Link
+                      href="/admin/class/session"
+                      className={`block py-2 px-2 rounded font-semibold flex items-center gap-2 ${pathname.startsWith("/admin/class/session") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
+                    ><FaCalendarCheck className="inline-block" /> Session</Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/class/plans"
+                      className={`block py-2 px-2 rounded font-semibold flex items-center gap-2 ${pathname.startsWith("/admin/class/plans") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
+                    ><FaClipboardList className="inline-block" /> Plans</Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/class/attendance"
+                      className={`block py-2 px-2 rounded font-semibold flex items-center gap-2 ${pathname.startsWith("/admin/class/attendance") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
+                    ><FaCheckCircle className="inline-block" /> Attendance</Link>
                   </li>
                 </ul>
               )}
             </li>
             <li>
-              <Link href="/barcode" className="block py-2 px-4 rounded hover:bg-gray-100 text-gray-700 font-semibold">Scan Barcode</Link>
+              <Link href="/barcode" className="block py-2 px-4 rounded hover:bg-gray-100 text-gray-700 font-semibold flex items-center gap-2"><FaBarcode className="inline-block" /> Scan Barcode</Link>
             </li>
             <li>
-              <Link href="/checkin" className="block py-2 px-4 rounded hover:bg-gray-100 text-gray-700 font-semibold">Checkin</Link>
+              <Link href="/checkin" className="block py-2 px-4 rounded hover:bg-gray-100 text-gray-700 font-semibold flex items-center gap-2"><FaBarcode className="inline-block" /> Checkin</Link>
             </li>
           </ul>
         </nav>
         <button
-          className="mt-8 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded font-bold shadow"
+          className="mt-8 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded font-bold shadow flex items-center justify-center gap-2"
           onClick={handleLogout}
         >
+          <FaSignOutAlt className="flex-shrink-0" />
           Logout
         </button>
+
       </aside>
       {/* Tombol show sidebar di semua layar saat sidebar tertutup */}
       {!sidebarOpen && (

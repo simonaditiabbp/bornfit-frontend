@@ -192,9 +192,10 @@ export default function CreateUserPage() {
             <option value="opscan">Opscan</option>
             <option value="admin">Admin</option>
             <option value="trainner">Trainner</option>
+            <option value="instructor">Instructor</option>
           </select>
         </div>
-        {(form.role === "admin" || form.role === "opscan") && (
+        {(form.role === "admin" || form.role === "opscan") && ( // trainner & instructor nanti buatkan password
           <div>
             <label className="block font-medium text-gray-900 dark:text-white mb-1">Password <span className="text-red-600">*</span></label>
             <input

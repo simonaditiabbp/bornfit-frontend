@@ -18,6 +18,8 @@ export default function AdminDashboardPage() {
     totalMember: 0,
     activeMembership: 0,
     inactiveMembership: 0,
+    totalPTSessions: 0,
+    totalClasses: 0,
   });
   const [loading, setLoading] = useState(true);
   const [chartData, setChartData] = useState({
@@ -54,10 +56,12 @@ export default function AdminDashboardPage() {
           }
           return res.json();
         };
-        const [usersRes, membershipsRes, checkinsRes] = await Promise.all([
+        const [usersRes, membershipsRes, checkinsRes, ptsessionsRes, classesRes] = await Promise.all([
           fetchWith401(`${API_URL}/api/users`),
           fetchWith401(`${API_URL}/api/memberships`),
           fetchWith401(`${API_URL}/api/checkins`),
+          fetchWith401(`${API_URL}/api/personaltrainersessions/paginated?page=1&limit=10`),
+          fetchWith401(`${API_URL}/api/classes/paginated?page=1&limit=10`),
         ]);
         const totalUsers = usersRes.length;
         // Total member = user yang punya membership (user_id unik di memberships)
@@ -65,6 +69,8 @@ export default function AdminDashboardPage() {
         const totalMember = memberUserIds.size;
         const activeMembership = membershipsRes.filter(m => m.is_active).length;
         const inactiveMembership = membershipsRes.filter(m => !m.is_active).length;
+        const totalPTSessions = ptsessionsRes.total || 0;
+        const totalClasses = classesRes.total || 0;
 
         // Grafik checkin 7 hari terakhir (WIB)
         const today = dayjs().tz('Asia/Jakarta');
@@ -87,10 +93,10 @@ export default function AdminDashboardPage() {
           ).size;
           data.push(count);
         }
-        setStats({ totalUsers, totalMember, activeMembership, inactiveMembership });
+        setStats({ totalUsers, totalMember, activeMembership, inactiveMembership, totalPTSessions, totalClasses });
         setChartData({ categories, data });
       } catch (err) {
-        setStats({ totalUsers: 0, totalMember: 0, activeMembership: 0, inactiveMembership: 0 });
+        setStats({ totalUsers: 0, totalMember: 0, activeMembership: 0, inactiveMembership: 0, totalPTSessions: 0, totalClasses: 0 });
         setChartData({ categories: [], data: [] });
         setBackendError(true);
       }
@@ -141,7 +147,7 @@ export default function AdminDashboardPage() {
         </div>
         <div className="bg-white rounded-xl shadow p-6 flex items-center gap-4">
           <div className="flex-shrink-0 bg-indigo-100 rounded-full p-3">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-indigo-600"><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-3-3h-4a3 3 0 00-3 3v2h5zM9 20H4v-2a3 3 0 013-3h4a3 3 0 013 3v2H9z" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-indigo-600"> <path strokeLinecap="round" strokeLinejoin="round" d="M12 6l2 4 4 .5-3 3 .7 4-3.7-2-3.7 2 .7-4-3-3 4-.5 2-4z" /> </svg>
           </div>
           <div>
             <div className="text-lg font-bold text-indigo-700">Total Members</div>
@@ -150,10 +156,10 @@ export default function AdminDashboardPage() {
         </div>
       </div>
       {/* 2 card: aktif & tidak aktif membership */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div className="bg-white rounded-xl shadow p-6 flex items-center gap-4">
           <div className="flex-shrink-0 bg-yellow-100 rounded-full p-3">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-yellow-600"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" /></svg>
+           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-yellow-600"> <path strokeLinecap="round" strokeLinejoin="round" d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" /> </svg>
           </div>
           <div>
             <div className="text-lg font-bold text-yellow-700">Active Memberships</div>
@@ -162,11 +168,40 @@ export default function AdminDashboardPage() {
         </div>
         <div className="bg-white rounded-xl shadow p-6 flex items-center gap-4">
           <div className="flex-shrink-0 bg-red-100 rounded-full p-3">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-red-600"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-red-600"> <path strokeLinecap="round" strokeLinejoin="round" d="M10 9v6m4-6v6M12 3a9 9 0 110 18 9 9 0 010-18z" /> </svg>
           </div>
           <div>
             <div className="text-lg font-bold text-red-700">Inactive Memberships</div>
             <div className="text-3xl font-extrabold text-red-900">{loading ? '-' : stats.inactiveMembership}</div>
+          </div>
+        </div>
+      </div>
+      {/* 2 card: total PT Session & total Classes */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-xl shadow p-6 flex items-center gap-4">
+          <div className="flex-shrink-0 bg-green-100 rounded-full p-3">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-10 h-10 text-green-600">
+              <rect x="5" y="11" width="14" height="2" rx="0.5" fill="currentColor" />
+              <circle cx="4" cy="12" r="3" />
+              <circle cx="20" cy="12" r="3" />
+            </svg>
+          </div>
+          <div>
+            <div className="text-lg font-bold text-green-700">Total PT Sessions</div>
+            <div className="text-3xl font-extrabold text-green-900">{loading ? '-' : stats.totalPTSessions}</div>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow p-6 flex items-center gap-4">
+          <div className="flex-shrink-0 bg-purple-100 rounded-full p-3">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-purple-600">
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M8 7V3m8 4V3m-9 8h10m2 10H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v12a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <div>
+            <div className="text-lg font-bold text-purple-700">Total Classes</div>
+            <div className="text-3xl font-extrabold text-purple-900">{loading ? '-' : stats.totalClasses}</div>
           </div>
         </div>
       </div>
