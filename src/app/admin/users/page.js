@@ -10,6 +10,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import BackendErrorFallback from '../../../components/BackendErrorFallback';
+import { FaPlus, FaUser } from 'react-icons/fa';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -299,146 +300,160 @@ export default function AdminUsersPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-blue-700">User Data</h1>
-            <Link href="/admin/users/create" className="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700">+ Create New User</Link>
+      <div className="bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-600">
+        <nav class="flex" aria-label="Breadcrumb">
+          <ol class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+            <li class="inline-flex items-center">
+              <FaUser className="w-3 h-3 me-2.5 text-amber-300" /> 
+              <span className="ms-1 text-sm font-medium text-gray-300 md:ms-2 dark:text-gray-400">User Data</span>
+            </li>
+          </ol>
+        </nav>
       </div>
-      <div className="mb-4 flex items-center justify-between">
-        <input
-          type="text"
-          placeholder="Search name/email..."
-          className="w-full max-w-xs p-2 border border-blue-300 rounded focus:outline-blue-500 text-base"
-          value={searchInput}
-          onChange={e => { setSearchInput(e.target.value); setPage(1); }}
-        />
-      </div>
-      {loading ? (
-        <div className="text-center text-blue-500">Loading...</div>
-      ) : (
-        <>
-          <UsersDataTable
-            columns={columns}
-            data={filteredUsers}
-            setQrUser={setQrUser}
-            pagination
-            paginationServer
-            paginationTotalRows={total}
-            paginationPerPage={limit}
-            currentPage={page}
-            onChangePage={handleChangePage}
-            onChangeRowsPerPage={handleChangeRowsPerPage}
-            paginationRowsPerPageOptions={[10,25,50]}
+      
+      <div className="m-5 p-5 bg-gray-800 border border-gray-600 rounded-lg">
+        <div className="mb-4 flex items-center justify-between">
+          <input
+            type="text"
+            placeholder="Search name/email..."
+            className="w-full max-w-xs p-2 border text-gray-100 border-amber-200 rounded focus:outline-amber-200 text-base"
+            value={searchInput}
+            onChange={e => { setSearchInput(e.target.value); setPage(1); }}
           />
-        </>
-      )}
-      {/* Modal QR Code */}
-      {qrUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-2xl shadow-xl text-center relative min-w-[340px]">
-            <h2 className="text-2xl font-extrabold mb-4 text-blue-700 drop-shadow">QR Code for {qrUser.name}</h2>
-            <div className="flex flex-col items-center justify-center">
-              <div id="qr-download-area" className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200 mb-2 shadow">
-                <QRCodeCanvas id="qr-canvas" value={qrUser.qr_code || ''} size={220} level="H" includeMargin={true} />
-                <QRCodeSVG  id="qr-canvas-svg" value={qrUser.qr_code || ''} size={220} level="H" includeMargin={true}  style={{ display: 'none' }} />
-              </div>
-              <div className="mt-2 text-base text-blue-700 font-mono tracking-wider">{qrUser.qr_code}</div>
-              <div className="flex gap-2 mt-4 justify-center">
-                <button
-                  className="bg-blue-600 text-white px-3 py-1 rounded font-semibold hover:bg-blue-700"
-                  onClick={() => {
-                    // Download PNG
-                    const canvas = document.getElementById('qr-canvas');
-                    const url = canvas.toDataURL('image/png');
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `qrcode_${qrUser.qr_code}.png`;
-                    a.click();
-                  }}
-                >
-                  Download PNG
-                </button>
-                <button
-                    className="bg-green-600 text-white px-3 py-1 rounded font-semibold hover:bg-green-700 transition-all"
+
+          <Link href="/admin/users/create" className="flex items-center gap-2 bg-amber-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-amber-500">
+            <FaPlus className="inline-block" />
+            Create
+          </Link>
+        </div>
+        {loading ? (
+          <div className="text-center text-blue-500">Loading...</div>
+        ) : (
+          <>
+            <UsersDataTable
+              columns={columns}
+              data={filteredUsers}
+              setQrUser={setQrUser}
+              pagination
+              paginationServer
+              paginationTotalRows={total}
+              paginationPerPage={limit}
+              currentPage={page}
+              onChangePage={handleChangePage}
+              onChangeRowsPerPage={handleChangeRowsPerPage}
+              paginationRowsPerPageOptions={[10,25,50]}
+            />
+          </>
+        )}
+        {/* Modal QR Code */}
+        {qrUser && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div className="bg-white p-8 rounded-2xl shadow-xl text-center relative min-w-[340px]">
+              <h2 className="text-2xl font-extrabold mb-4 text-blue-700 drop-shadow">QR Code for {qrUser.name}</h2>
+              <div className="flex flex-col items-center justify-center">
+                <div id="qr-download-area" className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200 mb-2 shadow">
+                  <QRCodeCanvas id="qr-canvas" value={qrUser.qr_code || ''} size={220} level="H" includeMargin={true} />
+                  <QRCodeSVG  id="qr-canvas-svg" value={qrUser.qr_code || ''} size={220} level="H" includeMargin={true}  style={{ display: 'none' }} />
+                </div>
+                <div className="mt-2 text-base text-blue-700 font-mono tracking-wider">{qrUser.qr_code}</div>
+                <div className="flex gap-2 mt-4 justify-center">
+                  <button
+                    className="bg-blue-600 text-white px-3 py-1 rounded font-semibold hover:bg-blue-700"
                     onClick={() => {
-                        // Download SVG
-                        const svgElem = document.querySelector("#qr-download-area svg");
-                        if (!svgElem) {
-                        alert("SVG element not found");
-                        return;
-                        }
-
-                        const serializer = new XMLSerializer();
-                        let svgStr = serializer.serializeToString(svgElem);
-
-                        // Tambahkan XML header biar valid SVG
-                        if (!svgStr.startsWith('<?xml')) {
-                        svgStr = '<?xml version="1.0" standalone="no"?>\r\n' + svgStr;
-                        }
-
-                        const blob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
-                        const url = URL.createObjectURL(blob);
-
-                        // Buat elemen <a> untuk download
-                        const a = document.createElement("a");
-                        a.href = url;
-                        a.download = `qrcode_${qrUser.qr_code}.svg`;
-                        document.body.appendChild(a); // penting: tambahkan ke DOM
-                        a.click();
-                        document.body.removeChild(a); // bersihkan lagi
-
-                        // Lepaskan URL object setelah delay singkat
-                        setTimeout(() => URL.revokeObjectURL(url), 1000);
+                      // Download PNG
+                      const canvas = document.getElementById('qr-canvas');
+                      const url = canvas.toDataURL('image/png');
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `qrcode_${qrUser.qr_code}.png`;
+                      a.click();
                     }}
-                    >
-                    Download SVG
+                  >
+                    Download PNG
+                  </button>
+                  <button
+                      className="bg-green-600 text-white px-3 py-1 rounded font-semibold hover:bg-green-700 transition-all"
+                      onClick={() => {
+                          // Download SVG
+                          const svgElem = document.querySelector("#qr-download-area svg");
+                          if (!svgElem) {
+                          alert("SVG element not found");
+                          return;
+                          }
+
+                          const serializer = new XMLSerializer();
+                          let svgStr = serializer.serializeToString(svgElem);
+
+                          // Tambahkan XML header biar valid SVG
+                          if (!svgStr.startsWith('<?xml')) {
+                          svgStr = '<?xml version="1.0" standalone="no"?>\r\n' + svgStr;
+                          }
+
+                          const blob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
+                          const url = URL.createObjectURL(blob);
+
+                          // Buat elemen <a> untuk download
+                          const a = document.createElement("a");
+                          a.href = url;
+                          a.download = `qrcode_${qrUser.qr_code}.svg`;
+                          document.body.appendChild(a); // penting: tambahkan ke DOM
+                          a.click();
+                          document.body.removeChild(a); // bersihkan lagi
+
+                          // Lepaskan URL object setelah delay singkat
+                          setTimeout(() => URL.revokeObjectURL(url), 1000);
+                      }}
+                      >
+                      Download SVG
+                  </button>
+                  <button
+                      className="bg-red-600 text-white px-3 py-1 rounded font-semibold hover:bg-red-700 transition-all"
+                      onClick={async () => {
+                          const canvas = document.getElementById("qr-canvas");
+                          if (!canvas) {
+                          alert("QR canvas not found");
+                          return;
+                          }
+
+                          const imgData = canvas.toDataURL("image/png");
+                          const pdf = new jsPDF({
+                          orientation: "portrait",
+                          unit: "mm",
+                          format: [80, 100], // small size like label
+                          });
+
+                          // Header
+                          pdf.setFont("helvetica", "bold");
+                          pdf.setFontSize(14);
+                          pdf.text("QR CODE", 40, 10, { align: "center" });
+
+                          // Gambar QR
+                          pdf.addImage(imgData, "PNG", 15, 20, 50, 50);
+
+                          // Kode QR di bawah gambar
+                          pdf.setFont("courier", "normal");
+                          pdf.setFontSize(12);
+                          pdf.setTextColor(37, 99, 235); // blue color (#2563eb)
+                          pdf.text(qrUser.qr_code, 40, 80, { align: "center" });
+
+                          // Simpan PDF
+                          pdf.save(`${qrUser.qr_code}.pdf`);
+                      }}
+                      >
+                      Download PDF
                 </button>
+                </div>
                 <button
-                    className="bg-red-600 text-white px-3 py-1 rounded font-semibold hover:bg-red-700 transition-all"
-                    onClick={async () => {
-                        const canvas = document.getElementById("qr-canvas");
-                        if (!canvas) {
-                        alert("QR canvas not found");
-                        return;
-                        }
-
-                        const imgData = canvas.toDataURL("image/png");
-                        const pdf = new jsPDF({
-                        orientation: "portrait",
-                        unit: "mm",
-                        format: [80, 100], // small size like label
-                        });
-
-                        // Header
-                        pdf.setFont("helvetica", "bold");
-                        pdf.setFontSize(14);
-                        pdf.text("QR CODE", 40, 10, { align: "center" });
-
-                        // Gambar QR
-                        pdf.addImage(imgData, "PNG", 15, 20, 50, 50);
-
-                        // Kode QR di bawah gambar
-                        pdf.setFont("courier", "normal");
-                        pdf.setFontSize(12);
-                        pdf.setTextColor(37, 99, 235); // blue color (#2563eb)
-                        pdf.text(qrUser.qr_code, 40, 80, { align: "center" });
-
-                        // Simpan PDF
-                        pdf.save(`${qrUser.qr_code}.pdf`);
-                    }}
-                    >
-                    Download PDF
-              </button>
+                  className="mt-8 bg-gray-400 text-white px-4 py-2 rounded font-semibold hover:bg-gray-500"
+                  onClick={() => setQrUser(null)}
+                >
+                  Close
+                </button>
               </div>
-              <button
-                className="mt-8 bg-gray-400 text-white px-4 py-2 rounded font-semibold hover:bg-gray-500"
-                onClick={() => setQrUser(null)}
-              >
-                Close
-              </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

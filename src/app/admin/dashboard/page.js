@@ -110,12 +110,15 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-6 text-blue-700">Dashboard Admin</h1>
+    <div className="p-5">
+      {/* <div className="bg-gray-800 border border-b-gray-600 p-6 mb-8">
+        <h1 className="text-3xl font-bold text-amber-300">Dashboard</h1>
+      </div> */}
+
       {/* Weekly check-in chart */}
-      <div className="bg-white rounded-xl shadow p-6 mb-8">
+      <div className="bg-gray-800 border border-gray-600 rounded-xl shadow p-6 mb-5">
         <div className="mb-4 flex items-center justify-between">
-          <div className="text-lg font-bold text-blue-700">Member Check-ins per Day (Last 7 Days)</div>
+          <div className="text-lg font-bold text-amber-200">Member Check-ins per Day (Last 7 Days)</div>
         </div>
         <div className="w-full">
             <ApexChart
@@ -123,11 +126,11 @@ export default function AdminDashboardPage() {
               height={320}
               options={{
                 chart: { id: 'checkin-bar', toolbar: { show: false } },
-                xaxis: { categories: chartData.categories, labels: { style: { fontSize: '14px' } } },
-                yaxis: { title: { text: 'Member Checkin' }, labels: { style: { fontSize: '14px' } } },
+                xaxis: { categories: chartData.categories, labels: { style: { fontSize: '14px', colors: '#fee685' } } },
+                yaxis: { title: { text: 'Member Checkin' }, labels: { style: { fontSize: '14px', colors: '#fee685' } } },
                 plotOptions: { bar: { borderRadius: 6, columnWidth: '40%' } },
                 dataLabels: { enabled: true },
-                colors: ['#2563eb'],
+                colors: ['#fee685'],
                 grid: { strokeDashArray: 4 },
               }}
               series={[{ name: 'Member Checkin', data: chartData.data }]}
@@ -135,73 +138,74 @@ export default function AdminDashboardPage() {
         </div>
       </div>
       {/* 2 card: total user, total member */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white rounded-xl shadow p-6 flex items-center gap-4">
-          <div className="flex-shrink-0 bg-blue-100 rounded-full p-3">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-blue-600"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118A7.5 7.5 0 0112 15.75a7.5 7.5 0 017.5 4.368" /></svg>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-5">
+        <div className="bg-gray-800 border border-gray-600 rounded-xl shadow p-6 flex items-center gap-4">
+          <div className="flex-shrink-0 bg-gray-300 rounded-full p-3">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-gray-600"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118A7.5 7.5 0 0112 15.75a7.5 7.5 0 017.5 4.368" /></svg>
           </div>
           <div>
-            <div className="text-lg font-bold text-blue-700">Total Users</div>
-            <div className="text-3xl font-extrabold text-blue-900">{loading ? '-' : stats.totalUsers}</div>
+            <div className="text-lg font-bold text-gray-300">Total Users</div>
+            <div className="text-3xl font-extrabold text-amber-300">{loading ? '-' : stats.totalUsers}</div>
           </div>
         </div>
-        <div className="bg-white rounded-xl shadow p-6 flex items-center gap-4">
-          <div className="flex-shrink-0 bg-indigo-100 rounded-full p-3">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-indigo-600"> <path strokeLinecap="round" strokeLinejoin="round" d="M12 6l2 4 4 .5-3 3 .7 4-3.7-2-3.7 2 .7-4-3-3 4-.5 2-4z" /> </svg>
+        <div className="bg-gray-800 border border-gray-600 rounded-xl shadow p-6 flex items-center gap-4">
+          <div className="flex-shrink-0 bg-gray-300 rounded-full p-3">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-gray-600"> <path strokeLinecap="round" strokeLinejoin="round" d="M12 6l2 4 4 .5-3 3 .7 4-3.7-2-3.7 2 .7-4-3-3 4-.5 2-4z" /> </svg>
           </div>
           <div>
-            <div className="text-lg font-bold text-indigo-700">Total Members</div>
-            <div className="text-3xl font-extrabold text-indigo-900">{loading ? '-' : stats.totalMember}</div>
+            <div className="text-lg font-bold text-gray-300">Total Members</div>
+            <div className="text-3xl font-extrabold text-amber-300">{loading ? '-' : stats.totalMember}</div>
           </div>
         </div>
       </div>
+
       {/* 2 card: aktif & tidak aktif membership */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white rounded-xl shadow p-6 flex items-center gap-4">
-          <div className="flex-shrink-0 bg-yellow-100 rounded-full p-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-5">
+        <div className="bg-gray-800 border border-gray-600 rounded-xl shadow p-6 flex items-center gap-4">
+          <div className="flex-shrink-0 bg-gray-300 rounded-full p-3">
            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-yellow-600"> <path strokeLinecap="round" strokeLinejoin="round" d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" /> </svg>
           </div>
           <div>
-            <div className="text-lg font-bold text-yellow-700">Active Memberships</div>
-            <div className="text-3xl font-extrabold text-yellow-900">{loading ? '-' : stats.activeMembership}</div>
+            <div className="text-lg font-bold text-gray-300">Active Memberships</div>
+            <div className="text-3xl font-extrabold text-yellow-600">{loading ? '-' : stats.activeMembership}</div>
           </div>
         </div>
-        <div className="bg-white rounded-xl shadow p-6 flex items-center gap-4">
-          <div className="flex-shrink-0 bg-red-100 rounded-full p-3">
+        <div className="bg-gray-800 border border-gray-600 rounded-xl shadow p-6 flex items-center gap-4">
+          <div className="flex-shrink-0 bg-gray-300 rounded-full p-3">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-red-600"> <path strokeLinecap="round" strokeLinejoin="round" d="M10 9v6m4-6v6M12 3a9 9 0 110 18 9 9 0 010-18z" /> </svg>
           </div>
           <div>
-            <div className="text-lg font-bold text-red-700">Inactive Memberships</div>
-            <div className="text-3xl font-extrabold text-red-900">{loading ? '-' : stats.inactiveMembership}</div>
+            <div className="text-lg font-bold text-gray-300">Inactive Memberships</div>
+            <div className="text-3xl font-extrabold text-red-600">{loading ? '-' : stats.inactiveMembership}</div>
           </div>
         </div>
       </div>
       {/* 2 card: total PT Session & total Classes */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl shadow p-6 flex items-center gap-4">
-          <div className="flex-shrink-0 bg-green-100 rounded-full p-3">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-10 h-10 text-green-600">
+        <div className="bg-gray-800 border border-gray-600 rounded-xl shadow p-6 flex items-center gap-4">
+          <div className="flex-shrink-0 bg-gray-300 rounded-full p-3">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-10 h-10 text-gray-600">
               <rect x="5" y="11" width="14" height="2" rx="0.5" fill="currentColor" />
               <circle cx="4" cy="12" r="3" />
               <circle cx="20" cy="12" r="3" />
             </svg>
           </div>
           <div>
-            <div className="text-lg font-bold text-green-700">Total PT Sessions</div>
-            <div className="text-3xl font-extrabold text-green-900">{loading ? '-' : stats.totalPTSessions}</div>
+            <div className="text-lg font-bold text-gray-300">Total PT Sessions</div>
+            <div className="text-3xl font-extrabold text-amber-300">{loading ? '-' : stats.totalPTSessions}</div>
           </div>
         </div>
-        <div className="bg-white rounded-xl shadow p-6 flex items-center gap-4">
+        <div className="bg-gray-800 border border-gray-600 rounded-xl shadow p-6 flex items-center gap-4">
           <div className="flex-shrink-0 bg-purple-100 rounded-full p-3">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-purple-600">
+                strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-gray-600">
               <path strokeLinecap="round" strokeLinejoin="round"
                 d="M8 7V3m8 4V3m-9 8h10m2 10H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v12a2 2 0 01-2 2z" />
             </svg>
           </div>
           <div>
-            <div className="text-lg font-bold text-purple-700">Total Classes</div>
-            <div className="text-3xl font-extrabold text-purple-900">{loading ? '-' : stats.totalClasses}</div>
+            <div className="text-lg font-bold text-gray-300">Total Classes</div>
+            <div className="text-3xl font-extrabold text-amber-300">{loading ? '-' : stats.totalClasses}</div>
           </div>
         </div>
       </div>

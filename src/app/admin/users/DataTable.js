@@ -57,7 +57,7 @@ export default function UsersDataTable({ columns, data, setQrUser, pagination, p
       direction="auto"
       subHeaderWrap
       customStyles={{
-        headCells: { style: { fontWeight: 'bold', fontSize: '1rem', background: '#eff6ff', color: '#2563eb' } },
+        headCells: { style: { fontWeight: 'bold', fontSize: '1rem', background: '#4a5565', color: 'oklch(92.8% 0.006 264.531)' } },
         rows: { style: { fontSize: '1rem' } },
       }}
     />
