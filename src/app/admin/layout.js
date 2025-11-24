@@ -1,12 +1,13 @@
 'use client';
 import Link from 'next/link';
-import { FaTachometerAlt, FaUsers, FaDumbbell, FaClipboardList, FaCalendarCheck, FaBarcode, FaCheckCircle, FaSignOutAlt } from 'react-icons/fa';
+import { FaTachometerAlt, FaUsers, FaDumbbell, FaClipboardList, FaCalendarCheck, FaBarcode, FaCheckCircle, FaSignOutAlt, FaCalendar, FaUserCheck, FaChalkboardTeacher } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
 export default function AdminLayout({ children }) {
   const [userEmail, setUserEmail] = useState("");
+  const [membershipDropdownOpen, setMembershipDropdownOpen] = useState(false);
   const [ptDropdownOpen, setPtDropdownOpen] = useState(false);
   const [classDropdownOpen, setClassDropdownOpen] = useState(false);
   const router = useRouter();
@@ -125,6 +126,42 @@ export default function AdminLayout({ children }) {
                 className={`block py-2 px-4 rounded font-semibold flex items-center gap-2 ${pathname.startsWith("/admin/users") ? "bg-blue-600 text-white" : "hover:bg-gray-100 text-gray-700"}`}
               ><FaUsers className="inline-block" /> User Data</Link>
             </li>
+            {/* Membership Dropdown */}
+            <li className="relative">
+              <button
+                className={`w-full text-left py-2 px-4 rounded font-bold flex items-center justify-between ${membershipDropdownOpen ? 'bg-blue-100 text-blue-700' : 'bg-white text-gray-700'}`}
+                type="button"
+                aria-expanded={membershipDropdownOpen}
+                aria-controls="membership-dropdown"
+                onClick={() => setMembershipDropdownOpen((open) => !open)}
+                data-collapse-toggle="membership-dropdown"
+              >
+                <span className="flex items-center gap-2"><FaUserCheck className="inline-block" /> Membership</span>
+                <span className="ml-2">{membershipDropdownOpen ? '▲' : '▼'}</span>
+              </button>
+              {membershipDropdownOpen && (
+                <ul id="pt-session-dropdown" className="pl-6 border-l-2 border-blue-100 mt-1">
+                  <li>
+                    <Link
+                      href="/admin/membership/session"
+                      className={`block py-2 px-2 rounded font-semibold flex items-center gap-2 ${pathname.startsWith("/admin/membership/session") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
+                    ><FaCalendarCheck className="inline-block" /> Session</Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/membership/plans"
+                      className={`block py-2 px-2 rounded font-semibold flex items-center gap-2 ${pathname.startsWith("/admin/membership/plans") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
+                    ><FaClipboardList className="inline-block" /> Plans</Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/membership/schedules"
+                      className={`block py-2 px-2 rounded font-semibold flex items-center gap-2 ${pathname.startsWith("/admin/membership/schedules") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
+                    ><FaCalendar className="inline-block" /> Schedule</Link>
+                  </li>
+                </ul>
+              )}
+            </li>
             {/* PT Session Dropdown */}
             <li className="relative">
               <button
@@ -171,7 +208,7 @@ export default function AdminLayout({ children }) {
                 onClick={() => setClassDropdownOpen((open) => !open)}
                 data-collapse-toggle="class-session-dropdown"
               >
-                <span className="flex items-center gap-2"><FaDumbbell className="inline-block" /> Class Session</span>
+                <span className="flex items-center gap-2"><FaChalkboardTeacher className="inline-block" /> Class Session</span>
                 <span className="ml-2">{classDropdownOpen ? '▲' : '▼'}</span>
               </button>
               {classDropdownOpen && (

@@ -12,23 +12,28 @@ export default function PTBookingCreatePage() {
   useEffect(() => {
     const fetchMembers = async () => {
       const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-      const res = await fetch('http://localhost:3002/api/users/filter?role=member&membership=active', {
+      // const res = await fetch('http://localhost:3002/api/users/filter?role=member&membership=active', {
+      const res = await fetch('http://localhost:3002/api/users/?role=member&membership=active', {
         headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
       });
-      if (res.ok) setMembers(await res.json());
+      const dataUser = await res.json();
+      if (res.ok) setMembers(dataUser.data.users);
     };
     fetchMembers();
   }, []);
 
   // Fetch PT sessions for selected member
   useEffect(() => {
+    console.log("MASUK")
     if (!user_member_id) { setPTSessions([]); setPTSessionId(''); return; }
     const fetchPTSessions = async () => {
       const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
       const res = await fetch(`http://localhost:3002/api/personaltrainersessions/member/${user_member_id}`, {
         headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
       });
-      if (res.ok) setPTSessions(await res.json());
+      const dataPTSessions = await res.json();
+      console.log("dataPTSessions: ", dataPTSessions)
+      if (res.ok) setPTSessions(dataPTSessions.data.membershipPlans);
       else setPTSessions([]);
     };
     fetchPTSessions();
@@ -87,6 +92,7 @@ export default function PTBookingCreatePage() {
             ))}
           </select>
         </div>
+        {console.log("ptSession: ", ptSessions)}
         <div>
           <label className="block font-semibold mb-1">PT Session</label>
           <select className="w-full border p-2 rounded" value={personal_trainer_session_id} onChange={e => setPTSessionId(e.target.value)} required disabled={!user_member_id || ptSessions.length === 0}>

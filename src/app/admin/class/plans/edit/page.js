@@ -25,7 +25,9 @@ export default function ClassPlanEditPage() {
         const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
         const res = await fetch(`${API_URL}/api/eventplans/${id}`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
         if (!res.ok) throw new Error('Gagal fetch plan');
-        const data = await res.json();
+        const dataEvent = await res.json();
+        const data = dataEvent.data || [];
+        console.log('Fetched plan data:', data);
         const planForm = {
           name: data.name || "",
           access_type: data.access_type || "Regular",
@@ -131,25 +133,29 @@ export default function ClassPlanEditPage() {
           <label className="block mb-1">Description</label>
           <textarea name="description" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} className={`w-full border px-2 py-1 rounded ${edit ? 'bg-white' : 'bg-gray-100'}`} disabled={!edit} />
         </div>
-        <div className="mb-4">
-          <label className="block mb-1">Unlimited Monthly Session</label>
-          <input name="unlimited_monthly_session" type="checkbox" checked={form.unlimited_monthly_session} onChange={e => setForm(f => ({ ...f, unlimited_monthly_session: e.target.checked }))} disabled={!edit} />
+        <div className="mb-4 flex items-center gap-2">
+          <input id="unlimited_monthly_session" name="unlimited_monthly_session" type="checkbox" checked={form.unlimited_monthly_session} onChange={e => setForm({ ...form, unlimited_monthly_session: e.target.checked })} disabled={!edit} />
+          <label htmlFor="unlimited_monthly_session" className="block mb-0">Unlimited Monthly Session</label>
         </div>
-        <div className="mb-4">
-          <label className="block mb-1">Monthly Limit</label>
-          <input name="monthly_limit" type="number" value={form.monthly_limit} onChange={e => setForm(f => ({ ...f, monthly_limit: Number(e.target.value) }))} className={`w-full border px-2 py-1 rounded ${edit ? 'bg-white' : 'bg-gray-100'}`} min={0} disabled={!edit} />
+        {!form.unlimited_monthly_session && (
+          <div className="mb-4">
+            <label className="block mb-1">Monthly Limit</label>
+            <input name="monthly_limit" type="number" value={form.monthly_limit} onChange={handleChange} className="w-full border px-2 py-1 rounded" min={0} disabled={!edit} />
+          </div>
+        )}
+        <div className="mb-4 flex items-center gap-2">
+          <input id="unlimited_daily_session" name="unlimited_daily_session" type="checkbox" checked={form.unlimited_daily_session} onChange={e => setForm({ ...form, unlimited_daily_session: e.target.checked })} disabled={!edit} />
+          <label htmlFor="unlimited_daily_session" className="block mb-0">Unlimited Daily Session</label>
         </div>
-        <div className="mb-4">
-          <label className="block mb-1">Unlimited Daily Session</label>
-          <input name="unlimited_daily_session" type="checkbox" checked={form.unlimited_daily_session} onChange={e => setForm(f => ({ ...f, unlimited_daily_session: e.target.checked }))} disabled={!edit} />
-        </div>
-        <div className="mb-4">
-          <label className="block mb-1">Daily Limit</label>
-          <input name="daily_limit" type="number" value={form.daily_limit} onChange={e => setForm(f => ({ ...f, daily_limit: Number(e.target.value) }))} className={`w-full border px-2 py-1 rounded ${edit ? 'bg-white' : 'bg-gray-100'}`} min={0} disabled={!edit} />
-        </div>
-        <div className="mb-4">
-          <label className="block mb-1">Active</label>
-          <input name="is_active" type="checkbox" checked={form.is_active} onChange={e => setForm(f => ({ ...f, is_active: e.target.checked }))} disabled={!edit} />
+        {!form.unlimited_daily_session && (
+          <div className="mb-4">
+            <label className="block mb-1">Daily Limit</label>
+            <input name="daily_limit" type="number" value={form.daily_limit} onChange={handleChange} className="w-full border px-2 py-1 rounded" min={0} disabled={!edit} />
+          </div>
+        )}
+        <div className="mb-4 flex items-center gap-2">
+          <input id="is_active" name="is_active" type="checkbox" checked={form.is_active} onChange={e => setForm(f => ({ ...f, is_active: e.target.checked }))} disabled={!edit} />
+          <label htmlFor="is_active" className="block mb-0">Active</label>
         </div>
         <div className="flex gap-2">
           {!edit ? (

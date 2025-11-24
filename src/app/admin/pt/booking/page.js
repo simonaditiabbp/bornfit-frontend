@@ -36,7 +36,8 @@ export default function PTBookingPage() {
             const bookingsSearchRes = await fetch(`http://localhost:3002/api/ptsessionbookings?search=${encodeURIComponent(search)}`, {
               headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
             });
-            const arr = await bookingsSearchRes.json();
+            const bookingData = await bookingsSearchRes.json();
+            const arr = bookingData.data?.bookings || [];
             if (Array.isArray(arr)) {
               allMatches = arr;
             }
@@ -49,7 +50,8 @@ export default function PTBookingPage() {
             const allRes = await fetch(`http://localhost:3002/api/ptsessionbookings`, {
               headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
             });
-            const arr = await allRes.json();
+            const bookingData = await allRes.json();
+            const arr = bookingData.data?.bookings || [];
             if (Array.isArray(arr)) {
               allMatches = arr.filter(b =>
                 (b.user_member?.name || '').toLowerCase().includes(search.toLowerCase()) ||
@@ -70,7 +72,8 @@ export default function PTBookingPage() {
           const bookingsRes = await fetch(`http://localhost:3002/api/ptsessionbookings/paginated?page=${page}&limit=${limit}`, {
             headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
           });
-          const result = await bookingsRes.json();
+          const bookingData = await bookingsRes.json();
+          const result = bookingData.data || {};
           setBookings(result.bookings || []);
           setTotal(result.total || 0);
         }

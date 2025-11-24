@@ -47,6 +47,7 @@ function RenewalActionsCell({ row, membership }) {
           'Content-Type': 'application/json',
         },
       });
+      console.log("res", res);
       if (res.ok) {
         alert('Renewal email sent successfully!');
       } else {
@@ -161,8 +162,8 @@ export default function AdminUsersPage() {
           try {
             // Try endpoint that may support searching and return an array
             const usersSearchRes = await fetchWith401(`${API_URL}/api/users?search=${encodeURIComponent(search)}`);
-            if (Array.isArray(usersSearchRes)) {
-              allMatches = usersSearchRes;
+            if (Array.isArray(usersSearchRes.data.users)) {
+              allMatches = usersSearchRes.data.users;
             }
           } catch (e) {
             // ignore and fallback
@@ -171,8 +172,8 @@ export default function AdminUsersPage() {
           if (!allMatches) {
             // fallback: fetch all users and filter client-side
             const allRes = await fetchWith401(`${API_URL}/api/users`);
-            if (Array.isArray(allRes)) {
-              allMatches = allRes.filter(u =>
+            if (Array.isArray(allRes.data.users)) {
+              allMatches = allRes.data.users.filter(u =>
                 (u.name || '').toLowerCase().includes(search.toLowerCase()) ||
                 (u.email || '').toLowerCase().includes(search.toLowerCase())
               );
@@ -190,9 +191,10 @@ export default function AdminUsersPage() {
           setHasPrev(page > 1);
         } else {
           const searchQuery = '';
-          const usersRes = await fetchWith401(`${API_URL}/api/users/paginated?page=${page}&limit=${limit}${searchQuery}`);
-              setUsers(Array.isArray(usersRes.users) ? usersRes.users : []);
-              setTotal(usersRes.total || 0);
+          const usersRes = await fetchWith401(`${API_URL}/api/users?page=${page}&limit=${limit}${searchQuery}`);
+          console.log("usersRes: ", usersRes)
+              setUsers(Array.isArray(usersRes.data.users) ? usersRes.data.users : []);
+              setTotal(usersRes.data.total || 0);
               setHasNext(usersRes.hasNext || false);
               setHasPrev(usersRes.hasPrev || false);
         }
@@ -201,7 +203,7 @@ export default function AdminUsersPage() {
           fetchWith401(`${API_URL}/api/memberships`),
           fetchWith401(`${API_URL}/api/checkins`),
         ]);
-        setMemberships(membershipsRes);
+        setMemberships(membershipsRes.data.memberships);
         setCheckins(checkinsRes);
       } catch (err) {
         setUsers([]);
@@ -248,6 +250,7 @@ export default function AdminUsersPage() {
       name: 'Status',
       cell: row => {
         const membership = getMembership(row.id);
+        console.log("membership for user ", row.id, membership);
         return membership && membership.is_active ? (
           <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-bold">Active</span>
         ) : (
@@ -288,10 +291,10 @@ export default function AdminUsersPage() {
   ];
 
   // Filter data by search (client-side for current page)
-  const filteredUsers = users.filter(u =>
-    u.name.toLowerCase().includes(search.toLowerCase()) ||
-    u.email.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredUsers = Array.isArray(users) ? users.filter(u =>
+    (u.name || '').toLowerCase().includes(search.toLowerCase()) ||
+    (u.email || '').toLowerCase().includes(search.toLowerCase())
+  ) : [];
 
   if (backendError) {
     return <BackendErrorFallback onRetry={() => { setBackendError(false); window.location.reload(); }} />;

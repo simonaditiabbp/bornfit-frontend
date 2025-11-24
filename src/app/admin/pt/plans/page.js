@@ -27,7 +27,8 @@ export default function PTPlansPage() {
           const resSearch = await fetch(`${API_URL}/api/ptsessionplans?search=${encodeURIComponent(search)}`, {
             headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
           });
-          const arr = await resSearch.json();
+          const sessionData = await resSearch.json();
+          const arr = sessionData.data?.plans || [];
           if (Array.isArray(arr)) {
             allMatches = arr;
           }
@@ -39,7 +40,8 @@ export default function PTPlansPage() {
           const resAll = await fetch(`${API_URL}/api/ptsessionplans`, {
             headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
           });
-          const arr = await resAll.json();
+          const sessionPlansData = await resAll.json();
+          const arr = sessionPlansData.data?.plans || [];
           if (Array.isArray(arr)) {
             allMatches = arr.filter(p =>
               (p.name || '').toLowerCase().includes(search.toLowerCase()) ||
@@ -58,9 +60,10 @@ export default function PTPlansPage() {
         const res = await fetch(`${API_URL}/api/ptsessionplans?page=${page}&limit=${limit}`, {
           headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
         });
-        const data = await res.json();
-        setPlans(Array.isArray(data) ? data : []);
-        setTotal(Array.isArray(data) ? data.length : 0);
+        const sessionPlansData = await res.json();
+        const arr = sessionPlansData.data?.plans || [];
+        setPlans(arr);
+        setTotal(sessionPlansData.data?.total || 0);
       }
     } catch (err) {
       setBackendError(true);
@@ -116,7 +119,7 @@ export default function PTPlansPage() {
   const columns = [
     { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px', center: true },
     { name: 'Name', selector: row => row.name, sortable: true, cell: row => <span className="font-semibold">{row.name}</span> },
-    { name: 'Duration', selector: row => row.duration, sortable: true, cell: row => `${row.duration} hari` },
+    { name: 'Duration', selector: row => row.duration_value, sortable: true, cell: row => `${row.duration_value} hari` },
     { name: 'Max Session', selector: row => row.max_session, sortable: true },
     { name: 'Price', selector: row => row.price, sortable: true, cell: row => `Rp.${row.price.toLocaleString()}` },
     { name: 'Minutes/Session', selector: row => row.minutes_per_session, sortable: true, cell: row => `${row.minutes_per_session} menit` },

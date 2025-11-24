@@ -29,11 +29,19 @@ export default function ClassSessionListPage() {
       try {
         const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
         const resPlans = await fetch(`${API_URL}/api/eventplans`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const resMembers = await fetch(`${API_URL}/api/users/filter?role=member`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const resInstructors = await fetch(`${API_URL}/api/users/filter?role=instructor`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        if (resPlans.ok) setPlans(await resPlans.json());
-        if (resMembers.ok) setMembers(await resMembers.json());
-        if (resInstructors.ok) setInstructors(await resInstructors.json());
+        const resMembers = await fetch(`${API_URL}/api/users/?role=member`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+        const resInstructors = await fetch(`${API_URL}/api/users/?role=instructor`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+        // const resMembers = await fetch(`${API_URL}/api/users/filter?role=member`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+        // const resInstructors = await fetch(`${API_URL}/api/users/filter?role=instructor`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+        const plansData = await resPlans.json();
+        const membersData = await resMembers.json();
+        const instructorsData = await resInstructors.json();
+        const arrPlans = plansData.data?.plans || [];
+        const arrMembers = membersData.data?.users || [];
+        const arrInstructors = instructorsData.data?.users || [];
+        if (resPlans.ok) setPlans(arrPlans);
+        if (resMembers.ok) setMembers(arrMembers);
+        if (resInstructors.ok) setInstructors(arrInstructors);
       } catch {}
     };
     fetchMeta();
@@ -48,7 +56,8 @@ export default function ClassSessionListPage() {
             const sessionsSearchRes = await fetch(`${API_URL}/api/classes?search=${encodeURIComponent(search)}`, {
               headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
             });
-            const arr = await sessionsSearchRes.json();
+            const sessionsData = await sessionsSearchRes.json();
+            const arr = sessionsData.data?.classes || [];
             if (Array.isArray(arr)) {
               allMatches = arr;
             }
@@ -59,7 +68,8 @@ export default function ClassSessionListPage() {
             const allRes = await fetch(`${API_URL}/api/classes`, {
               headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
             });
-            const arr = await allRes.json();
+            const allData = await allRes.json();
+            const arr = allData.data?.classes || [];
             if (Array.isArray(arr)) {
               allMatches = arr.filter(s =>
                 (s.user_member?.name || '').toLowerCase().includes(search.toLowerCase()) ||
@@ -79,7 +89,8 @@ export default function ClassSessionListPage() {
             headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
           });
           if (!res.ok) throw new Error("Gagal fetch classes");
-          const result = await res.json();
+          const classData = await res.json();
+          const result = classData.data || {};
           setSessions(result.classes|| []);
           setTotalRows(result.total || 0);
         }

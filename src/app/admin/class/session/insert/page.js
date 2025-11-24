@@ -13,15 +13,16 @@ export default function ClassSessionInsertPage() {
       try {
         const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
         const res = await fetch(`${API_URL}/api/eventplans`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        if (res.ok) setPlans(await res.json());
+        const data = await res.json();
+        if (res.ok) setPlans(data.data.plans);
       } catch {}
     };
     fetchPlans();
     const fetchUsers = async () => {
       try {
         const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-        const resMember = await fetch(`${API_URL}/api/users/filter?role=member&membership=active`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const resInstructor = await fetch(`${API_URL}/api/users/filter?role=instructor`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+        const resMember = await fetch(`${API_URL}/api/users/?role=member&membership=active`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+        const resInstructor = await fetch(`${API_URL}/api/users/?role=instructor`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
         if (resMember.ok) setMembers(await resMember.json());
         if (resInstructor.ok) setInstructors(await resInstructor.json());
       } catch {}

@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
 import BackendErrorFallback from '../../../../components/BackendErrorFallback';
+import Webcam from 'react-webcam';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -13,15 +14,26 @@ export default function UserDetailPage() {
   const params = useParams();
   const { id } = params;
   const [user, setUser] = useState(null);
-  const [membership, setMembership] = useState(null);
   const [checkins, setCheckins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [edit, setEdit] = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', role: '' });
-  const [membershipForm, setMembershipForm] = useState({ start_date: '', end_date: '' });
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    role: '',
+    phone: '',
+    date_of_birth: '',
+    nik_passport: '',
+    emergency_contact_name: '',
+    emergency_contact_phone: '',
+    latitude: null,
+    longitude: null,
+  });
   const [token, setToken] = useState('');
   const [photo, setPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const webcamRef = useRef(null);
   const [backendError, setBackendError] = useState(false);
   const router = useRouter();
 
@@ -54,17 +66,22 @@ export default function UserDetailPage() {
       setLoading(true);
       try {
         const userRes = await fetchWith401(`${API_URL}/api/users/${id}`);
-        const membershipRes = await fetchWith401(`${API_URL}/api/memberships`);
         const checkinsRes = await fetchWith401(`${API_URL}/api/checkins/user/${id}`);
-
-        setUser(userRes);
-        setMembership(membershipRes.find((m) => m.user_id == id));
+        const userData = userRes.data;
+        setUser(userData);
         setCheckins(checkinsRes);
 
-        setForm({ name: userRes.name, email: userRes.email, role: userRes.role });
-        setMembershipForm({
-          start_date: membershipRes.find((m) => m.user_id == id)?.start_date?.slice(0, 10) || '',
-          end_date: membershipRes.find((m) => m.user_id == id)?.end_date?.slice(0, 10) || '',
+        setForm({
+          name: userData.name || '',
+          email: userData.email || '',
+          role: userData.role || '',
+          phone: userData.phone || '',
+          date_of_birth: userData.date_of_birth ? userData.date_of_birth.slice(0, 10) : '',
+          nik_passport: userData.nik_passport || '',
+          emergency_contact_name: userData.emergency_contact_name || '',
+          emergency_contact_phone: userData.emergency_contact_phone || '',
+          latitude: userData.latitude && !isNaN(Number(userData.latitude)) ? Number(userData.latitude) : null,
+          longitude: userData.longitude && !isNaN(Number(userData.longitude)) ? Number(userData.longitude) : null,
         });
       } catch (err) {
         setBackendError(true);
@@ -88,11 +105,19 @@ export default function UserDetailPage() {
     let userUpdateSuccess = false;
     try {
       let res, data;
+      // Format date_of_birth ke ISO-8601
+      let dobIso = form.date_of_birth;
+      if (dobIso && dobIso.length === 10) {
+        dobIso = dobIso + "T00:00:00.000Z";
+      }
       if (photo) {
         const formData = new FormData();
         formData.append('name', form.name);
         formData.append('email', form.email);
         formData.append('role', form.role);
+        formData.append('date_of_birth', dobIso);
+        formData.append('latitude', form.latitude && !isNaN(Number(form.latitude)) ? Number(form.latitude) : null);
+        formData.append('longitude', form.longitude && !isNaN(Number(form.longitude)) ? Number(form.longitude) : null);
         formData.append('photo', photo);
         res = await fetch(`${API_URL}/api/users/${id}`, {
           method: 'PUT',
@@ -104,9 +129,15 @@ export default function UserDetailPage() {
         res = await fetch(`${API_URL}/api/users/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify(form),
+          body: JSON.stringify({
+            ...form,
+            date_of_birth: dobIso,
+            latitude: form.latitude && !isNaN(Number(form.latitude)) ? Number(form.latitude) : null,
+            longitude: form.longitude && !isNaN(Number(form.longitude)) ? Number(form.longitude) : null
+          }),
         });
-        data = await res.json();
+        const userData = await res.json();
+        data = userData;
       }
       if (!res.ok) {
         if (res.status === 409 && data.code === "EMAIL_EXISTS") {
@@ -116,13 +147,7 @@ export default function UserDetailPage() {
         throw new Error(data.message || "Failed to update user");
       }
       userUpdateSuccess = true;
-      if (membership) {
-        await fetch(`${API_URL}/api/memberships/${membership.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify(membershipForm),
-        });
-      }
+
       setEdit(false);
       setPhoto(null);
       setPhotoPreview(null);
@@ -131,7 +156,7 @@ export default function UserDetailPage() {
         const tokenData = localStorage.getItem('token');
         const res = await fetch(`${API_URL}/api/users/${id}`, { headers: { Authorization: `Bearer ${tokenData}` } });
         const userRes = await res.json();
-        setUser(userRes);
+        setUser(userRes.data);
         setSuccess("User updated successfully!");
       }
     } catch (err) {
@@ -169,140 +194,148 @@ export default function UserDetailPage() {
             </h2>
 
             {/* PHOTO USER */}
-            <div className="flex flex-col items-center mb-8">
-  {(photoPreview || user?.photo) ? (
-    <Image
-      src={
-        photoPreview ||
-        (user.photo.startsWith('http')
-          ? user.photo
-          : `${API_URL?.replace(/\/$/, '')}${user.photo}`)
-      }
-  alt="User Photo"
-      width={128}
-      height={128}
-      className="w-32 h-32 object-cover rounded-full border border-gray-300 shadow mb-3"
-    />
-  ) : (
-    <div className="w-32 h-32 flex items-center justify-center bg-gray-200 rounded-full text-gray-400 mb-3">
-  No photo available
-    </div>
-  )}
+              <div className="flex flex-col items-center mb-8">
 
-  <span className="text-sm text-gray-600 font-medium">Photo</span>
+                {(photoPreview || user?.photo) ? (
+                  <Image
+                    src={
+                      photoPreview ||
+                      (user.photo.startsWith("http")
+                        ? user.photo
+                        : `${API_URL?.replace(/\/$/, "")}${user.photo}`)
+                    }
+                    alt="User Photo"
+                    width={128}
+                    height={128}
+                    className="w-32 h-32 object-cover rounded-full border border-gray-300 shadow mb-3"
+                  />
+                ) : (
+                  <div className="w-32 h-32 flex items-center justify-center bg-gray-200 rounded-full text-gray-400 mb-3">
+                    No photo available
+                  </div>
+                )}
 
-  {edit && (
-    <label className="mt-3 px-4 py-2 bg-blue-500 text-white rounded-lg cursor-pointer hover:bg-blue-600 transition">
-  Choose Photo
-      <input
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={(e) => {
-          setPhoto(e.target.files[0]);
-          setPhotoPreview(
-            e.target.files[0]
-              ? URL.createObjectURL(e.target.files[0])
-              : null
-          );
-        }}
-      />
-    </label>
-  )}
+                <span className="text-sm text-gray-600 font-medium">Photo</span>
 
-  {photoPreview && (
-    <button
-      onClick={() => {
-        setPhoto(null);
-        setPhotoPreview(null);
-      }}
-      className="mt-2 text-xs text-red-500 hover:underline"
-    >
-  Remove photo
-    </button>
-  )}
-</div>
+                {edit && (
+                  <div className="flex gap-3 mt-3">
+
+                    {/* Upload File */}
+                    <label className="px-4 py-2 bg-blue-500 text-white rounded-lg cursor-pointer hover:bg-blue-600 transition">
+                      Choose Photo
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          setPhoto(e.target.files[0]);
+                          setPhotoPreview(e.target.files[0] ? URL.createObjectURL(e.target.files[0]) : null);
+                        }}
+                      />
+                    </label>
+
+                    {/* Open Camera */}
+                    <button
+                      type="button"
+                      onClick={() => setIsCameraOpen(true)}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                    >
+                      Open Camera
+                    </button>
+                  </div>
+                )}
+
+                {/* Remove Photo */}
+                {photoPreview && (
+                  <button
+                    onClick={() => {
+                      setPhoto(null);
+                      setPhotoPreview(null);
+                    }}
+                    className="mt-2 text-xs text-red-500 hover:underline"
+                  >
+                    Remove photo
+                  </button>
+                )}
+
+                {/* CAMERA MODAL */}
+                {isCameraOpen && (
+                  <div className="mt-3 p-4 border rounded-lg bg-black/10 flex flex-col items-center">
+                    <Webcam
+                      audio={false}
+                      ref={webcamRef}
+                      screenshotFormat="image/jpeg"
+                      className="rounded-lg mb-3"
+                    />
+
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => {
+                          const imageSrc = webcamRef.current.getScreenshot();
+
+                          fetch(imageSrc)
+                            .then(res => res.blob())
+                            .then(blob => {
+                              const file = new File([blob], "camera-photo.jpg", { type: "image/jpeg" });
+                              setPhoto(file);
+                              setPhotoPreview(URL.createObjectURL(file));
+                              setIsCameraOpen(false);
+                            });
+                        }}
+                        className="px-4 py-2 bg-green-600 text-white rounded"
+                      >
+                        Capture
+                      </button>
+
+                      <button
+                        onClick={() => setIsCameraOpen(false)}
+                        className="px-4 py-2 bg-gray-400 text-white rounded"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
 
             {/* INFO SECTION */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* USER FIELDS */}
               <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-700">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  className={`w-full p-3 border rounded-lg ${
-                    edit ? 'bg-white' : 'bg-gray-100'
-                  }`}
-                  value={form.name}
-                  disabled={!edit}
-                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-700">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  className={`w-full p-3 border rounded-lg ${
-                    edit ? 'bg-white' : 'bg-gray-100'
-                  }`}
-                  value={form.email}
-                  disabled={!edit}
-                  onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                />
+                <label className="block text-sm font-semibold mb-1 text-gray-700">Name</label>
+                <input type="text" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.name} disabled={!edit} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-700">
-                  Membership Start
-                </label>
-                <input
-                  type="date"
-                  className={`w-full p-3 border rounded-lg ${
-                    edit ? 'bg-white' : 'bg-gray-100'
-                  }`}
-                  value={membershipForm.start_date}
-                  disabled={!edit}
-                  onChange={(e) =>
-                    setMembershipForm((f) => ({ ...f, start_date: e.target.value }))
-                  }
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-700">
-                  Membership End
-                </label>
-                <input
-                  type="date"
-                  className={`w-full p-3 border rounded-lg ${
-                    edit ? 'bg-white' : 'bg-gray-100'
-                  }`}
-                  value={membershipForm.end_date}
-                  disabled={!edit}
-                  onChange={(e) =>
-                    setMembershipForm((f) => ({ ...f, end_date: e.target.value }))
-                  }
-                />
+                <label className="block text-sm font-semibold mb-1 text-gray-700">Email</label>
+                <input type="email" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.email} disabled={!edit} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-700">
-                  Role
-                </label>
-                <select
-                  className={`w-full p-3 border rounded-lg ${
-                    edit ? 'bg-white' : 'bg-gray-100'
-                  }`}
-                  value={form.role}
-                  disabled={!edit}
-                  onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
-                >
+                <label className="block text-sm font-semibold mb-1 text-gray-700">Phone</label>
+                <input type="text" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.phone} disabled={!edit} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-1 text-gray-700">Date of Birth</label>
+                <input type="date" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.date_of_birth} disabled={!edit} onChange={e => setForm(f => ({ ...f, date_of_birth: e.target.value }))} />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-1 text-gray-700">NIK/Passport</label>
+                <input type="text" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.nik_passport} disabled={!edit} onChange={e => setForm(f => ({ ...f, nik_passport: e.target.value }))} />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-1 text-gray-700">Role</label>
+                <select className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.role} disabled={!edit} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}>
                   <option value="member">Member</option>
                   <option value="admin">Admin</option>
                   <option value="opscan">Opscan</option>
                 </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-1 text-gray-700">Emergency Contact Name</label>
+                <input type="text" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.emergency_contact_name} disabled={!edit} onChange={e => setForm(f => ({ ...f, emergency_contact_name: e.target.value }))} />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-1 text-gray-700">Emergency Contact Phone</label>
+                <input type="text" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.emergency_contact_phone} disabled={!edit} onChange={e => setForm(f => ({ ...f, emergency_contact_phone: e.target.value }))} />
               </div>
             </div>
 
