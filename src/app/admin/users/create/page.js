@@ -47,6 +47,7 @@ export default function CreateUserPage() {
   const [loading, setLoading] = useState(false);
   const [backendError, setBackendError] = useState(false);
   const router = useRouter();
+  const [continueToMembership, setContinueToMembership] = useState(false);
 
   const getJwtExp = () => {
     const tokenCheck = localStorage.getItem('token');
@@ -112,7 +113,7 @@ export default function CreateUserPage() {
     setPhoto(e.target.files[0]);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e, redirectMembership = false) => {
     e.preventDefault();
     setError("");
     setSuccess("");
@@ -121,6 +122,7 @@ export default function CreateUserPage() {
       // Validasi sesuai role
       if ((form.role === "admin" || form.role === "opscan") && !form.password) {
         setError("Password is required for admin & opscan role");
+        setLoading(false);
         return;
       }
       // Format date_of_birth ke ISO-8601
@@ -131,6 +133,12 @@ export default function CreateUserPage() {
       const token = localStorage.getItem("token");
       const formData = new FormData();
       Object.entries(form).forEach(([key, value]) => {
+        if (["email", "date_of_birth", "nik_passport"].includes(key)) {
+          if (!value || value.trim() === "") {
+            // JANGAN append → backend terima sebagai NULL
+            return;
+          }
+        }
         if (key === 'date_of_birth') {
           formData.append('date_of_birth', dobIso);
         } else if (key === 'latitude' || key === 'longitude') {
@@ -156,10 +164,12 @@ export default function CreateUserPage() {
         },
         body: formData,
       });
-      const data = await res.json();
+      const dataUser = await res.json();
+      const data = dataUser.data;
       if (!res.ok) {
         if (res.status === 409 && data.code === "EMAIL_EXISTS") {
           setError("Email is already registered");
+          setLoading(false);
           return;
         }
         throw new Error(data.message || "Failed to create user");
@@ -174,7 +184,12 @@ export default function CreateUserPage() {
         membership: { start_date: "", end_date: "" },
       });
       setPhoto(null);
-      setTimeout(() => router.push("/admin/users"), 1200);
+      if (redirectMembership && data && data.id) {
+        // Redirect to membership session insert, pass member id
+        router.push(`/admin/membership/session/insert?member_id=${data.id}`);
+      } else {
+        setTimeout(() => router.push("/admin/users"), 1200);
+      }
     } catch (err) {
       if (err.message === "Email is already registered") {
         setError(err.message);
@@ -188,7 +203,6 @@ export default function CreateUserPage() {
 
   const capture = () => {
     const imageSrc = webcamRef.current.getScreenshot();
-    // Convert base64 to blob
     fetch(imageSrc)
       .then(res => res.blob())
       .then(blob => {
@@ -205,7 +219,7 @@ export default function CreateUserPage() {
   return (
     <div className="max-w-3xl mx-auto bg-white p-10 rounded-2xl shadow-lg mt-12 border border-gray-100">
       <h1 className="text-3xl font-bold mb-8 text-blue-700 text-center">Create New User</h1>
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
         {/* USER FIELDS */}
         <div>
           <label className="block font-medium text-gray-900 dark:text-white mb-1">Name <span className="text-red-600">*</span></label>
@@ -217,7 +231,7 @@ export default function CreateUserPage() {
         </div>
         <div>
           <label className="block font-medium text-gray-900 dark:text-white mb-1">Phone <span className="text-red-600">*</span></label>
-          <input type="text" name="phone" value={form.phone} onChange={handleChange} required className="w-full border border-gray-300 p-2 rounded" />
+          <input type="text" name="phone" value={form.phone ?? ''} onChange={handleChange} required className="w-full border border-gray-300 p-2 rounded" />
         </div>
         <div className="flex gap-2">
           <div className="flex-1">
@@ -227,7 +241,7 @@ export default function CreateUserPage() {
             <input
               type="text"
               name="nik_passport"
-              value={form.nik_passport}
+              value={form.nik_passport ?? ''}
               onChange={handleChange}
               className="w-full border border-gray-300 p-2 rounded"
             />
@@ -239,7 +253,7 @@ export default function CreateUserPage() {
             <input
               type="date"
               name="date_of_birth"
-              value={form.date_of_birth}
+              value={form.date_of_birth ?? ''}
               onChange={handleChange}
               className="w-full border border-gray-300 p-2 rounded"
             />
@@ -253,7 +267,7 @@ export default function CreateUserPage() {
             <input
               type="text"
               name="emergency_contact_name"
-              value={form.emergency_contact_name}
+              value={form.emergency_contact_name ?? ''}
               onChange={handleChange}
               required
               className="w-full border border-gray-300 p-2 rounded"
@@ -266,7 +280,7 @@ export default function CreateUserPage() {
             <input
               type="text"
               name="emergency_contact_phone"
-              value={form.emergency_contact_phone}
+              value={form.emergency_contact_phone ?? ''}
               onChange={handleChange}
               required
               className="w-full border border-gray-300 p-2 rounded"
@@ -331,18 +345,28 @@ export default function CreateUserPage() {
                 screenshotFormat="image/jpeg"
                 className="rounded"
               />
-              <button
-                onClick={capture}
-                className="mt-2 px-3 py-2 bg-green-600 text-white rounded"
-              >
-                Capture Photo
-              </button>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={capture}
+                  className="mt-2 px-3 py-2 bg-green-600 text-white rounded"
+                >
+                  Capture Photo
+                </button>
+                <button
+                  onClick={() => setIsCameraOpen(false)}
+                  className="mt-2 px-3 py-2 bg-gray-400 text-white rounded"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           )}
 
           {/* Preview */}
           {photo && (
             <div className="mt-2 flex flex-col items-center">
+              <span className="text-xs text-gray-500 mt-1">Preview</span>
               <Image
                 src={URL.createObjectURL(photo)}
                 alt="Preview Photo"
@@ -350,15 +374,37 @@ export default function CreateUserPage() {
                 height={180}
                 className="w-45 h-45 object-cover rounded-lg border border-gray-300 shadow"
               />
-              <span className="text-xs text-gray-500 mt-1">Preview</span>
+            </div>
+          )}
+          {/* Remove Photo */}
+          {photo && (
+            <div className="flex flex-col items-center mt-2 ">
+              <button
+                onClick={() => {
+                  setPhoto(null);
+                }}
+                className="text-xs text-red-500 hover:underline"
+              >
+                Remove photo
+              </button>
             </div>
           )}
         </div>
         {error && <div className="text-red-600 font-semibold">{error}</div>}
         {success && <div className="text-green-600 font-semibold">{success}</div>}
-        <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700" disabled={loading}>
-          {loading ? "Saving..." : "Create User"}
-        </button>
+        <div className="flex gap-3 mt-6">
+          <button type="submit" className="flex-1 bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700" disabled={loading}>
+            {loading ? "Saving..." : "Create User"}
+          </button>
+          <button
+            type="button"
+            className="flex-1 bg-green-600 text-white py-2 rounded font-bold hover:bg-green-700"
+            disabled={loading}
+            onClick={(e) => handleSubmit(e, true)}
+          >
+            {loading ? "Saving..." : "Create User & Continue to Membership"}
+          </button>
+        </div>
       </form>
     </div>
   );

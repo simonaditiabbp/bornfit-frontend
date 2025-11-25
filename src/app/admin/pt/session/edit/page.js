@@ -21,6 +21,8 @@ export default function PTSessionEditPage() {
   const router = useRouter();
   const params = useSearchParams();
   const id = params.get('id');
+  
+  const formatDateForInput = (isoString) => isoString ? isoString.split("T")[0] : "";
 
   useEffect(() => {
     // Fetch plans for dropdown
@@ -30,7 +32,8 @@ export default function PTSessionEditPage() {
         const res = await fetch(`${API_URL}/api/ptsessionplans`, {
           headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
         });
-        if (res.ok) setPlans(await res.json());
+        const dataPlans = await res.json();
+        if (res.ok) setPlans(dataPlans.data.plans);
       } catch {}
     };
     fetchPlans();
@@ -38,14 +41,16 @@ export default function PTSessionEditPage() {
     const fetchUsers = async () => {
       try {
         const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-        const resMember = await fetch(`${API_URL}/api/users/filter?role=member&membership=active`, {
+        const resMember = await fetch(`${API_URL}/api/users?role=member&membership=active`, {
           headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
         });
-        const resTrainner = await fetch(`${API_URL}/api/users/filter?role=trainner`, {
+        const resTrainner = await fetch(`${API_URL}/api/users?role=trainner`, {
           headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
         });
-        if (resMember.ok) setMembers(await resMember.json());
-        if (resTrainner.ok) setTrainners(await resTrainner.json());
+        const dataMember = await resMember.json();
+        const dataTrainner = await resTrainner.json();
+        if (resMember.ok) setMembers(dataMember.data.users);
+        if (resTrainner.ok) setTrainners(dataTrainner.data.users);
       } catch {}
     };
     fetchUsers();
@@ -60,14 +65,16 @@ export default function PTSessionEditPage() {
           }
         });
         if (!res.ok) throw new Error("Gagal fetch session");
-        const data = await res.json();
-        setSession(data);
+        const dataPTSessions = await res.json();
+        console.log("data: ", dataPTSessions)
+        setSession(dataPTSessions.data);
         setForm({
-          pt_session_plan_id: data.pt_session_plan_id,
-          user_member_id: data.user_member_id,
-          user_pt_id: data.user_pt_id,
-          join_date: data.join_date?.slice(0, 16),
-          status: data.status
+          pt_session_plan_id: dataPTSessions.data.pt_session_plan_id,
+          user_member_id: dataPTSessions.data.user_member_id,
+          user_pt_id: dataPTSessions.data.user_pt_id,
+          start_date: dataPTSessions.data.start_date?.slice(0, 16),
+          end_date: dataPTSessions.data.end_date?.slice(0, 16),
+          status: dataPTSessions.data.status
         });
       } catch (err) {
         setBackendError(true);
@@ -91,7 +98,8 @@ export default function PTSessionEditPage() {
       pt_session_plan_id: session.pt_session_plan_id,
       user_member_id: session.user_member_id,
       user_pt_id: session.user_pt_id,
-      join_date: session.join_date?.slice(0, 16),
+      start_date: session.start_date?.slice(0, 16),
+      end_date: session.end_date?.slice(0, 16),
       status: session.status
     });
   };  
@@ -112,7 +120,8 @@ export default function PTSessionEditPage() {
           pt_session_plan_id: Number(form.pt_session_plan_id),
           user_member_id: Number(form.user_member_id),
           user_pt_id: Number(form.user_pt_id),
-          join_date: formatDateToISO(form.join_date),
+          start_date: formatDateToISO(form.start_date),
+          end_date: formatDateToISO(form.end_date),
           status: form.status,
           id: Number(id)
         })
@@ -120,6 +129,7 @@ export default function PTSessionEditPage() {
       if (!res.ok) throw new Error("Gagal update session");
       setSuccess("Session berhasil diupdate!");
       setEdit(false);
+      setTimeout(() => window.location.reload(), 500);
     //   setTimeout(() => window.location.reload(), 1200);
     } catch (err) {
       setError("Gagal update session");
@@ -153,13 +163,13 @@ export default function PTSessionEditPage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto bg-white p-10 rounded-2xl shadow-lg mt-12 border border-gray-100">
-      <h1 className="text-2xl font-bold mb-8 text-blue-700 text-center">Edit PT Session</h1>      
+    <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-10 border border-gray-100">
+      <h1 className="text-3xl font-bold mb-8 text-blue-700 border-b pb-3">Edit PT Session</h1>      
       <div className="space-y-4 mb-4">
         <div>
           <label className="block font-medium mb-1">Plan</label>
           <select
-            className={`w-full border rounded px-3 py-2 ${edit ? 'bg-white' : 'bg-gray-100'}`}
+            className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`}
             value={form.pt_session_plan_id}
             onChange={e => setForm(f => ({ ...f, pt_session_plan_id: e.target.value }))}
             required
@@ -174,7 +184,7 @@ export default function PTSessionEditPage() {
         <div>
           <label className="block font-medium mb-1">Member</label>
           <select
-            className={`w-full border rounded px-3 py-2 ${edit ? 'bg-white' : 'bg-gray-100'}`}
+            className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`}
             value={form.user_member_id}
             onChange={e => setForm(f => ({ ...f, user_member_id: e.target.value }))}
             required
@@ -189,7 +199,7 @@ export default function PTSessionEditPage() {
         <div>
           <label className="block font-medium mb-1">Personal Trainer</label>
           <select
-            className={`w-full border rounded px-3 py-2 ${edit ? 'bg-white' : 'bg-gray-100'}`}
+            className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`}
             value={form.user_pt_id}
             onChange={e => setForm(f => ({ ...f, user_pt_id: e.target.value }))}
             required
@@ -202,12 +212,16 @@ export default function PTSessionEditPage() {
           </select>
         </div>
         <div>
-          <label className="block font-medium mb-1">Join Date</label>
-          <input type="datetime-local" className={`w-full border rounded px-3 py-2 ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.join_date} onChange={e => setForm(f => ({ ...f, join_date: e.target.value }))} required disabled={!edit} />
+          <label className="block font-medium mb-1">Start Date</label>
+          <input type="datetime-local" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.start_date} onChange={e => setForm(f => ({ ...f, start_date: e.target.value }))} required disabled={!edit} />
         </div>
+        {!edit ? <div>
+          <label className="block font-medium mb-1">End Date</label>
+          <input type="datetime-local" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.end_date} onChange={e => setForm(f => ({ ...f, end_date: e.target.value }))} required disabled={!edit} />
+        </div> : ""}
         <div>
           <label className="block font-medium mb-1">Status</label>
-          <select className={`w-full border rounded px-3 py-2 ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} required disabled={!edit}>
+          <select className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} required disabled={!edit}>
             <option value="aktif">Aktif</option>
             <option value="selesai">Selesai</option>
             <option value="batal">Batal</option>

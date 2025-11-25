@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function PTBookingEditPage() {
   const router = useRouter();
@@ -15,10 +16,11 @@ export default function PTBookingEditPage() {
   useEffect(() => {
     const fetchMembers = async () => {
       const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-      const res = await fetch('http://localhost:3002/api/users/filter?role=member&membership=active', {
+      const res = await fetch(`${API_URL}/api/users?role=member&membership=active`, {
         headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
       });
-      if (res.ok) setMembers(await res.json());
+      const dataMembers = await res.json();
+      if (res.ok) setMembers(dataMembers.data.users);
     };
     fetchMembers();
   }, []);
@@ -28,10 +30,11 @@ export default function PTBookingEditPage() {
     if (!form?.user_member_id) { setPTSessions([]); return; }
     const fetchPTSessions = async () => {
       const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-      const res = await fetch(`http://localhost:3002/api/personaltrainersessions/member/${form.user_member_id}`, {
+      const res = await fetch(`${API_URL}/api/personaltrainersessions/member/${form.user_member_id}`, {
         headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
       });
-      if (res.ok) setPTSessions(await res.json());
+      const data = await res.json();
+      if (res.ok) setPTSessions(data.data);
       else setPTSessions([]);
     };
     fetchPTSessions();
@@ -45,17 +48,18 @@ export default function PTBookingEditPage() {
 
   useEffect(() => {
     if (!id) return;
-    setLoading(true);
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-    fetch(`http://localhost:3002/api/ptsessionbookings/${id}`, {
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
-      }
-    })
-      .then(res => res.json())
-      .then(res => {
-        // API returns single booking object
-        const bookingObj = res;
+    const fetchBooking = async () => {
+      setLoading(true);
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
+      try {
+        const res = await fetch(`${API_URL}/api/ptsessionbookings/${id}`, {
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+          }
+        });
+        const data = await res.json();
+        const bookingObj = data?.data;
+        console.log("bookingObj: ", bookingObj);
         setBooking(bookingObj || null);
         if (bookingObj) {
           setForm({
@@ -65,9 +69,12 @@ export default function PTBookingEditPage() {
             status: bookingObj.status
           });
         }
-        setLoading(false);
-      });
-    setLoading(false);
+      } catch (err) {
+        setBooking(null);
+      }
+      setLoading(false);
+    };
+    fetchBooking();
   }, [id]);
 
   const handleEdit = () => {
@@ -99,7 +106,7 @@ export default function PTBookingEditPage() {
     }
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
     try {
-      const res = await fetch(`http://localhost:3002/api/ptsessionbookings/${id}`, {
+      const res = await fetch(`${API_URL}/api/ptsessionbookings/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -127,7 +134,7 @@ export default function PTBookingEditPage() {
     setFormLoading(true);
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
     try {
-      await fetch(`http://localhost:3002/api/ptsessionbookings/${id}`, {
+      await fetch(`${API_URL}/api/ptsessionbookings/${id}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
       });
@@ -142,12 +149,12 @@ export default function PTBookingEditPage() {
   if (!booking) return <div className="text-center text-red-500">Booking not found</div>;
 
   return (
-    <div className="max-w-xl mx-auto mt-8 p-6 bg-white rounded shadow">
-      <h2 className="text-2xl font-bold mb-4 text-blue-700">Edit Booking</h2>
+    <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-10 border border-gray-100">
+      <h2 className="text-3xl font-bold mb-8 text-blue-700 border-b pb-3">Edit Booking</h2>
       <div className="space-y-4 mb-4">
         <div>
           <label className="block font-semibold mb-1">Member</label>
-          <select className={`w-full border p-2 rounded ${edit ? '' : 'bg-gray-100'}`} value={form.user_member_id} onChange={e => setForm(f => ({ ...f, user_member_id: e.target.value, personal_trainer_session_id: '' }))} required disabled={!edit}>
+          <select className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.user_member_id} onChange={e => setForm(f => ({ ...f, user_member_id: e.target.value, personal_trainer_session_id: '' }))} required disabled={!edit}>
             <option value="">Pilih Member</option>
             {members.map(m => (
               <option key={m.id} value={m.id}>{m.name}</option>
@@ -156,7 +163,7 @@ export default function PTBookingEditPage() {
         </div>
         <div>
           <label className="block font-semibold mb-1">PT Session</label>
-          <select className={`w-full border p-2 rounded ${edit ? '' : 'bg-gray-100'}`} value={form.personal_trainer_session_id} onChange={e => setForm(f => ({ ...f, personal_trainer_session_id: e.target.value }))} required disabled={!edit || !form.user_member_id || ptSessions.length === 0}>
+          <select className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.personal_trainer_session_id} onChange={e => setForm(f => ({ ...f, personal_trainer_session_id: e.target.value }))} required disabled={!edit || !form.user_member_id || ptSessions.length === 0}>
             <option value="">Pilih PT Session</option>
             {ptSessions.map(s => (
               <option key={s.id} value={s.id}>{s.name || `Session #${s.id}`}</option>
@@ -165,11 +172,11 @@ export default function PTBookingEditPage() {
         </div>
         <div>
           <label className="block font-semibold mb-1">Booking Time</label>
-          <input type="datetime-local" className={`w-full border p-2 rounded ${edit ? '' : 'bg-gray-100'}`} value={form.booking_time} onChange={e => setForm(f => ({ ...f, booking_time: e.target.value }))} required disabled={!edit} />
+          <input type="datetime-local" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.booking_time} onChange={e => setForm(f => ({ ...f, booking_time: e.target.value }))} required disabled={!edit} />
         </div>
         <div>
           <label className="block font-semibold mb-1">Status</label>
-          <select className={`w-full border p-2 rounded ${edit ? '' : 'bg-gray-100'}`} value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} disabled={!edit}>
+          <select className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} disabled={!edit}>
             <option value="booked">Booked</option>
             <option value="cancelled">Cancelled</option>
             <option value="completed">Completed</option>

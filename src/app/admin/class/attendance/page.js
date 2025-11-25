@@ -35,15 +35,15 @@ export default function ClassAttendancePage() {
           let allMatches = null;
           try {
             const resSearch = await fetch(`${API_URL}/api/classattendances?search=${encodeURIComponent(search)}`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-            const arr = await resSearch.json();
-            if (Array.isArray(arr)) allMatches = arr;
+            const dataAttendances = await resSearch.json();
+            if (Array.isArray(dataAttendances.data.attendances)) allMatches = dataAttendances.data.attendances;
           } catch (e) {}
 
           if (!allMatches) {
             const resAll = await fetch(`${API_URL}/api/classattendances`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-            const arr = await resAll.json();
-            if (Array.isArray(arr)) {
-              allMatches = arr.filter(b =>
+            const dataAttendances = await resAll.json();
+            if (Array.isArray(dataAttendances.data.attendances)) {
+              allMatches = dataAttendances.data.attendances.filter(b =>
                 (b.user_member?.name || '').toLowerCase().includes(search.toLowerCase()) ||
                 (b.class_plan?.name || '').toLowerCase().includes(search.toLowerCase()) ||
                 (b.status || '').toLowerCase().includes(search.toLowerCase())
@@ -56,10 +56,10 @@ export default function ClassAttendancePage() {
           setAttendances(pageSlice);
           setTotal(allMatches.length);
         } else {
-          const res = await fetch(`${API_URL}/api/classattendances/paginated?page=${page}&limit=${limit}`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-          const result = await res.json();
-          setAttendances(result.attendances || []);
-          setTotal(result.total || 0);
+          const res = await fetch(`${API_URL}/api/classattendances?page=${page}&limit=${limit}`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+          const dataAttendances = await res.json();
+          setAttendances(dataAttendances.data.attendances || []);
+          setTotal(dataAttendances.data.total || 0);
         }
       } catch (err) {
         setAttendances([]);

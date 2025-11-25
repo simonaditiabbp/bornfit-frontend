@@ -26,7 +26,7 @@ export default function PTBookingDataTable({
     {
       name: 'Aksi',
       cell: row => (
-        <Link href={`/admin/pt/booking/edit?id=${row.id}`} className="bg-gray-400 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">Edit</Link>
+        <Link href={`/admin/pt/booking/edit?id=${row.id}`} className="bg-gray-400 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">Detail</Link>
       ),
       ignoreRowClick: true,
     },

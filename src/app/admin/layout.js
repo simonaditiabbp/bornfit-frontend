@@ -145,7 +145,7 @@ export default function AdminLayout({ children }) {
                     <Link
                       href="/admin/membership/session"
                       className={`block py-2 px-2 rounded font-semibold flex items-center gap-2 ${pathname.startsWith("/admin/membership/session") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
-                    ><FaCalendarCheck className="inline-block" /> Session</Link>
+                    ><FaCalendarCheck className="inline-block" /> Details</Link>
                   </li>
                   <li>
                     <Link
@@ -181,7 +181,7 @@ export default function AdminLayout({ children }) {
                     <Link
                       href="/admin/pt/session"
                       className={`block py-2 px-2 rounded font-semibold flex items-center gap-2 ${pathname.startsWith("/admin/pt/session") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
-                    ><FaCalendarCheck className="inline-block" /> Session</Link>
+                    ><FaCalendarCheck className="inline-block" /> Details</Link>
                   </li>
                   <li>
                     <Link
@@ -217,7 +217,7 @@ export default function AdminLayout({ children }) {
                     <Link
                       href="/admin/class/session"
                       className={`block py-2 px-2 rounded font-semibold flex items-center gap-2 ${pathname.startsWith("/admin/class/session") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
-                    ><FaCalendarCheck className="inline-block" /> Session</Link>
+                    ><FaCalendarCheck className="inline-block" /> Details</Link>
                   </li>
                   <li>
                     <Link

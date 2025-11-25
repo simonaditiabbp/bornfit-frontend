@@ -24,7 +24,6 @@ export default function PTBookingCreatePage() {
 
   // Fetch PT sessions for selected member
   useEffect(() => {
-    console.log("MASUK")
     if (!user_member_id) { setPTSessions([]); setPTSessionId(''); return; }
     const fetchPTSessions = async () => {
       const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
@@ -32,8 +31,8 @@ export default function PTBookingCreatePage() {
         headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
       });
       const dataPTSessions = await res.json();
-      console.log("dataPTSessions: ", dataPTSessions)
-      if (res.ok) setPTSessions(dataPTSessions.data.membershipPlans);
+      console.log("dataPTSessions: ", dataPTSessions);
+      if (res.ok) setPTSessions(dataPTSessions.data || []);
       else setPTSessions([]);
     };
     fetchPTSessions();
@@ -80,22 +79,21 @@ export default function PTBookingCreatePage() {
   };
 
   return (
-    <div className="max-w-xl mx-auto mt-8 p-6 bg-white rounded shadow">
-      <h2 className="text-2xl font-bold mb-4 text-blue-700">Booking Baru</h2>
+    <div className="max-w-3xl mx-auto bg-white p-10 rounded-2xl shadow-lg mt-12 border border-gray-100">
+      <h2 className="text-3xl font-bold mb-8 text-blue-700 text-center">Booking Baru</h2>
       <form onSubmit={handleSubmit} className="space-y-4">        
         <div>
           <label className="block font-semibold mb-1">Member</label>
-          <select className="w-full border p-2 rounded" value={user_member_id} onChange={e => setUserMemberId(e.target.value)} required>
+          <select className="w-full border border-gray-300 p-2 rounded" value={user_member_id} onChange={e => setUserMemberId(e.target.value)} required>
             <option value="">Pilih Member</option>
             {members.map(m => (
               <option key={m.id} value={m.id}>{m.name}</option>
             ))}
           </select>
         </div>
-        {console.log("ptSession: ", ptSessions)}
         <div>
           <label className="block font-semibold mb-1">PT Session</label>
-          <select className="w-full border p-2 rounded" value={personal_trainer_session_id} onChange={e => setPTSessionId(e.target.value)} required disabled={!user_member_id || ptSessions.length === 0}>
+          <select className="w-full border border-gray-300 p-2 rounded" value={personal_trainer_session_id} onChange={e => setPTSessionId(e.target.value)} required disabled={!user_member_id || ptSessions.length === 0}>
             <option value="">Pilih PT Session</option>
             {ptSessions.map(s => (
               <option key={s.id} value={s.id}>{s.name || `Session #${s.id}`}</option>
@@ -104,11 +102,11 @@ export default function PTBookingCreatePage() {
         </div>
         <div>
           <label className="block font-semibold mb-1">Booking Time</label>
-          <input type="datetime-local" className="w-full border p-2 rounded" value={booking_time} onChange={e => setBookingTime(e.target.value)} required />
+          <input type="datetime-local" className="w-full border border-gray-300 p-2 rounded" value={booking_time} onChange={e => setBookingTime(e.target.value)} required />
         </div>
         <div>
           <label className="block font-semibold mb-1">Status</label>
-          <select className="w-full border p-2 rounded" value={status} onChange={e => setStatus(e.target.value)}>
+          <select className="w-full border border-gray-300 p-2 rounded" value={status} onChange={e => setStatus(e.target.value)}>
             <option value="booked">Booked</option>
             <option value="cancelled">Cancelled</option>
             <option value="completed">Completed</option>
