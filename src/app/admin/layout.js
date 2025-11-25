@@ -112,9 +112,9 @@ export default function AdminLayout({ children }) {
             <div className="flex items-center">
               <div className="flex items-center ms-3 gap-2.5">
               {/* Theme Setting */}
-                <button id="theme-toggle" type="button" className="text-amber-300 dark:text-white hover:bg-gray-700 dark:hover:bg-gray-700 focus:outline-none focus:ring-0 rounded-lg text-sm p-2.5">
+                {/* <button id="theme-toggle" type="button" className="text-amber-300 dark:text-white hover:bg-gray-700 dark:hover:bg-gray-700 focus:outline-none focus:ring-0 rounded-lg text-sm p-2.5">
                   <FaMoon />
-                </button>
+                </button> */}
 
               {/* Dropdown User */}
               <div className="relative">
@@ -203,37 +203,53 @@ export default function AdminLayout({ children }) {
               </Link>
             </li>
             {/* Membership Dropdown */}
-            <li className="relative">
+            <li>
               <button
-                className={`w-full text-left py-2 px-4 rounded font-bold flex items-center justify-between ${membershipDropdownOpen ? 'bg-blue-100 text-blue-700' : 'bg-white text-gray-700'}`}
+                className={`flex items-center w-full py-2 px-4 text-base transition duration-75 rounded-lg font-bold ${membershipDropdownOpen ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"}`}
                 type="button"
                 aria-expanded={membershipDropdownOpen}
                 aria-controls="membership-dropdown"
                 onClick={() => setMembershipDropdownOpen((open) => !open)}
                 data-collapse-toggle="membership-dropdown"
               >
-                <span className="flex items-center gap-2"><FaUserCheck className="inline-block" /> Membership</span>
-                <span className="ml-2">{membershipDropdownOpen ? '▲' : '▼'}</span>
+                <FaUserCheck className="inline-block transition duration-75" /> 
+                <span className={`${navTextClass} flex-1 ms-3 text-left rtl:text-right whitespace-nowrap`}>Membership</span>
+                <span className={`${membershipDropdownOpen} w-3 h-3 transition-transform duration-300`}>
+                  {membershipDropdownOpen ? (
+                    <FaAngleUp />
+                  ) : (
+                    <FaAngleDown />
+                  )}
+                </span>
               </button>
               {membershipDropdownOpen && (
-                <ul id="pt-session-dropdown" className="pl-6 border-l-2 border-blue-100 mt-1">
+                <ul id="pt-session-dropdown" className={`py-2 space-y-2 ${isCollapsed ? 'pl-0 text-center' : 'pl-6 border-l-2 border-gray-600'}`}>
                   <li>
                     <Link
                       href="/admin/membership/session"
-                      className={`block py-2 px-2 rounded font-semibold flex items-center gap-2 ${pathname.startsWith("/admin/membership/session") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
-                    ><FaCalendarCheck className="inline-block" /> Session</Link>
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/membership/session") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaCalendarCheck className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Session</span>
+                    </Link>
                   </li>
                   <li>
                     <Link
                       href="/admin/membership/plans"
-                      className={`block py-2 px-2 rounded font-semibold flex items-center gap-2 ${pathname.startsWith("/admin/membership/plans") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
-                    ><FaClipboardList className="inline-block" /> Plans</Link>
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/membership/plans") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaClipboardList className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Plans</span>
+                    </Link>
                   </li>
                   <li>
                     <Link
                       href="/admin/membership/schedules"
-                      className={`block py-2 px-2 rounded font-semibold flex items-center gap-2 ${pathname.startsWith("/admin/membership/schedules") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
-                    ><FaCalendar className="inline-block" /> Schedule</Link>
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/membership/schedules") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaCalendar className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Schedule</span>
+                    </Link>
                   </li>
                 </ul>
               )}
@@ -248,7 +264,7 @@ export default function AdminLayout({ children }) {
                 onClick={() => setPtDropdownOpen((open) => !open)}
                 data-collapse-toggle="pt-session-dropdown"
               >
-                <FaDumbbell className="inline-block transition duration-75" />
+                <FaChalkboardTeacher className="inline-block transition duration-75" />
                 <span className={`${navTextClass} flex-1 ms-3 text-left rtl:text-right whitespace-nowrap`}>PT Session</span>
                 <span className={`${dropdownArrowClass} w-3 h-3 transition-transform duration-300`}>
                   {ptDropdownOpen ? (
@@ -379,7 +395,7 @@ export default function AdminLayout({ children }) {
         </div>
       </aside>        
         
-      <main className={`flex-1 overflow-x-hidden bg-gray-900 transition-all duration-300 ease-in-out ${isCollapsed ? 'sm:ml-20' : 'sm:ml-64'}`}>{children}</main>
+      <main className={`flex-1 overflow-x-hidden bg-gray-900 min-h-[91vh] transition-all duration-300 ease-in-out ${isCollapsed ? 'sm:ml-20' : 'sm:ml-64'}`}>{children}</main>
     </div>
   </div>
   );

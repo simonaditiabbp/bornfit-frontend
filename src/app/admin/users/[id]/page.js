@@ -323,40 +323,40 @@ export default function UserDetailPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* USER FIELDS */}
               <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-700">Name</label>
-                <input type="text" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.name} disabled={!edit} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+                <label className="block text-sm font-semibold mb-1 text-gray-200">Name</label>
+                <input type="text" className={`w-full p-3 text-gray-200 bg-gray-700 border rounded-lg ${edit ? 'border-gray-200' : 'border-gray-600'}`} value={form.name} disabled={!edit} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-700">Email</label>
-                <input type="email" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.email} disabled={!edit} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+                <label className="block text-sm font-semibold mb-1 text-gray-200">Email</label>
+                <input type="email" className={`w-full p-3 text-gray-200 bg-gray-700 border rounded-lg ${edit ? 'border-gray-200' : 'border-gray-600'}`} value={form.email} disabled={!edit} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-700">Phone</label>
-                <input type="text" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.phone} disabled={!edit} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
+                <label className="block text-sm font-semibold mb-1 text-gray-200">Phone</label>
+                <input type="text" className={`w-full p-3 text-gray-200 bg-gray-700 border rounded-lg ${edit ? 'border-gray-200' : 'border-gray-600'}`} value={form.phone} disabled={!edit} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-700">Date of Birth</label>
-                <input type="date" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.date_of_birth} disabled={!edit} onChange={e => setForm(f => ({ ...f, date_of_birth: e.target.value }))} />
+                <label className="block text-sm font-semibold mb-1 text-gray-200">Date of Birth</label>
+                <input type="date" className={`w-full p-3 text-gray-200 bg-gray-700 border rounded-lg ${edit ? 'border-gray-200' : 'border-gray-600'}`} value={form.date_of_birth} disabled={!edit} onChange={e => setForm(f => ({ ...f, date_of_birth: e.target.value }))} />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-700">NIK/Passport</label>
-                <input type="text" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.nik_passport} disabled={!edit} onChange={e => setForm(f => ({ ...f, nik_passport: e.target.value }))} />
+                <label className="block text-sm font-semibold mb-1 text-gray-200">NIK/Passport</label>
+                <input type="text" className={`w-full p-3 text-gray-200 bg-gray-700 border rounded-lg ${edit ? 'border-gray-200' : 'border-gray-600'}`} value={form.nik_passport} disabled={!edit} onChange={e => setForm(f => ({ ...f, nik_passport: e.target.value }))} />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-700">Role</label>
-                <select className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.role} disabled={!edit} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}>
+                <label className="block text-sm font-semibold mb-1 text-gray-200">Role</label>
+                <select className={`w-full p-3 text-gray-200 bg-gray-700 border rounded-lg ${edit ? 'border-gray-200' : 'border-gray-600'}`} value={form.role} disabled={!edit} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}>
                   <option value="member">Member</option>
                   <option value="admin">Admin</option>
                   <option value="opscan">Opscan</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-700">Emergency Contact Name</label>
-                <input type="text" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.emergency_contact_name} disabled={!edit} onChange={e => setForm(f => ({ ...f, emergency_contact_name: e.target.value }))} />
+                <label className="block text-sm font-semibold mb-1 text-gray-200">Emergency Contact Name</label>
+                <input type="text" className={`w-full p-3 text-gray-200 bg-gray-700 border rounded-lg ${edit ? 'border-gray-200' : 'border-gray-600'}`} value={form.emergency_contact_name} disabled={!edit} onChange={e => setForm(f => ({ ...f, emergency_contact_name: e.target.value }))} />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-700">Emergency Contact Phone</label>
-                <input type="text" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.emergency_contact_phone} disabled={!edit} onChange={e => setForm(f => ({ ...f, emergency_contact_phone: e.target.value }))} />
+                <label className="block text-sm font-semibold mb-1 text-gray-200">Emergency Contact Phone</label>
+                <input type="text" className={`w-full p-3 text-gray-200 bg-gray-700 border rounded-lg ${edit ? 'border-gray-200' : 'border-gray-600'}`} value={form.emergency_contact_phone} disabled={!edit} onChange={e => setForm(f => ({ ...f, emergency_contact_phone: e.target.value }))} />
               </div>
             </div>
 

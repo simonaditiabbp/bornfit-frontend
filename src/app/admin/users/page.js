@@ -4,14 +4,15 @@ import { useRouter } from 'next/navigation';
 import {QRCodeCanvas, QRCodeSVG } from 'qrcode.react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-const UsersDataTable = dynamic(() => import('./DataTable'), { ssr: false });
 import { jsPDF } from "jspdf";
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import BackendErrorFallback from '../../../components/BackendErrorFallback';
 import { FaPlus, FaUser } from 'react-icons/fa';
+import CreateUserModal from '../../../components/CreateUserModal';
 
+const UsersDataTable = dynamic(() => import('./DataTable'), { ssr: false });
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 dayjs.extend(utc);
@@ -104,6 +105,7 @@ export default function AdminUsersPage() {
   const [checkins, setCheckins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [qrUser, setQrUser] = useState(null);
+  const [createUser, setCreateUser] = useState(false);
   const [token, setToken] = useState('');
   const [backendError, setBackendError] = useState(false);
   const [page, setPage] = useState(1);
@@ -251,7 +253,7 @@ export default function AdminUsersPage() {
       name: 'Status',
       cell: row => {
         const membership = getMembership(row.id);
-        console.log("membership for user ", row.id, membership);
+        // console.log("membership for user ", row.id, membership);
         return membership && membership.is_active ? (
           <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-bold">Active</span>
         ) : (
@@ -325,10 +327,13 @@ export default function AdminUsersPage() {
             onChange={e => { setSearchInput(e.target.value); setPage(1); }}
           />
 
-          <Link href="/admin/users/create" className="flex items-center gap-2 bg-amber-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-amber-500">
+          <button 
+            onClick={() => setCreateUser(true)}
+            className="flex items-center gap-2 bg-amber-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-amber-500"
+          >
             <FaPlus className="inline-block" />
             Create
-          </Link>
+          </button>
         </div>
         {loading ? (
           <div className="text-center text-amber-300">Loading...</div>
@@ -457,6 +462,12 @@ export default function AdminUsersPage() {
             </div>
           </div>
         )}
+
+        <CreateUserModal 
+          isOpen={createUser} 
+          onClose={() => setCreateUser(false)} 
+          onRefresh={() => fetchAll()}
+        />
       </div>
     </div>
   );
