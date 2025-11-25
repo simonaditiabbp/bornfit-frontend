@@ -265,16 +265,17 @@ export default function AdminUsersPage() {
     },
     {
       name: 'Actions',
+      minWidth: '250px',
       cell: row => (
         <div className="flex gap-2 justify-center">
           <button
-            className="bg-blue-600 text-white px-3 py-1 rounded font-semibold hover:bg-blue-700"
+            className="bg-blue-600 text-white px-3 py-1 rounded-md font-semibold hover:bg-blue-700"
             onClick={() => setQrUser(row)}
           >
             Generate QR
           </button>
           <button
-            className="bg-gray-400 text-white px-3 py-1 rounded font-semibold hover:bg-gray-500"
+            className="bg-gray-400 text-white px-3 py-1 rounded-md font-semibold hover:bg-gray-500"
             onClick={() => router.push(`/admin/users/${row.id}`)}
           >
             Detail
@@ -301,11 +302,11 @@ export default function AdminUsersPage() {
   return (
     <div>
       <div className="bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-600">
-        <nav class="flex" aria-label="Breadcrumb">
-          <ol class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-            <li class="inline-flex items-center">
+        <nav className="flex" aria-label="Breadcrumb">
+          <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+            <li className="inline-flex items-center">
               <FaUser className="w-3 h-3 me-2.5 text-amber-300" /> 
-              <span className="ms-1 text-sm font-medium text-gray-300 md:ms-2 dark:text-gray-400">User Data</span>
+              <span className="ms-1 text-sm font-medium text-gray-400 md:ms-2 dark:text-gray-400">User Data</span>
             </li>
           </ol>
         </nav>
@@ -316,7 +317,7 @@ export default function AdminUsersPage() {
           <input
             type="text"
             placeholder="Search name/email..."
-            className="w-full max-w-xs p-2 border text-gray-100 border-amber-200 rounded focus:outline-amber-200 text-base"
+            className="w-full max-w-xs p-2 border text-gray-100 border-amber-200 rounded focus:outline-none text-base"
             value={searchInput}
             onChange={e => { setSearchInput(e.target.value); setPage(1); }}
           />
@@ -327,7 +328,7 @@ export default function AdminUsersPage() {
           </Link>
         </div>
         {loading ? (
-          <div className="text-center text-blue-500">Loading...</div>
+          <div className="text-center text-amber-300">Loading...</div>
         ) : (
           <>
             <UsersDataTable

@@ -134,7 +134,7 @@ export default function AdminLayout({ children }) {
                 </button>
               </div>
               {userDropdownOpen && (
-                <div id="user-dropdown" className="absolute right-0 top-full z-50 mt-2 w-48 text-base list-none bg-gray-800 divide-y divide-gray-600 rounded-md shadow-lg dark:bg-gray-400 dark:divide-gray-100">
+                <div id="user-dropdown" className="absolute right-0 top-full z-50 mt-2 w-48 text-base list-none bg-gray-800 border border-gray-600 divide-y divide-gray-600 rounded-md shadow-lg dark:bg-gray-400 dark:divide-gray-100">
                   <div className="px-4 py-3" role="none">
                     <p className="text-sm text-amber-300" role="none">
                       {user?.name}
@@ -188,7 +188,7 @@ export default function AdminLayout({ children }) {
               <Link
                 href="/admin/dashboard"
                 className={`flex items-center py-2 px-4 gap-2 rounded-lg font-semibold ${pathname.startsWith("/admin/dashboard") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"}`}>
-                <FaTachometerAlt class="inline-block transition duration-75"/> 
+                <FaTachometerAlt className="inline-block transition duration-75"/> 
                 <span className={navTextClass}>Dashboard</span>
               </Link>
             </li>
