@@ -26,7 +26,8 @@ export default function ClassPlansPage() {
           const resSearch = await fetch(`${API_URL}/api/eventplans?search=${encodeURIComponent(search)}`, {
             headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
           });
-          const arr = await resSearch.json();
+          const dataEvent = await resSearch.json();
+          const arr = dataEvent.data?.plans || [];
           if (Array.isArray(arr)) {
             allMatches = arr;
           }
@@ -37,7 +38,8 @@ export default function ClassPlansPage() {
           const resAll = await fetch(`${API_URL}/api/eventplans`, {
             headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
           });
-          const arr = await resAll.json();
+          const dataEvent = await resAll.json();
+          const arr = dataEvent.data?.plans || [];
           if (Array.isArray(arr)) {
             allMatches = arr.filter(p =>
               (p.name || '').toLowerCase().includes(search.toLowerCase()) ||
@@ -55,9 +57,10 @@ export default function ClassPlansPage() {
         const res = await fetch(`${API_URL}/api/eventplans?page=${page}&limit=${limit}`, {
           headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
         });
-        const data = await res.json();
-        setPlans(Array.isArray(data) ? data : []);
-        setTotal(Array.isArray(data) ? data.length : 0);
+        const dataEvent = await res.json();
+        const arr = dataEvent.data?.plans || [];
+        setPlans(Array.isArray(arr) ? arr : []);
+        setTotal(dataEvent?.data?.total ?? 0);
       }
     } catch (err) {
       setBackendError(true);

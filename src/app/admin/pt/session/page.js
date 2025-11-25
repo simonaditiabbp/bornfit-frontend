@@ -30,11 +30,19 @@ export default function PTSessionListPage() {
       try {
         const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
         const resPlans = await fetch(`${API_URL}/api/ptsessionplans`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const resMembers = await fetch(`${API_URL}/api/users/filter?role=member`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const resTrainners = await fetch(`${API_URL}/api/users/filter?role=trainner`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        if (resPlans.ok) setPlans(await resPlans.json());
-        if (resMembers.ok) setMembers(await resMembers.json());
-        if (resTrainners.ok) setTrainners(await resTrainners.json());
+        const resMembers = await fetch(`${API_URL}/api/users?role=member`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+        const resTrainners = await fetch(`${API_URL}/api/users?role=trainner`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+        // const resMembers = await fetch(`${API_URL}/api/users/filter?role=member`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+        // const resTrainners = await fetch(`${API_URL}/api/users/filter?role=trainner`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+        const plansData = await resPlans.json();
+        const plansArray = plansData.data?.plans || [];
+        const membersData = await resMembers.json();
+        const membersArray = membersData.data?.users || [];
+        const trainnersData = await resTrainners.json();
+        const trainnersArray = trainnersData.data?.users || [];
+        if (resPlans.ok) setPlans(plansArray);
+        if (resMembers.ok) setMembers(membersArray);
+        if (resTrainners.ok) setTrainners(trainnersArray);
       } catch {}
     };
     fetchMeta();
@@ -50,7 +58,9 @@ export default function PTSessionListPage() {
             const sessionsSearchRes = await fetch(`${API_URL}/api/personaltrainersessions?search=${encodeURIComponent(search)}`, {
               headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
             });
-            const arr = await sessionsSearchRes.json();
+            // const arr = await sessionsSearchRes.json();
+            const sessionData = await sessionsSearchRes.json();
+            const arr = sessionData.data?.sessions || [];
             if (Array.isArray(arr)) {
               allMatches = arr;
             }
@@ -62,7 +72,8 @@ export default function PTSessionListPage() {
             const allRes = await fetch(`${API_URL}/api/personaltrainersessions`, {
               headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
             });
-            const arr = await allRes.json();
+            const sessionData = await allRes.json();
+            const arr = sessionData.data?.sessions || [];
             if (Array.isArray(arr)) {
               allMatches = arr.filter(s =>
                 (s.user_member?.name || '').toLowerCase().includes(search.toLowerCase()) ||
@@ -83,9 +94,10 @@ export default function PTSessionListPage() {
             headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
           });
           if (!res.ok) throw new Error("Gagal fetch sessions");
-          const result = await res.json();
-          setSessions(result.sessions|| []);
-          setTotalRows(result.total || 0);
+          const sessionData = await res.json();
+          const arr = sessionData.data?.sessions || [];
+          setSessions(arr);
+          setTotalRows(sessionData.data?.total || 0);
         }
       } catch (err) {
         setSessions([]);

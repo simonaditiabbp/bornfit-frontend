@@ -63,14 +63,16 @@ export default function AdminDashboardPage() {
           fetchWith401(`${API_URL}/api/personaltrainersessions/paginated?page=1&limit=10`),
           fetchWith401(`${API_URL}/api/classes/paginated?page=1&limit=10`),
         ]);
-        const totalUsers = usersRes.length;
+        // console.log("usersRes:", usersRes);
+        // const totalUsers = usersRes.length;
+        const totalUsers = usersRes.data.total || 0;
         // Total member = user yang punya membership (user_id unik di memberships)
-        const memberUserIds = new Set(membershipsRes.map(m => m.user_id));
+        const memberUserIds = new Set(membershipsRes.data.memberships.map(m => m.user_id));
         const totalMember = memberUserIds.size;
-        const activeMembership = membershipsRes.filter(m => m.is_active).length;
-        const inactiveMembership = membershipsRes.filter(m => !m.is_active).length;
-        const totalPTSessions = ptsessionsRes.total || 0;
-        const totalClasses = classesRes.total || 0;
+        const activeMembership = membershipsRes.data.memberships.filter(m => m.is_active).length;
+        const inactiveMembership = membershipsRes.data.memberships.filter(m => !m.is_active).length;
+        const totalPTSessions = ptsessionsRes.data.total || 0;
+        const totalClasses = classesRes.data.total || 0;
 
         // Grafik checkin 7 hari terakhir (WIB)
         const today = dayjs().tz('Asia/Jakarta');

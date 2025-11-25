@@ -11,9 +11,9 @@ export default function ClassPlanInsertPage() {
     max_visitor: 0,
     minutes_per_session: 0,
     description: "",
-    unlimited_monthly_session: false,
+    unlimited_monthly_session: true,
     monthly_limit: 0,
-    unlimited_daily_session: false,
+    unlimited_daily_session: true,
     daily_limit: 0,
     is_active: true
   });
@@ -22,7 +22,22 @@ export default function ClassPlanInsertPage() {
   const router = useRouter();
 
   function handleChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    if (name === "unlimited_monthly_session") {
+      setForm(f => ({
+        ...f,
+        unlimited_monthly_session: checked,
+        monthly_limit: checked ? 999999 : f.monthly_limit
+      }));
+    } else if (name === "unlimited_daily_session") {
+      setForm(f => ({
+        ...f,
+        unlimited_daily_session: checked,
+        daily_limit: checked ? 999999 : f.daily_limit
+      }));
+    } else {
+      setForm({ ...form, [name]: type === "checkbox" ? checked : value });
+    }
   }
 
   async function handleSubmit(e) {
@@ -38,9 +53,9 @@ export default function ClassPlanInsertPage() {
         minutes_per_session: parseInt(form.minutes_per_session, 10),
         description: form.description,
         unlimited_monthly_session: form.unlimited_monthly_session,
-        monthly_limit: parseInt(form.monthly_limit, 10),
+        monthly_limit: form.unlimited_monthly_session ? 999999 : parseInt(form.monthly_limit, 10),
         unlimited_daily_session: form.unlimited_daily_session,
-        daily_limit: parseInt(form.daily_limit, 10),
+        daily_limit: form.unlimited_daily_session ? 999999 : parseInt(form.daily_limit, 10),
         is_active: form.is_active
       };
       await fetch(`${API_URL}/api/eventplans`, {
@@ -86,25 +101,29 @@ export default function ClassPlanInsertPage() {
           <label className="block mb-1">Description</label>
           <textarea name="description" value={form.description} onChange={handleChange} className="w-full border px-2 py-1 rounded" />
         </div>
-        <div className="mb-4">
-          <label className="block mb-1">Unlimited Monthly Session</label>
-          <input name="unlimited_monthly_session" type="checkbox" checked={form.unlimited_monthly_session} onChange={e => setForm({ ...form, unlimited_monthly_session: e.target.checked })} />
+        <div className="mb-4 flex items-center gap-2">
+          <input id="unlimited_monthly_session" name="unlimited_monthly_session" type="checkbox" checked={form.unlimited_monthly_session} onChange={e => setForm({ ...form, unlimited_monthly_session: e.target.checked })} />
+          <label htmlFor="unlimited_monthly_session" className="block mb-0">Unlimited Monthly Session</label>
         </div>
-        <div className="mb-4">
-          <label className="block mb-1">Monthly Limit</label>
-          <input name="monthly_limit" type="number" value={form.monthly_limit} onChange={handleChange} className="w-full border px-2 py-1 rounded" min={0} />
+        {!form.unlimited_monthly_session && (
+          <div className="mb-4">
+            <label className="block mb-1">Monthly Limit</label>
+            <input name="monthly_limit" type="number" value={form.monthly_limit} onChange={handleChange} className="w-full border px-2 py-1 rounded" min={0} />
+          </div>
+        )}
+        <div className="mb-4 flex items-center gap-2">
+          <input id="unlimited_daily_session" name="unlimited_daily_session" type="checkbox" checked={form.unlimited_daily_session} onChange={e => setForm({ ...form, unlimited_daily_session: e.target.checked })} />
+          <label htmlFor="unlimited_daily_session" className="block mb-0">Unlimited Daily Session</label>
         </div>
-        <div className="mb-4">
-          <label className="block mb-1">Unlimited Daily Session</label>
-          <input name="unlimited_daily_session" type="checkbox" checked={form.unlimited_daily_session} onChange={e => setForm({ ...form, unlimited_daily_session: e.target.checked })} />
-        </div>
-        <div className="mb-4">
-          <label className="block mb-1">Daily Limit</label>
-          <input name="daily_limit" type="number" value={form.daily_limit} onChange={handleChange} className="w-full border px-2 py-1 rounded" min={0} />
-        </div>
-        <div className="mb-4">
-          <label className="block mb-1">Active</label>
-          <input name="is_active" type="checkbox" checked={form.is_active} onChange={e => setForm({ ...form, is_active: e.target.checked })} />
+        {!form.unlimited_daily_session && (
+          <div className="mb-4">
+            <label className="block mb-1">Daily Limit</label>
+            <input name="daily_limit" type="number" value={form.daily_limit} onChange={handleChange} className="w-full border px-2 py-1 rounded" min={0} />
+          </div>
+        )}
+        <div className="mb-4 flex items-center gap-2">
+          <input id="is_active" name="is_active" type="checkbox" checked={form.is_active} onChange={e => setForm({ ...form, is_active: e.target.checked })} />
+          <label htmlFor="is_active" className="block mb-0">Active</label>
         </div>
         <div className="flex gap-2">
           <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded" disabled={loading}>
