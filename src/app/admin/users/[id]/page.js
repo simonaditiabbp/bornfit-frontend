@@ -196,9 +196,9 @@ export default function UserDetailPage() {
               </div>
             </li>
             <li aria-current="page">
-              <div class="flex items-center">
+              <div className="flex items-center">
                 <FaAngleRight className="w-3 h-3 text-gray-400 mx-1" />
-                <span class="ms-1 text-sm font-medium text-gray-400 md:ms-2 dark:text-gray-400">Detail</span>
+                <span className="ms-1 text-sm font-medium text-gray-400 md:ms-2 dark:text-gray-400">Detail</span>
               </div>
             </li>
           </ol>
@@ -394,38 +394,43 @@ export default function UserDetailPage() {
             {error && <div className="text-red-600 font-semibold mt-2">{error}</div>}
             {success && <div className="text-green-600 font-semibold mt-2">{success}</div>}
             {/* ACTION BUTTONS */}
-            <div className="flex gap-3 mt-8">
-              {!edit ? (
-                <>
-                  <button
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition"
-                    onClick={handleEdit}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition"
-                    onClick={handleDelete}
-                  >
-                    Delete
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition"
-                    onClick={handleSave}
-                  >
-                    Save
-                  </button>
-                  <button
-                    className="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold transition"
-                    onClick={handleCancel}
-                  >
-                    Cancel
-                  </button>
-                </>
-              )}
+            <div className="flex justify-between mt-8 ">
+              <div className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-semibold transition">
+                <Link href="/admin/users">Back</Link>
+              </div>
+              <div className="flex gap-3">
+                {!edit ? (
+                  <>
+                    <button
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition"
+                      onClick={handleEdit}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition"
+                      onClick={handleDelete}
+                    >
+                      Delete
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition"
+                      onClick={handleSave}
+                    >
+                      Save
+                    </button>
+                    <button
+                      className="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold transition"
+                      onClick={handleCancel}
+                    >
+                      Cancel
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </>
           )}
