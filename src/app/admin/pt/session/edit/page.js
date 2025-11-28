@@ -8,7 +8,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export default function PTSessionEditPage() {
   const [plans, setPlans] = useState([]);
   const [members, setMembers] = useState([]);
-  const [trainners, setTrainners] = useState([]);
+  const [trainers, setTrainers] = useState([]);
   const formatDateToISO = (val) => val ? (val.length === 16 ? val + ":00.000Z" : val) : "";
   const [session, setSession] = useState(null);
   const [form, setForm] = useState(null);
@@ -37,20 +37,20 @@ export default function PTSessionEditPage() {
       } catch {}
     };
     fetchPlans();
-    // Fetch member & trainner for dropdown
+    // Fetch member & trainer for dropdown
     const fetchUsers = async () => {
       try {
         const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
         const resMember = await fetch(`${API_URL}/api/users?role=member&membership=active`, {
           headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
         });
-        const resTrainner = await fetch(`${API_URL}/api/users?role=trainner`, {
+        const resTrainer = await fetch(`${API_URL}/api/users?role=trainer`, {
           headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
         });
         const dataMember = await resMember.json();
-        const dataTrainner = await resTrainner.json();
+        const dataTrainer = await resTrainer.json();
         if (resMember.ok) setMembers(dataMember.data.users);
-        if (resTrainner.ok) setTrainners(dataTrainner.data.users);
+        if (resTrainer.ok) setTrainers(dataTrainer.data.users);
       } catch {}
     };
     fetchUsers();
@@ -73,7 +73,6 @@ export default function PTSessionEditPage() {
           user_member_id: dataPTSessions.data.user_member_id,
           user_pt_id: dataPTSessions.data.user_pt_id,
           start_date: dataPTSessions.data.start_date?.slice(0, 16),
-          end_date: dataPTSessions.data.end_date?.slice(0, 16),
           status: dataPTSessions.data.status
         });
       } catch (err) {
@@ -99,7 +98,6 @@ export default function PTSessionEditPage() {
       user_member_id: session.user_member_id,
       user_pt_id: session.user_pt_id,
       start_date: session.start_date?.slice(0, 16),
-      end_date: session.end_date?.slice(0, 16),
       status: session.status
     });
   };  
@@ -121,7 +119,6 @@ export default function PTSessionEditPage() {
           user_member_id: Number(form.user_member_id),
           user_pt_id: Number(form.user_pt_id),
           start_date: formatDateToISO(form.start_date),
-          end_date: formatDateToISO(form.end_date),
           status: form.status,
           id: Number(id)
         })
@@ -206,7 +203,7 @@ export default function PTSessionEditPage() {
             disabled={!edit}
           >
             <option value="">Pilih PT</option>
-            {trainners.map(u => (
+            {trainers.map(u => (
               <option key={u.id} value={u.id}>{u.name}</option>
             ))}
           </select>
@@ -215,16 +212,12 @@ export default function PTSessionEditPage() {
           <label className="block font-medium mb-1">Start Date</label>
           <input type="datetime-local" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.start_date} onChange={e => setForm(f => ({ ...f, start_date: e.target.value }))} required disabled={!edit} />
         </div>
-        {!edit ? <div>
-          <label className="block font-medium mb-1">End Date</label>
-          <input type="datetime-local" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.end_date} onChange={e => setForm(f => ({ ...f, end_date: e.target.value }))} required disabled={!edit} />
-        </div> : ""}
         <div>
           <label className="block font-medium mb-1">Status</label>
           <select className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} required disabled={!edit}>
-            <option value="aktif">Aktif</option>
-            <option value="selesai">Selesai</option>
-            <option value="batal">Batal</option>
+            <option value="active">Active</option>
+            <option value="pending">Pending</option>
+            <option value="expired">Expired</option>
           </select>
         </div>
       </div>

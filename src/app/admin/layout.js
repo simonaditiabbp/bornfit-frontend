@@ -231,6 +231,12 @@ export default function AdminLayout({ children }) {
                       className={`block py-2 px-2 rounded font-semibold flex items-center gap-2 ${pathname.startsWith("/admin/class/attendance") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
                     ><FaCheckCircle className="inline-block" /> Attendance</Link>
                   </li>
+                  <li>
+                    <Link
+                      href="/admin/class/classpurchase"
+                      className={`block py-2 px-2 rounded font-semibold flex items-center gap-2 ${pathname.startsWith("/admin/class/purchase") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
+                    ><FaCheckCircle className="inline-block" /> Class Purchase</Link>
+                  </li>
                 </ul>
               )}
             </li>

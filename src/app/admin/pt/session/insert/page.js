@@ -8,8 +8,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export default function PTSessionInsertPage() {
   const [plans, setPlans] = useState([]);
   const [members, setMembers] = useState([]);
-  const [trainners, setTrainners] = useState([]);
-  // Fetch member & trainner for dropdown
+  const [trainers, setTrainers] = useState([]);
+  // Fetch member & trainer for dropdown
   useEffect(() => {
     // Fetch plans for dropdown
     const fetchPlans = async () => {
@@ -29,13 +29,13 @@ export default function PTSessionInsertPage() {
         const resMember = await fetch(`${API_URL}/api/users?role=member&membership=active`, {
           headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
         });
-        const resTrainner = await fetch(`${API_URL}/api/users?role=trainner`, {
+        const resTrainer = await fetch(`${API_URL}/api/users?role=trainer`, {
           headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
         });
         const dataMember = await resMember.json();
-        const dataTrainner = await resTrainner.json();
+        const dataTrainer = await resTrainer.json();
         if (resMember.ok) setMembers(dataMember.data.users);
-        if (resTrainner.ok) setTrainners(dataTrainner.data.users);
+        if (resTrainer.ok) setTrainers(dataTrainer.data.users);
       } catch {}
     };
     fetchUsers();
@@ -46,7 +46,7 @@ export default function PTSessionInsertPage() {
     user_member_id: "",
     user_pt_id: "",
     start_date: "",
-    status: "aktif"
+    status: "active"
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -125,7 +125,7 @@ export default function PTSessionInsertPage() {
             required
           >
             <option value="">Pilih PT</option>
-            {trainners.map(u => (
+            {trainers.map(u => (
               <option key={u.id} value={u.id}>{u.name}</option>
             ))}
           </select>
@@ -137,8 +137,8 @@ export default function PTSessionInsertPage() {
         <div>
           <label className="block font-medium mb-1">Status</label>
           <select className="w-full border border-gray-300 p-2 rounded" value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} required>
-            <option value="aktif">Aktif</option>
-            <option value="nonaktif">Nonaktif</option>
+            <option value="active">Active</option>
+            <option value="pending">Pending</option>
           </select>
         </div>
       </div>

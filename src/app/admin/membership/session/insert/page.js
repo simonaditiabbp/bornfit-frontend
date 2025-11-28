@@ -19,10 +19,12 @@ export default function InsertMembershipSessionPage() {
     discount_percent: '',
     extra_duration_days: '',
     note: '',
-    referral_user_id: '',
-    status: 'active',
+    referral_user_member_id: '',
+    referral_user_staff_id: '',
+    // status: 'active',
   });
   const [users, setUsers] = useState([]);
+  const [staff, setStaff] = useState([]);
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -35,10 +37,13 @@ export default function InsertMembershipSessionPage() {
       try {
         const resUsers = await fetch(`${API_URL}/api/users?role=member`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
         const resPlans = await fetch(`${API_URL}/api/membership-plans`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+        const resStaff = await fetch(`${API_URL}/api/users?exclude_role=member`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
         const usersData = await resUsers.json();
         const plansData = await resPlans.json();
+        const staffData = await resStaff.json();
         setUsers(usersData.data?.users || []);
         setPlans(plansData.data?.membershipPlans || []);
+        setStaff(staffData.data?.users || []);
       } catch {}
     };
     fetchDropdowns();
@@ -73,8 +78,9 @@ export default function InsertMembershipSessionPage() {
           discount_percent: form.discount_type === 'percent' && form.discount_percent !== '' ? Number(form.discount_percent) : null,
           extra_duration_days: form.extra_duration_days ? Number(form.extra_duration_days) : 0,
           note: form.note,
-          referral_user_id: form.referral_user_id ? Number(form.referral_user_id) : null,
-          status: form.status ? form.status : ''
+          // status: form.status ? form.status : '',
+          referral_user_member_id: form.referral_user_member_id ? Number(form.referral_user_member_id) : null,
+          referral_user_staff_id: form.referral_user_staff_id ? Number(form.referral_user_staff_id) : null,          
         })
       });
       router.push('/admin/membership/session');
@@ -120,17 +126,24 @@ export default function InsertMembershipSessionPage() {
             <option value="downgrade">Downgrade</option>
           </select>
         </div>
-        <div>
+        {/* <div>
           <label className="block font-medium text-gray-900 dark:text-white mb-1">Membership Status <span className="text-red-600">*</span></label>
           <select name="status" value={form.status} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" required>
             <option value="pending">Pending</option>
             <option value="active">Active</option>
             <option value="expired">Expired</option>
           </select>
-        </div>
+        </div> */}
         <div>
           <label className="block font-medium text-gray-900 dark:text-white mb-1">Final Price <span className="text-red-600">*</span></label>
           <input type="number" name="final_price" value={form.final_price || ''} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" required />
+        </div>
+        <div>
+          <label className="block font-medium text-gray-900 dark:text-white mb-1">Referral Staff/Sales</label>
+          <select name="referral_user_staff_id" value={form.referral_user_staff_id} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded">
+            <option value="">Pilih Referral Staff/Sales</option>
+            {staff.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+          </select>
         </div>
         <div className="mb-2">
           <label className="inline-flex items-center">
@@ -168,9 +181,9 @@ export default function InsertMembershipSessionPage() {
               <input type="number" name="extra_duration_days" value={form.extra_duration_days} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" />
             </div>
             <div>
-              <label className="block font-medium text-gray-900 dark:text-white mb-1">Referral User</label>
-              <select name="referral_user_id" value={form.referral_user_id} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded">
-                <option value="">Pilih Referral</option>
+              <label className="block font-medium text-gray-900 dark:text-white mb-1">Referral Member</label>
+              <select name="referral_user_member_id" value={form.referral_user_member_id} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded">
+                <option value="">Pilih Referral Member</option>
                 {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
               </select>
             </div>

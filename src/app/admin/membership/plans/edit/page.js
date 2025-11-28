@@ -33,6 +33,11 @@ export default function EditMembershipPlanPage() {
   const router = useRouter();
   const params = useSearchParams();
   const id = params.get('id');
+  const formatDateForInput = s => s ? new Date(new Date(s).getTime() - new Date().getTimezoneOffset()*60000) .toISOString().slice(0,16) : "";
+  const formatDateOnlyForInput = s => s 
+    ? new Date(new Date(s).getTime())
+        .toISOString().slice(0, 10) // <-- Hanya mengambil YYYY-MM-DD
+    : "";
 
   useEffect(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
@@ -82,13 +87,21 @@ export default function EditMembershipPlanPage() {
     setError('');
     try {
       let availableFromIso = form.available_from;
-      if (availableFromIso && availableFromIso.length === 16) {
-        availableFromIso = availableFromIso + ':00.000Z';
+      if (availableFromIso && availableFromIso.length === 10) {
+          availableFromIso = availableFromIso + 'T00:00:00.000Z';
       }
+      else if (availableFromIso && availableFromIso.length === 16) {
+          availableFromIso = availableFromIso + ':00.000Z';
+      }
+
       let availableUntilIso = form.available_until;
-      if (availableUntilIso && availableUntilIso.length === 16) {
-        availableUntilIso = availableUntilIso + ':00.000Z';
+      if (availableUntilIso && availableUntilIso.length === 10) {
+          availableUntilIso = availableUntilIso + 'T00:00:00.000Z';
       }
+      else if (availableUntilIso && availableUntilIso.length === 16) {
+          availableUntilIso = availableUntilIso + ':00.000Z';
+      }
+      
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
       await fetch(`${API_URL}/api/membership-plans/${id}`, {
         method: 'PUT',
@@ -201,28 +214,50 @@ export default function EditMembershipPlanPage() {
           </div>
         )}
        <div className="flex gap-2">
-            <div className="flex-1">
+          <div className="flex-1">
+              <label className="block mb-1">Available From</label>
+              <input
+              type="date"
+              name="available_from"
+              value={formatDateOnlyForInput(form.available_from) || ''}
+              onChange={handleChange}
+              className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`}
+              disabled={!edit}
+              />
+          </div>
+            {/* <div className="flex-1">
                 <label className="block mb-1">Available From</label>
                 <input
                 type="datetime-local"
                 name="available_from"
-                value={form.available_from || ''}
+                value={formatDateForInput(form.available_from) || ''}
                 onChange={handleChange}
                 className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`}
                 disabled={!edit}
                 />
-            </div>
-            <div className="flex-1">
+            </div> */}
+          <div className="flex-1">
+              <label className="block mb-1">Available Until</label>
+              <input
+              type="date"
+              name="available_until"
+              value={formatDateOnlyForInput(form.available_until) || ''}
+              onChange={handleChange}
+              className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`}
+              disabled={!edit}
+              />
+          </div>
+            {/* <div className="flex-1">
                 <label className="block mb-1">Available Until</label>
                 <input
                 type="datetime-local"
                 name="available_until"
-                value={form.available_until || ''}
+                value={formatDateForInput(form.available_until) || ''}
                 onChange={handleChange}
                 className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`}
                 disabled={!edit}
                 />
-            </div>
+            </div> */}
         </div>
         <div>
           <label className="block mb-1">Always Available</label>

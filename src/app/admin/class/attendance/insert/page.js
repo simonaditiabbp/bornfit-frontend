@@ -5,10 +5,13 @@ import { useRouter } from "next/navigation";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function InsertAttendancePage() {
+  const now = new Date();
+  const nowPlus7 = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+
   const [form, setForm] = useState({
     class_id: "",
     member_id: "",
-    checked_in_at: "",
+    checked_in_at: nowPlus7.toISOString().slice(0,16),
     status: "Booked",
     created_by: "",
     updated_by: ""
@@ -36,7 +39,39 @@ export default function InsertAttendancePage() {
   }, []);
 
   function handleChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    setForm(prev => ({ ...prev, [name]: value }));
+
+    if (name === "class_id") {
+      const selected = classes.find(c => c.id == value);
+
+      if (selected) {
+        const start = new Date(selected.start_time);
+
+        const adjustedStart = new Date(start.getTime());
+        adjustedStart.setHours(adjustedStart.getHours() - 7);
+
+        // ambil jam & menit dari class start_time
+        const hh = String(adjustedStart.getHours()).padStart(2, "0");
+        const mm = String(adjustedStart.getMinutes()).padStart(2, "0");
+
+        // today
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const MM = String(today.getMonth() + 1).padStart(2, "0");
+        const dd = String(today.getDate()).padStart(2, "0");
+
+        // format untuk datetime-local -> YYYY-MM-DDTHH:MM
+        const todayWithClassTime = `${yyyy}-${MM}-${dd}T${hh}:${mm}`;
+
+        // Set otomatis checked_in_at
+        setForm(prev => ({
+          ...prev,
+          checked_in_at: todayWithClassTime
+        }));
+      }
+    }
   }
 
   async function handleSubmit(e) {

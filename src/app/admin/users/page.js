@@ -244,17 +244,17 @@ export default function AdminUsersPage() {
       selector: row => row.email,
       sortable: true,
     },
-    {
-      name: 'Status',
-      cell: row => {
-        const membership = getMembership(row.id);
-        return membership && membership.is_active ? (
-          <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-bold">Active</span>
-        ) : (
-          <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-bold">Inactive</span>
-        );
-      },
-    },
+    // {
+    //   name: 'Status',
+    //   cell: row => {
+    //     const membership = getMembership(row.id);
+    //     return membership && membership.is_active ? (
+    //       <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-bold">Active</span>
+    //     ) : (
+    //       <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-bold">Inactive</span>
+    //     );
+    //   },
+    // },
     {
       name: 'Last Check-in',
       cell: row => {

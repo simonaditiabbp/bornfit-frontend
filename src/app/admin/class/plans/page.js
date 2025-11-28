@@ -118,6 +118,7 @@ export default function ClassPlansPage() {
     { name: 'Max Visitors', selector: row => row.max_visitor, sortable: true, cell: row => `${row.max_visitor} people` },
     { name: 'Minutes/Session', selector: row => row.minutes_per_session, sortable: true, cell: row => `${row.minutes_per_session} minutes` },
     { name: 'Description', selector: row => row.description, sortable: false },
+    { name: 'Status', selector: row => row.is_active ? 'Active' : 'Inactive', sortable: false },
     {
       name: 'Actions',
       cell: row => (

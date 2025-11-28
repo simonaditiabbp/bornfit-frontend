@@ -7,11 +7,12 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export default function PTPlanInsertPage() {
   const [form, setForm] = useState({
     name: "",
-    duration: 30,
+    duration_value: 1,
     max_session: 1,
     price: 0,
     minutes_per_session: 60,
     description: "",
+    duration_unit: "day",
   });
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -20,7 +21,7 @@ export default function PTPlanInsertPage() {
     const { name, value } = e.target;
     setForm((f) => ({
       ...f,
-      [name]: name === "price" || name === "duration" || name === "max_session" || name === "minutes_per_session" ? Number(value) : value,
+      [name]: name === "price" || name === "duration_value" || name === "max_session" || name === "minutes_per_session" ? Number(value) : value,
     }));
   };
 
@@ -55,7 +56,7 @@ export default function PTPlanInsertPage() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block font-medium mb-1">Duration (days)</label>
-            <input type="number" name="duration" value={form.duration} onChange={handleChange} required className="w-full border border-gray-300 p-2 rounded" />
+            <input type="number" name="duration_value" value={form.duration_value} onChange={handleChange} required className="w-full border border-gray-300 p-2 rounded" />
           </div>
           <div>
             <label className="block font-medium mb-1">Max Session</label>

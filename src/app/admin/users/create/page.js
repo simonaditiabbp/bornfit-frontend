@@ -306,7 +306,7 @@ export default function CreateUserPage() {
             <option value="member">Member</option>
             <option value="opscan">Opscan</option>
             <option value="admin">Admin</option>
-            <option value="trainner">Trainner</option>
+            <option value="trainer">Trainer</option>
             <option value="instructor">Instructor</option>
           </select>
         </div>

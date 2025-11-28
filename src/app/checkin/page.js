@@ -1,5 +1,7 @@
 'use client';
 import { useEffect, useState, useRef } from 'react';
+import Modal from 'react-modal';
+import BookingDataTable from './BookingDataTable';
 import Image from 'next/image';
 import { Html5Qrcode } from 'html5-qrcode';
 import { format, differenceInDays, parseISO } from "date-fns";
@@ -26,6 +28,234 @@ export default function BarcodePage() {
 
   const [buffer, setBuffer] = useState("");
   const timerRef = useRef(null);
+
+  // Modal state for booking class
+    // Modal state for booking PT session
+    const [showPTModal, setShowPTModal] = useState(false);
+    const [availablePTSessions, setAvailablePTSessions] = useState([]);
+    const [ptTotalRows, setPTTotalRows] = useState(0);
+    const [ptPage, setPTPage] = useState(1);
+    const [ptLimit, setPTLimit] = useState(10);
+    const [bookingPTLoading, setBookingPTLoading] = useState(false);
+    const [bookingPTError, setBookingPTError] = useState("");
+    const [bookingPTSuccess, setBookingPTSuccess] = useState("");
+    const [ptSearch, setPTSearch] = useState("");
+    const ptSearchDebounceRef = useRef(null);
+    // Handler for Booking PT Session button
+    const fetchAvailablePTSessions = async (page = 1, limit = 10, search = "") => {
+      setBookingPTLoading(true);
+      setBookingPTError("");
+      setBookingPTSuccess("");
+      try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
+        // API sudah sesuai: /api/personaltrainersessions/member/:id
+        const params = new URLSearchParams({ page, limit });
+        if (search) params.append('search', search);
+        const res = await fetch(`${API_URL}/api/personaltrainersessions/member/${user.id}?${params.toString()}`, {
+          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
+        });
+        const data = await res.json();
+        if (res.ok && Array.isArray(data.data?.sessions)) {
+          setAvailablePTSessions(data.data.sessions);
+          setPTTotalRows(data.data.total); // total = jumlah data
+          setPTPage(page);
+          setPTLimit(limit);
+        } else {
+          setAvailablePTSessions([]);
+          setPTTotalRows(0);
+          setBookingPTError(data.message || "Tidak ada PT session tersedia");
+        }
+      } catch (err) {
+        setAvailablePTSessions([]);
+        setPTTotalRows(0);
+        setBookingPTError("Gagal mengambil data PT session");
+      }
+      setBookingPTLoading(false);
+    };
+
+    const handleBookingPTSession = () => {
+      if (!user?.id) return;
+      setShowPTModal(true);
+      fetchAvailablePTSessions(1, ptLimit, ptSearch);
+    };
+
+    const handlePTTablePageChange = (page) => {
+      fetchAvailablePTSessions(page, ptLimit, ptSearch);
+    };
+    const handlePTTableRowsPerPageChange = (newLimit, page) => {
+      setPTLimit(newLimit);
+      fetchAvailablePTSessions(page, newLimit, ptSearch);
+    };
+
+    // Search input change handler with debounce
+    const handlePTSearchChange = (e) => {
+      const value = e.target.value;
+      setPTSearch(value);
+      if (ptSearchDebounceRef.current) clearTimeout(ptSearchDebounceRef.current);
+      ptSearchDebounceRef.current = setTimeout(() => {
+        fetchAvailablePTSessions(1, ptLimit, value);
+      }, 400);
+    };
+
+    // Handler for booking a PT session
+    const handleBookPTSession = async (sessionId) => {
+      setBookingPTLoading(true);
+      setBookingPTError("");
+      setBookingPTSuccess("");
+      try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
+        // Cari data session yang dibooking
+        const bookedSession = availablePTSessions.find(s => s.id === sessionId);
+        let bookingTime = null;
+        if (bookedSession && bookedSession.start_date) {
+          // start_date format: "2025-11-28T09:45:00.000Z"
+          bookingTime = bookedSession.start_date;
+        } else {
+          bookingTime = new Date().toISOString();
+        }
+        const res = await fetch(`http://localhost:3002/api/ptsessionbookings`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({
+            user_member_id: user.id,
+            personal_trainer_session_id: sessionId,
+            booking_time: bookingTime,
+            status: "booked"
+          })
+        });
+        if (res.ok) {
+          setBookingPTSuccess("Berhasil booking PT session!");
+          fetchAvailablePTSessions(ptPage, ptLimit);
+        } else {
+          const data = await res.json();
+          setBookingPTError(data.message || "Gagal booking PT session");
+        }
+      } catch (err) {
+        setBookingPTError("Gagal booking PT session");
+      }
+      setBookingPTLoading(false);
+    };
+  const [showClassModal, setShowClassModal] = useState(false);
+  const [availableClasses, setAvailableClasses] = useState([]);
+  const [classTotalRows, setClassTotalRows] = useState(0);
+  const [classPage, setClassPage] = useState(1);
+  const [classLimit, setClassLimit] = useState(10);
+  const [bookingClassLoading, setBookingClassLoading] = useState(false);
+  const [bookingClassError, setBookingClassError] = useState("");
+  const [bookingClassSuccess, setBookingClassSuccess] = useState("");
+  const [classSearch, setClassSearch] = useState("");
+  const classSearchDebounceRef = useRef(null);
+  // Handler for Booking Class button
+  const fetchAvailableClasses = async (page = 1, limit = 10, search = "") => {
+    setBookingClassLoading(true);
+    setBookingClassError("");
+    setBookingClassSuccess("");
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
+      const params = new URLSearchParams({ page, limit });
+      if (search) params.append('search', search);
+      const res = await fetch(`${API_URL}/api/classes?${params.toString()}`, {
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
+      });
+      const data = await res.json();
+      if (res.ok && Array.isArray(data.data?.classes)) {
+        setAvailableClasses(data.data.classes);
+        setClassTotalRows(data.data.total || 0);
+        setClassPage(data.data.page || 1);
+        setClassLimit(data.data.limit || 10);
+      } else {
+        setAvailableClasses([]);
+        setClassTotalRows(0);
+        setBookingClassError(data.message || "Tidak ada kelas tersedia");
+      }
+    } catch (err) {
+      setAvailableClasses([]);
+      setClassTotalRows(0);
+      setBookingClassError("Gagal mengambil data kelas");
+    }
+    setBookingClassLoading(false);
+  };
+
+  const handleBookingClass = () => {
+    if (!user?.id) return;
+    setShowClassModal(true);
+    fetchAvailableClasses(1, classLimit, classSearch);
+  };
+
+  const handleClassTablePageChange = (page) => {
+    fetchAvailableClasses(page, classLimit, classSearch);
+  };
+  const handleClassTableRowsPerPageChange = (newLimit, page) => {
+    setClassLimit(newLimit);
+    fetchAvailableClasses(page, newLimit, classSearch);
+  };
+
+  // Search input change handler with debounce
+  const handleClassSearchChange = (e) => {
+    const value = e.target.value;
+    setClassSearch(value);
+    if (classSearchDebounceRef.current) clearTimeout(classSearchDebounceRef.current);
+    classSearchDebounceRef.current = setTimeout(() => {
+      fetchAvailableClasses(1, classLimit, value);
+    }, 400);
+  };
+
+  // Handler for booking a class
+  const handleBookClass = async (classId) => {
+    setBookingClassLoading(true);
+    setBookingClassError("");
+    setBookingClassSuccess("");
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
+      // Cari data kelas yang dibooking
+      const bookedClass = availableClasses.find(cls => cls.id === classId);
+      let checkedInAt = null;
+      if (bookedClass && bookedClass.start_time) {
+        const now = new Date();
+        let startTime = bookedClass.start_time;
+        let hour = "00", minute = "00", second = "00";
+        if (startTime.length >= 8) {
+          const timeMatch = startTime.match(/(\d{2}):(\d{2}):(\d{2})/);
+          if (timeMatch) {
+            hour = parseInt(timeMatch[1], 10) + 7; // sesuaikan timezone (+7)
+            minute = timeMatch[2];
+            second = timeMatch[3];
+          }
+        }
+        // Gabungkan tanggal hari ini dengan jam kelas
+        const checkedDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute, second);
+        checkedInAt = checkedDate.toISOString();
+      } else {
+        checkedInAt = new Date().toISOString();
+      }
+      const res = await fetch(`${API_URL}/api/classattendances`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          class_id: classId,
+          member_id: user.id,
+          status: "Booked",
+          checked_in_at: checkedInAt
+        })
+      });
+      if (res.ok) {
+        setBookingClassSuccess("Berhasil booking kelas!");
+        fetchAvailableClasses(classPage, classLimit);
+      } else {
+        const data = await res.json();
+        setBookingClassError(data.message || "Gagal booking kelas");
+      }
+    } catch (err) {
+      setBookingClassError("Gagal booking kelas");
+    }
+    setBookingClassLoading(false);
+  };
 
   // Handle response dari backend (dipakai oleh scan dan manual input)
   const handleQrResponse = async (qr_code) => {
@@ -91,9 +321,36 @@ export default function BarcodePage() {
     }
   };
 
-  // Keep manual QR input always focused
+  // State untuk PT session plans
+  const [plans, setPlans] = useState([]);
+
+  // Fetch PT session plans saat modal PT dibuka
+  useEffect(() => {
+    if (!showPTModal) return;
+    const fetchPlans = async () => {
+      try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
+        const res = await fetch(`${API_URL}/api/ptsessionplans`, {
+          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
+        });
+        const data = await res.json();
+        if (res.ok && Array.isArray(data.data?.plans)) {
+          setPlans(data.data.plans);
+        } else {
+          setPlans([]);
+        }
+      } catch {
+        setPlans([]);
+      }
+    };
+    fetchPlans();
+  }, [showPTModal, API_URL]);
+
+  // Keep manual QR input always focused, kecuali modal booking class/PT session sedang terbuka
   useEffect(() => {
     const handleGlobalClick = (e) => {
+      // Jangan paksa fokus jika modal booking class atau PT session terbuka
+      if (showClassModal || showPTModal) return;
       if (manualQrInputRef.current && document.activeElement !== manualQrInputRef.current) {
         manualQrInputRef.current.focus();
       }
@@ -102,7 +359,7 @@ export default function BarcodePage() {
     return () => {
       window.removeEventListener('click', handleGlobalClick);
     };
-  }, []);
+  }, [showClassModal, showPTModal]);
 
   // Cancel scan
   const handleCancelScan = () => {
@@ -395,8 +652,8 @@ useEffect(() => {
 
   // Helper untuk render info PT Session
   const renderPTSessionInfo = (result) => {
-    if (!result?.data?.type?.toLowerCase().includes('pt')) return null;
-    const ptsession = Array.isArray(result.data?.ptsession) ? result.data.ptsession[0] : null;
+    // if (!result?.data?.type?.toLowerCase().includes('pt')) return null;
+    const ptsession = Array.isArray(result.data?.ptsessions) ? result.data.ptsessions[0] : null;
     if (!ptsession) return null;
     const ptplan = ptsession.ptplan;
     const trainer = ptsession.trainer;
@@ -441,7 +698,7 @@ useEffect(() => {
         <div className="mb-1"><span className="font-semibold">Session Name:</span> {ptsession.name || ptplan?.name}</div>
         <div className="mb-1"><span className="font-semibold">Session Period:</span> {ptPeriod}</div>
         <div className="mb-1"><span className="font-semibold">Trainer:</span> {trainer?.name}</div>
-        <div className="mb-1"><span className="font-semibold">Plan Duration:</span> {ptplan?.duration} hari</div>
+        <div className="mb-1"><span className="font-semibold">Plan Duration:</span> {ptplan?.duration} days</div>
         <div className="mb-1"><span className="font-semibold">Max Session:</span> {ptplan?.max_session}</div>
         <div className="mb-1">
           <span className="font-semibold">Session Status:</span> {' '}
@@ -657,14 +914,253 @@ useEffect(() => {
               type="text"
               placeholder="Input QR code manual"
               className="w-full p-3 border-2 border-blue-300 rounded-xl text-center focus:outline-blue-500 mb-2 bg-blue-50 placeholder:text-blue-300 shadow"
-              // value={manualQr}
-              value={buffer} // Show buffered input
-              onChange={(e) => handleBufferedInput(e.target.value)} // Pass the full input value
-              // onChange={(e) => handleManualInput(e.target.value)}
-              // disabled={loading}
+              value={buffer}
+              onChange={(e) => handleBufferedInput(e.target.value)}
               autoFocus
               ref={manualQrInputRef}
             />
+
+            {/* Tambahan tombol booking class dan PT session */}
+            <button
+              className="bg-green-600 text-white px-6 py-3 rounded-xl font-bold shadow hover:bg-green-700 transition"
+              onClick={handleBookingClass}
+              disabled={loading || !user}
+            >
+              Booking Class
+            </button>
+                  {/* Modal Booking Class */}
+                  <Modal
+    isOpen={showClassModal}
+    onRequestClose={() => setShowClassModal(false)}
+    contentLabel="Booking Class"
+    ariaHideApp={false}
+    style={{
+        overlay: { 
+            zIndex: 1000, 
+            backgroundColor: 'rgba(0,0,0,0.5)', // Backdrop lebih gelap
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        content: { 
+            maxWidth: 1200, 
+            minWidth: 750, // Melebarkan sedikit untuk tampilan tabel yang lebih baik
+            margin: 'auto', 
+            borderRadius: 16, 
+            padding: 32,
+            boxShadow: '0 10px 25px rgba(0,0,0,0.2)', // Tambah bayangan
+            border: 'none', // Hilangkan border default
+        }
+    }}
+>
+    {/* HEADER MODAL */}
+    <div className="flex justify-between items-center border-b pb-4 mb-6">
+        <h2 className="text-3xl font-extrabold text-gray-800">🗓️ Booking Class</h2>
+        {/* Tombol close di sudut kanan atas */}
+        <button
+            className="text-gray-500 hover:text-gray-800 transition duration-150"
+            onClick={() => setShowClassModal(false)}
+        >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+    </div>
+
+    {/* FEEDBACK AREA */}
+    <div className="mb-4">
+        {bookingClassLoading && <div className="p-3 bg-blue-100 text-blue-800 border-l-4 border-blue-500 rounded-md font-medium">Memuat data...</div>}
+        {bookingClassError && <div className="p-3 bg-red-100 text-red-800 border-l-4 border-red-500 rounded-md font-medium">Error: {bookingClassError}</div>}
+        {bookingClassSuccess && <div className="p-3 bg-green-100 text-green-800 border-l-4 border-green-500 rounded-md font-medium">Berhasil: {bookingClassSuccess}</div>}
+    </div>
+    
+    {/* LOG PENGEMBANG (dihilangkan dari tampilan final, tapi disisipkan untuk referensi) */}
+    {/* {console.log("availableClasses: ", availableClasses)} */}
+    
+    {/* SEARCH INPUT & DATA TABLE */}
+    <div className="mb-4 flex items-center gap-4">
+      <input
+        type="text"
+        className="p-3 border-2 border-blue-300 rounded-xl text-lg w-96 focus:outline-blue-500 bg-blue-50 placeholder:text-blue-300 shadow"
+        placeholder="Search class, instructor, date (28/11/2025)"
+        value={classSearch}
+        onChange={handleClassSearchChange}
+        autoFocus
+      />
+      <span className="text-gray-400 text-sm">Press Enter or wait for 0.4 seconds</span>
+    </div>
+    <div className="shadow-lg rounded-lg overflow-hidden border">
+      <BookingDataTable
+        columns={[
+          { name: 'Nama Kelas', selector: row => row.name, sortable: true, grow: 2 },
+          { name: 'Tanggal', selector: row => row.class_date?.slice(0, 10), sortable: true },
+          { name: 'Mulai', selector: row => row.start_time?.slice(11, 16), sortable: true },
+          { name: 'Selesai', selector: row => row.end_time?.slice(11, 16), sortable: true },
+          { name: 'Instruktur', selector: row => row.instructor?.name || '-', sortable: true, grow: 1.5 },
+          { 
+            name: 'Aksi', 
+            cell: row => (
+              <button
+                className={`px-4 py-2 rounded-full font-semibold transition duration-200 ${
+                  bookingClassLoading 
+                    ? 'bg-gray-400 text-gray-700 cursor-not-allowed' 
+                    : 'bg-green-600 text-white hover:bg-green-700 shadow-md hover:shadow-lg'
+                }`}
+                onClick={() => handleBookClass(row.id)}
+                disabled={bookingClassLoading}
+              >
+                {bookingClassLoading ? 'Processing...' : 'Book'}
+              </button>
+            ), 
+            ignoreRowClick: true 
+          },
+        ]}
+        data={availableClasses}
+        pagination={true}
+        paginationServer={true}
+        paginationTotalRows={classTotalRows}
+        paginationPerPage={classLimit}
+        currentPage={classPage}
+        onChangePage={handleClassTablePageChange}
+        onChangeRowsPerPage={handleClassTableRowsPerPageChange}
+        paginationRowsPerPageOptions={[10, 25, 50]}
+        customStyles={{
+          header: { style: { backgroundColor: '#f7f7f7' } },
+          rows: { highlightOnHoverStyle: { backgroundColor: '#eef4ff' } },
+        }}
+      />
+    </div>
+
+    {/* FOOTER MODAL / BUTTON CLOSE */}
+    <div className="flex justify-end mt-6 pt-4 border-t">
+        <button
+            className="bg-gray-500 text-white px-5 py-2 rounded-lg font-bold hover:bg-gray-600 transition duration-200 shadow-md"
+            onClick={() => setShowClassModal(false)}
+        >
+            Tutup
+        </button>
+    </div>
+</Modal>
+            <button
+              className="bg-purple-600 text-white px-6 py-3 rounded-xl font-bold shadow hover:bg-purple-700 transition"
+              onClick={handleBookingPTSession}
+              disabled={loading || !user}
+            >
+              Booking PT Session
+            </button>
+            {/* Modal Booking PT Session */}
+            <Modal
+              isOpen={showPTModal}
+              onRequestClose={() => setShowPTModal(false)}
+              contentLabel="Booking PT Session"
+              ariaHideApp={false}
+              style={{
+                overlay: {
+                  zIndex: 1000,
+                  backgroundColor: 'rgba(0,0,0,0.5)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                },
+                content: {
+                  maxWidth: 1200,
+                  minWidth: 750,
+                  margin: 'auto',
+                  borderRadius: 16,
+                  padding: 32,
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+                  border: 'none',
+                }
+              }}
+            >
+              <div className="flex justify-between items-center border-b pb-4 mb-6">
+                <h2 className="text-3xl font-extrabold text-gray-800">💪 Booking PT Session</h2>
+                <button
+                  className="text-gray-500 hover:text-gray-800 transition duration-150"
+                  onClick={() => setShowPTModal(false)}
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
+              <div className="mb-4">
+                {bookingPTLoading && <div className="p-3 bg-blue-100 text-blue-800 border-l-4 border-blue-500 rounded-md font-medium">Memuat data...</div>}
+                {bookingPTError && <div className="p-3 bg-red-100 text-red-800 border-l-4 border-red-500 rounded-md font-medium">Error: {bookingPTError}</div>}
+                {bookingPTSuccess && <div className="p-3 bg-green-100 text-green-800 border-l-4 border-green-500 rounded-md font-medium">Berhasil: {bookingPTSuccess}</div>}
+              </div>
+              <div className="mb-4 flex items-center gap-4">
+                <input
+                  type="text"
+                  className="p-3 border-2 border-blue-300 rounded-xl text-lg w-96 focus:outline-blue-500 bg-blue-50 placeholder:text-blue-300 shadow"
+                  placeholder="Search PT session, trainer, date (28/11/2025)"
+                  value={ptSearch}
+                  onChange={handlePTSearchChange}
+                  autoFocus
+                />
+                <span className="text-gray-400 text-sm">Press Enter or wait for 0.4 seconds</span>
+              </div>
+              {console.log("plans: ", plans)}
+              <div className="shadow-lg rounded-lg overflow-hidden border">
+                <BookingDataTable
+                  columns={[
+                    // { name: 'Nama Session', selector: row => row.name, sortable: true },
+                    { name: 'Name', selector: row => {
+                      const plan = plans.find(p => p.id === row.pt_session_plan_id);
+                      return plan ? plan.name : '-';
+                    }, sortable: true },
+                    { name: 'Start', selector: row => row.start_date ? row.start_date.slice(0, 16).replace('T', ' ') : '-', sortable: true },
+                    { name: 'End', selector: row => row.end_date ? row.end_date.slice(0, 16).replace('T', ' ') : '-', sortable: true },
+                    // { name: 'Status', selector: row => row.status, sortable: true },
+                    { name: 'Trainer', selector: row => row.name?.split(' - ')[1]?.split(' (')[0] || '-', sortable: true },
+                    { name: 'Remaining Session', selector: row => {
+                      const plan = plans.find(p => p.id === row.pt_session_plan_id);
+                      const max = plan ? plan.max_session : '...';
+                      const sisa = typeof row.remaining_session === 'number' ? row.remaining_session : '...';
+                      return `${sisa} of ${max} sessions remaining`;
+                    }, sortable: true },
+                    {
+                      name: 'Aksi',
+                      cell: row => (
+                        <button
+                          className={`px-4 py-2 rounded-full font-semibold transition duration-200 ${
+                            bookingPTLoading
+                              ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
+                              : 'bg-purple-600 text-white hover:bg-purple-700 shadow-md hover:shadow-lg'
+                          }`}
+                          onClick={() => handleBookPTSession(row.id)}
+                          disabled={bookingPTLoading}
+                        >
+                          {bookingPTLoading ? 'Processing...' : 'Book'}
+                        </button>
+                      ),
+                      ignoreRowClick: true
+                    },
+                  ]}
+                  data={availablePTSessions}
+                  pagination={true}
+                  paginationServer={true}
+                  paginationTotalRows={ptTotalRows}
+                  paginationPerPage={ptLimit}
+                  currentPage={ptPage}
+                  onChangePage={handlePTTablePageChange}
+                  onChangeRowsPerPage={handlePTTableRowsPerPageChange}
+                  paginationRowsPerPageOptions={[10, 25, 50]}
+                  customStyles={{
+                    header: { style: { backgroundColor: '#f7f7f7' } },
+                    rows: { highlightOnHoverStyle: { backgroundColor: '#f3e8ff' } },
+                  }}
+                />
+              </div>
+              <div className="flex justify-end mt-6 pt-4 border-t">
+                <button
+                  className="bg-gray-500 text-white px-5 py-2 rounded-lg font-bold hover:bg-gray-600 transition duration-200 shadow-md"
+                  onClick={() => setShowPTModal(false)}
+                >
+                  Tutup
+                </button>
+              </div>
+            </Modal>
           </div>
         </div>
       )}
