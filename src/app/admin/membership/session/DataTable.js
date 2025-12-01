@@ -10,7 +10,34 @@ export default function MembershipSessionDataTable({ data }) {
     { name: 'Plan', selector: row => row.membershipPlan?.name || '-', sortable: true },
     { name: 'Start Date', selector: row => row.start_date?.slice(0,10) || '-', sortable: true },
     { name: 'End Date', selector: row => row.end_date?.slice(0,10) || '-', sortable: true },
-    { name: 'Status', selector: row => row.is_active ? 'Active' : 'Inactive', sortable: true },
+    // { name: 'Status', selector: row => row.is_active ? 'Active' : 'Inactive', sortable: true },
+    {
+      name: 'Status',
+      cell: row => {
+        const status = row.status?.toLowerCase();
+
+        const styleMap = {
+          active:   "bg-green-100 text-green-700",
+          expired:  "bg-red-100 text-red-700",
+          pending:  "bg-yellow-100 text-yellow-700",
+        };
+
+        const label = status
+          ? status.charAt(0).toUpperCase() + status.slice(1)
+          : "";
+
+        return (
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-bold ${
+              styleMap[status] || "bg-gray-100 text-gray-700"
+            }`}
+          >
+            {label}
+          </span>
+        );
+      },
+      sortable: true
+    },
     {
       name: 'Aksi',
       cell: row => (

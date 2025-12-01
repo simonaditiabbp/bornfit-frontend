@@ -74,32 +74,32 @@ export default function ClassPlanInsertPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto bg-white p-10 rounded-2xl shadow-lg mt-12 border border-gray-100">
+    <div className="max-w-3xl mx-auto bg-white p-10 rounded-2xl shadow-lg mt-12 border border-gray-100">
       <h1 className="text-3xl font-bold mb-8 text-blue-700 text-center">Add Class Plan</h1>
       {error && <div className="text-red-600 mb-2">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label className="block mb-1">Name</label>
-          <input name="name" type="text" value={form.name} onChange={handleChange} className="w-full border px-2 py-1 rounded" required />
+          <input name="name" type="text" value={form.name} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" required />
         </div>
         <div className="mb-4">
           <label className="block mb-1">Access Type</label>
-          <select name="access_type" value={form.access_type} onChange={handleChange} className="w-full border px-2 py-1 rounded">
+          <select name="access_type" value={form.access_type} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded">
             <option value="Regular">Regular</option>
             <option value="Premium">Premium</option>
           </select>
         </div>
         <div className="mb-4">
           <label className="block mb-1">Max Visitor</label>
-          <input name="max_visitor" type="number" value={form.max_visitor} onChange={handleChange} className="w-full border px-2 py-1 rounded" min={0} />
+          <input name="max_visitor" type="number" value={form.max_visitor} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" min={0} />
         </div>
         <div className="mb-4">
           <label className="block mb-1">Minutes per Session</label>
-          <input name="minutes_per_session" type="number" value={form.minutes_per_session} onChange={handleChange} className="w-full border px-2 py-1 rounded" min={0} />
+          <input name="minutes_per_session" type="number" value={form.minutes_per_session} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" min={0} />
         </div>
         <div className="mb-4">
           <label className="block mb-1">Description</label>
-          <textarea name="description" value={form.description} onChange={handleChange} className="w-full border px-2 py-1 rounded" />
+          <textarea name="description" value={form.description} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" />
         </div>
         <div className="mb-4 flex items-center gap-2">
           <input id="unlimited_monthly_session" name="unlimited_monthly_session" type="checkbox" checked={form.unlimited_monthly_session} onChange={e => setForm({ ...form, unlimited_monthly_session: e.target.checked })} />
@@ -108,7 +108,7 @@ export default function ClassPlanInsertPage() {
         {!form.unlimited_monthly_session && (
           <div className="mb-4">
             <label className="block mb-1">Monthly Limit</label>
-            <input name="monthly_limit" type="number" value={form.monthly_limit} onChange={handleChange} className="w-full border px-2 py-1 rounded" min={0} />
+            <input name="monthly_limit" type="number" value={form.monthly_limit} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" min={0} />
           </div>
         )}
         <div className="mb-4 flex items-center gap-2">
@@ -118,7 +118,7 @@ export default function ClassPlanInsertPage() {
         {!form.unlimited_daily_session && (
           <div className="mb-4">
             <label className="block mb-1">Daily Limit</label>
-            <input name="daily_limit" type="number" value={form.daily_limit} onChange={handleChange} className="w-full border px-2 py-1 rounded" min={0} />
+            <input name="daily_limit" type="number" value={form.daily_limit} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" min={0} />
           </div>
         )}
         <div className="mb-4 flex items-center gap-2">

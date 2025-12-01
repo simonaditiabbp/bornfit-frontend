@@ -117,7 +117,7 @@ export default function PTPlansPage() {
 
   const startNo = (page - 1) * limit;
   const columns = [
-    { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px', center: true },
+    { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px', center: "true" },
     { name: 'Name', selector: row => row.name, sortable: true, cell: row => <span className="font-semibold">{row.name}</span> },
     { name: 'Duration', selector: row => row.duration_value, sortable: true, cell: row => `${row.duration_value} hari` },
     { name: 'Max Session', selector: row => row.max_session, sortable: true },

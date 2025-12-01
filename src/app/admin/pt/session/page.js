@@ -15,7 +15,7 @@ export default function PTSessionListPage() {
   const [searchInput, setSearchInput] = useState('');
   const [plans, setPlans] = useState([]);
   const [members, setMembers] = useState([]);
-  const [trainners, setTrainners] = useState([]);
+  const [trainers, setTrainers] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [backendError, setBackendError] = useState(false);
@@ -25,24 +25,24 @@ export default function PTSessionListPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Fetch plans, members, trainners for display
+    // Fetch plans, members, trainers for display
     const fetchMeta = async () => {
       try {
         const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
         const resPlans = await fetch(`${API_URL}/api/ptsessionplans`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const resMembers = await fetch(`${API_URL}/api/users?role=member`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const resTrainners = await fetch(`${API_URL}/api/users?role=trainner`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+        const resMembers = await fetch(`${API_URL}/api/users?role=member&limit=9999`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+        const resTrainers = await fetch(`${API_URL}/api/users?role=trainer&limit=9999`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
         // const resMembers = await fetch(`${API_URL}/api/users/filter?role=member`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        // const resTrainners = await fetch(`${API_URL}/api/users/filter?role=trainner`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+        // const resTrainers = await fetch(`${API_URL}/api/users/filter?role=trainer`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
         const plansData = await resPlans.json();
         const plansArray = plansData.data?.plans || [];
         const membersData = await resMembers.json();
         const membersArray = membersData.data?.users || [];
-        const trainnersData = await resTrainners.json();
-        const trainnersArray = trainnersData.data?.users || [];
+        const trainersData = await resTrainers.json();
+        const trainersArray = trainersData.data?.users || [];
         if (resPlans.ok) setPlans(plansArray);
         if (resMembers.ok) setMembers(membersArray);
-        if (resTrainners.ok) setTrainners(trainnersArray);
+        if (resTrainers.ok) setTrainers(trainersArray);
       } catch {}
     };
     fetchMeta();
@@ -149,7 +149,7 @@ export default function PTSessionListPage() {
         data={sessions}
         plans={plans}
         members={members}
-        trainners={trainners}
+        trainers={trainers}
         setQrSession={setQrSession}
         pagination
         paginationServer
@@ -161,7 +161,6 @@ export default function PTSessionListPage() {
         paginationRowsPerPageOptions={[10, 25, 50]}
       />
       {/* Modal QR Code */}
-      {console.log('qrSession:', qrSession)}
       {qrSession && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-2xl shadow-xl text-center relative min-w-[340px]">

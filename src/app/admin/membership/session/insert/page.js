@@ -1,25 +1,30 @@
 // Insert Membership Session
 'use client';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function InsertMembershipSessionPage() {
+  const searchParams = useSearchParams();
+  const memberIdFromQuery = searchParams.get('member_id') || '';
   const [form, setForm] = useState({
-    user_id: '',
+    user_id: memberIdFromQuery,
     membership_plan_id: '',
     start_date: '',
     sales_type: 'new',
     additional_fee: '',
-    discount_value: '',
     discount_type: 'amount',
     discount_amount: '',
+    discount_percent: '',
     extra_duration_days: '',
     note: '',
-    referral_user_id: '',
+    referral_user_member_id: '',
+    referral_user_staff_id: '',
+    // status: 'active',
   });
   const [users, setUsers] = useState([]);
+  const [staff, setStaff] = useState([]);
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -32,10 +37,13 @@ export default function InsertMembershipSessionPage() {
       try {
         const resUsers = await fetch(`${API_URL}/api/users?role=member`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
         const resPlans = await fetch(`${API_URL}/api/membership-plans`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+        const resStaff = await fetch(`${API_URL}/api/users?exclude_role=member`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
         const usersData = await resUsers.json();
         const plansData = await resPlans.json();
+        const staffData = await resStaff.json();
         setUsers(usersData.data?.users || []);
         setPlans(plansData.data?.membershipPlans || []);
+        setStaff(staffData.data?.users || []);
       } catch {}
     };
     fetchDropdowns();
@@ -65,12 +73,14 @@ export default function InsertMembershipSessionPage() {
           start_date: startDateIso,
           sales_type: form.sales_type,
           additional_fee: form.additional_fee ? Number(form.additional_fee) : 0,
-          discount_value: form.discount_value ? Number(form.discount_value) : 0,
           discount_type: form.discount_type,
-          discount_amount: form.discount_amount ? Number(form.discount_amount) : 0,
+          discount_amount: form.discount_type === 'amount' && form.discount_amount !== '' ? Number(form.discount_amount) : null,
+          discount_percent: form.discount_type === 'percent' && form.discount_percent !== '' ? Number(form.discount_percent) : null,
           extra_duration_days: form.extra_duration_days ? Number(form.extra_duration_days) : 0,
           note: form.note,
-          referral_user_id: form.referral_user_id ? Number(form.referral_user_id) : null
+          // status: form.status ? form.status : '',
+          referral_user_member_id: form.referral_user_member_id ? Number(form.referral_user_member_id) : null,
+          referral_user_staff_id: form.referral_user_staff_id ? Number(form.referral_user_staff_id) : null,          
         })
       });
       router.push('/admin/membership/session');
@@ -116,24 +126,24 @@ export default function InsertMembershipSessionPage() {
             <option value="downgrade">Downgrade</option>
           </select>
         </div>
-        <div>
-          <label className="block font-medium text-gray-900 dark:text-white mb-1">Status <span className="text-red-600">*</span></label>
+        {/* <div>
+          <label className="block font-medium text-gray-900 dark:text-white mb-1">Membership Status <span className="text-red-600">*</span></label>
           <select name="status" value={form.status} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" required>
             <option value="pending">Pending</option>
             <option value="active">Active</option>
             <option value="expired">Expired</option>
           </select>
-        </div>
-        <div>
-          <label className="block font-medium text-gray-900 dark:text-white mb-1">Is Active <span className="text-red-600">*</span></label>
-          <select name="is_active" value={form.is_active ? 'true' : 'false'} onChange={e => setForm(f => ({ ...f, is_active: e.target.value === 'true' }))} className="w-full border border-gray-300 p-2 rounded" required>
-            <option value="true">Ya</option>
-            <option value="false">Tidak</option>
-          </select>
-        </div>
+        </div> */}
         <div>
           <label className="block font-medium text-gray-900 dark:text-white mb-1">Final Price <span className="text-red-600">*</span></label>
           <input type="number" name="final_price" value={form.final_price || ''} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" required />
+        </div>
+        <div>
+          <label className="block font-medium text-gray-900 dark:text-white mb-1">Referral Staff/Sales</label>
+          <select name="referral_user_staff_id" value={form.referral_user_staff_id} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded">
+            <option value="">Pilih Referral Staff/Sales</option>
+            {staff.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+          </select>
         </div>
         <div className="mb-2">
           <label className="inline-flex items-center">
@@ -148,28 +158,32 @@ export default function InsertMembershipSessionPage() {
               <input type="number" name="additional_fee" value={form.additional_fee} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" />
             </div>
             <div>
-              <label className="block font-medium text-gray-900 dark:text-white mb-1">Discount Value</label>
-              <input type="number" name="discount_value" value={form.discount_value} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" />
-            </div>
-            <div>
               <label className="block font-medium text-gray-900 dark:text-white mb-1">Discount Type</label>
               <select name="discount_type" value={form.discount_type} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded">
                 <option value="amount">Amount</option>
                 <option value="percent">Percent</option>
               </select>
             </div>
-            <div>
-              <label className="block font-medium text-gray-900 dark:text-white mb-1">Discount Amount</label>
-              <input type="number" name="discount_amount" value={form.discount_amount} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" />
-            </div>
+            {form.discount_type === 'amount' && (
+              <div>
+                <label className="block font-medium text-gray-900 dark:text-white mb-1">Value Amount</label>
+                <input type="number" name="discount_amount" value={form.discount_amount ?? ''} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" />
+              </div>
+            )}
+            {form.discount_type === 'percent' && (
+              <div>
+                <label className="block font-medium text-gray-900 dark:text-white mb-1">Value Percent</label>
+                <input type="number" name="discount_percent" value={form.discount_percent ?? ''} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" />
+              </div>
+            )}
             <div>
               <label className="block font-medium text-gray-900 dark:text-white mb-1">Extra Duration Days</label>
               <input type="number" name="extra_duration_days" value={form.extra_duration_days} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" />
             </div>
             <div>
-              <label className="block font-medium text-gray-900 dark:text-white mb-1">Referral User</label>
-              <select name="referral_user_id" value={form.referral_user_id} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded">
-                <option value="">Pilih Referral</option>
+              <label className="block font-medium text-gray-900 dark:text-white mb-1">Referral Member</label>
+              <select name="referral_user_member_id" value={form.referral_user_member_id} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded">
+                <option value="">Pilih Referral Member</option>
                 {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
               </select>
             </div>

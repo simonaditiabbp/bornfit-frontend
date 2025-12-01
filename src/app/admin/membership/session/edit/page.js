@@ -8,6 +8,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export default function EditMembershipSessionPage() {
   const [form, setForm] = useState(null);
   const [users, setUsers] = useState([]);
+  const [staff, setStaff] = useState([]);
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
@@ -19,6 +20,8 @@ export default function EditMembershipSessionPage() {
   const params = useSearchParams();
   const id = params.get('id');
 
+  const formatDateForInput = (isoString) => isoString ? isoString.split("T")[0] : "";
+
   useEffect(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
     const fetchData = async () => {
@@ -26,13 +29,16 @@ export default function EditMembershipSessionPage() {
       try {
         const resSession = await fetch(`${API_URL}/api/memberships/${id}`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
         const resUsers = await fetch(`${API_URL}/api/users?role=member`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+        const resUserStaff = await fetch(`${API_URL}/api/users?exclude_role=member`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
         const resPlans = await fetch(`${API_URL}/api/membership-plans`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
         const sessionData = await resSession.json();
         const usersData = await resUsers.json();
+        const usersDataStaff = await resUserStaff.json();
         const plansData = await resPlans.json();
         setForm(sessionData.data || null);
         setUsers(usersData.data?.users || []);
-        setPlans(plansData.data?.plans || []);
+        setStaff(usersDataStaff.data?.users || []);
+        setPlans(plansData.data?.membershipPlans || []);
       } catch (err) {
         setError('Gagal fetch data');
       }
@@ -63,21 +69,23 @@ export default function EditMembershipSessionPage() {
           user_id: Number(form.user_id),
           membership_plan_id: Number(form.membership_plan_id),
           start_date: startDateIso,
-          end_date: form.end_date,
+          // end_date: form.end_date,
           sales_type: form.sales_type,
           additional_fee: form.additional_fee ? Number(form.additional_fee) : 0,
-          discount_value: form.discount_value ? Number(form.discount_value) : 0,
           discount_type: form.discount_type,
-          discount_amount: form.discount_amount ? Number(form.discount_amount) : 0,
+          discount_amount: form.discount_type === 'amount' && form.discount_amount !== '' ? Number(form.discount_amount) : null,
+          discount_percent: form.discount_type === 'percent' && form.discount_percent !== '' ? Number(form.discount_percent) : null,
           extra_duration_days: form.extra_duration_days ? Number(form.extra_duration_days) : 0,
           note: form.note,
-          referral_user_id: form.referral_user_id ? Number(form.referral_user_id) : null,
+          referral_user_member_id: form.referral_user_member_id ? Number(form.referral_user_member_id) : null,
+          referral_user_staff_id: form.referral_user_staff_id ? Number(form.referral_user_staff_id) : null,
           status: form.status,
           is_active: form.is_active
         })
       });
       setSuccess('Session updated');
       setEdit(false);
+      setTimeout(() => window.location.reload(), 500);
     } catch (err) {
       setError('Gagal update session');
     }
@@ -121,11 +129,11 @@ export default function EditMembershipSessionPage() {
         </div>
         <div>
           <label className={`block font-medium text-gray-900 dark:text-white mb-1`}>Start Date <span className="text-red-600">*</span></label>
-          <input type="date" name="start_date" value={form.start_date} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} required disabled={!edit} />
+          <input type="date" name="start_date" value={formatDateForInput(form.start_date)} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} required disabled={!edit} />
         </div>
         {/* <div>
           <label className={`block font-medium text-gray-900 dark:text-white mb-1`}>End Date <span className="text-red-600">*</span></label>
-          <input type="date" name="end_date" value={form.end_date} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} required disabled={!edit} />
+          <input type="date" name="end_date" value={formatDateForInput(form.end_date)} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} required disabled={!edit} />
         </div> */}
         <div>
           <label className={`block font-medium text-gray-900 dark:text-white mb-1`}>Sales Type <span className="text-red-600">*</span></label>
@@ -155,10 +163,17 @@ export default function EditMembershipSessionPage() {
           <label className={`block font-medium text-gray-900 dark:text-white mb-1`}>Final Price <span className="text-red-600">*</span></label>
           <input type="number" name="final_price" value={form.final_price || ''} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} required disabled={!edit} />
         </div>
+        <div>
+              <label className={`block font-medium text-gray-900 dark:text-white mb-1`}>Referral Staff/Sales</label>
+              <select name="referral_user_staff_id" value={form.referral_user_staff_id || ''} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} disabled={!edit}>
+                <option value="">Pilih Referral Staff/Sales</option>
+                {staff.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+              </select>
+            </div>
         <div className="mb-2">
           <label className="inline-flex items-center">
             <input type="checkbox" checked={showAdditional} onChange={e => setShowAdditional(e.target.checked)} className="mr-2" />
-            <span className="font-medium text-gray-900 dark:text-white">Tampilkan Additional Settings</span>
+            <span className="font-medium text-gray-900 dark:text-white">View Additional Settings</span>
           </label>
         </div>
         {showAdditional && (
@@ -168,28 +183,32 @@ export default function EditMembershipSessionPage() {
               <input type="number" name="additional_fee" value={form.additional_fee || ''} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} disabled={!edit} />
             </div>
             <div>
-              <label className={`block font-medium text-gray-900 dark:text-white mb-1`}>Discount Value</label>
-              <input type="number" name="discount_value" value={form.discount_value || ''} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} disabled={!edit} />
-            </div>
-            <div>
-              <label className={`block font-medium text-gray-900 dark:text-white mb-1`}>Discount Type</label>
-              <select name="discount_type" value={form.discount_type || 'amount'} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} disabled={!edit}>
+              <label className="block font-medium text-gray-900 dark:text-white mb-1">Discount Type</label>
+              <select name="discount_type" value={form.discount_type} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} disabled={!edit}>
                 <option value="amount">Amount</option>
                 <option value="percent">Percent</option>
               </select>
             </div>
-            <div>
-              <label className={`block font-medium text-gray-900 dark:text-white mb-1`}>Discount Amount</label>
-              <input type="number" name="discount_amount" value={form.discount_amount || ''} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} disabled={!edit} />
-            </div>
+            {form.discount_type === 'amount' && (
+              <div>
+                <label className="block font-medium text-gray-900 dark:text-white mb-1">Value Amount</label>
+                <input type="number" name="discount_amount" value={form.discount_amount ?? ''} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} disabled={!edit} />
+              </div>
+            )}
+            {form.discount_type === 'percent' && (
+              <div>
+                <label className="block font-medium text-gray-900 dark:text-white mb-1">Value Percent</label>
+                <input type="number" name="discount_percent" value={form.discount_percent ?? ''} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} disabled={!edit} />
+              </div>
+            )}
             <div>
               <label className={`block font-medium text-gray-900 dark:text-white mb-1`}>Extra Duration Days</label>
               <input type="number" name="extra_duration_days" value={form.extra_duration_days || ''} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} disabled={!edit} />
             </div>
             <div>
-              <label className={`block font-medium text-gray-900 dark:text-white mb-1`}>Referral User</label>
-              <select name="referral_user_id" value={form.referral_user_id || ''} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} disabled={!edit}>
-                <option value="">Pilih Referral</option>
+              <label className={`block font-medium text-gray-900 dark:text-white mb-1`}>Referral Member</label>
+              <select name="referral_user_member_id" value={form.referral_user_member_id || ''} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} disabled={!edit}>
+                <option value="">Pilih Referral Member</option>
                 {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
               </select>
             </div>

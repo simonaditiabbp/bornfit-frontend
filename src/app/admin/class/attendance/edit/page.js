@@ -25,7 +25,9 @@ export default function EditAttendancePage() {
         const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
         const res = await fetch(`${API_URL}/api/classattendances/${id}`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
         if (!res.ok) throw new Error('Gagal fetch attendance');
-        const data = await res.json();
+        const dataClasses = await res.json();
+        const data = dataClasses.data;
+        console.log("dataClasses: ", dataClasses);
         const attForm = {
           class_id: data.class_id || "",
           member_id: data.member_id || "",
@@ -45,9 +47,11 @@ export default function EditAttendancePage() {
       try {
         const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
         const resClasses = await fetch(`${API_URL}/api/classes`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const resMembers = await fetch(`${API_URL}/api/users/filter?role=member&membership=active`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        if (resClasses.ok) setClasses(await resClasses.json());
-        if (resMembers.ok) setMembers(await resMembers.json());
+        const resMembers = await fetch(`${API_URL}/api/users?role=member&membership=active`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+        const dataClasses = await resClasses.json();
+        const dataMembers = await resMembers.json();
+        if (resClasses.ok) setClasses(dataClasses.data.classes);
+        if (resMembers.ok) setMembers(dataMembers.data.users);
       } catch {}
     };
     if (id) {
@@ -119,15 +123,15 @@ export default function EditAttendancePage() {
   if (loading || !form) return <div className="text-blue-600 text-center font-medium mt-20">Loading...</div>;
 
   return (
-    <div className="max-w-md mx-auto p-4 bg-white rounded shadow">
-      <h2 className="text-xl font-bold mb-4">Edit Attendance</h2>
+    <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-10 border border-gray-100">
+      <h2 className="text-3xl font-bold mb-8 text-blue-700 border-b pb-3">Edit Class Attendance</h2>
       {success && <div className="text-green-600 mb-2">{success}</div>}
       {error && <div className="text-red-600 mb-2">{error}</div>}
       {/* <form onSubmit={e => { e.preventDefault(); handleSave(); }}> */}
       <div className="space-y-4 mb-4">
         <div className="mb-2">
           <label className="block mb-1">Class</label>
-          <select name="class_id" value={form.class_id} onChange={e => setForm(f => ({ ...f, class_id: e.target.value }))} className={`w-full border px-2 py-1 rounded ${edit ? 'bg-white' : 'bg-gray-100'}`} required disabled={!edit}>
+          <select name="class_id" value={form.class_id} onChange={e => setForm(f => ({ ...f, class_id: e.target.value }))} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} required disabled={!edit}>
             <option value="">Pilih Class</option>
             {classes.map(cls => (
               <option key={cls.id} value={cls.id}>{cls.name ? cls.name : `Class #${cls.id}`}</option>
@@ -136,7 +140,7 @@ export default function EditAttendancePage() {
         </div>
         <div className="mb-2">
           <label className="block mb-1">Member</label>
-          <select name="member_id" value={form.member_id} onChange={e => setForm(f => ({ ...f, member_id: e.target.value }))} className={`w-full border px-2 py-1 rounded ${edit ? 'bg-white' : 'bg-gray-100'}`} required disabled={!edit}>
+          <select name="member_id" value={form.member_id} onChange={e => setForm(f => ({ ...f, member_id: e.target.value }))} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} required disabled={!edit}>
             <option value="">Pilih Member</option>
             {members.map(m => (
               <option key={m.id} value={m.id}>{m.name ? m.name : `Member #${m.id}`}</option>
@@ -145,11 +149,11 @@ export default function EditAttendancePage() {
         </div>
         <div className="mb-2">
           <label className="block mb-1">Checked In At</label>
-          <input name="checked_in_at" type="datetime-local" value={form.checked_in_at} onChange={e => setForm(f => ({ ...f, checked_in_at: e.target.value }))} className={`w-full border px-2 py-1 rounded ${edit ? 'bg-white' : 'bg-gray-100'}`} disabled={!edit} />
+          <input name="checked_in_at" type="datetime-local" value={form.checked_in_at} onChange={e => setForm(f => ({ ...f, checked_in_at: e.target.value }))} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} disabled={!edit} />
         </div>
         <div className="mb-2">
           <label className="block mb-1">Status</label>
-          <select name="status" value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} className={`w-full border px-2 py-1 rounded ${edit ? 'bg-white' : 'bg-gray-100'}`} disabled={!edit}>
+          <select name="status" value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} disabled={!edit}>
             <option value="Booked">Booked</option>
             <option value="Checked-in">Checked-in</option>
             <option value="Cancelled">Cancelled</option>

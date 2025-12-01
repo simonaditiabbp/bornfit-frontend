@@ -37,7 +37,7 @@ export default function MembershipSessionPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6 text-blue-700">Membership Sessions</h1>
+      <h1 className="text-2xl font-bold mb-6 text-blue-700">Membership Details</h1>
       <div className="mb-4 flex items-center justify-between">
         <input
           type="text"
@@ -50,6 +50,7 @@ export default function MembershipSessionPage() {
       </div>
       {loading ? <div className="text-blue-600">Loading...</div> : (
         <div className="bg-white rounded-xl shadow p-6">
+          {console.log('Filtered Sessions:', filteredSessions)}
           <MembershipSessionDataTable data={filteredSessions} />
         </div>
       )}

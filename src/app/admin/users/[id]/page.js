@@ -28,8 +28,8 @@ export default function UserDetailPage() {
     nik_passport: '',
     emergency_contact_name: '',
     emergency_contact_phone: '',
-    latitude: null,
-    longitude: null,
+    // latitude: null,
+    // longitude: null,
   });
   const [token, setToken] = useState('');
   const [photo, setPhoto] = useState(null);
@@ -82,8 +82,8 @@ export default function UserDetailPage() {
           nik_passport: userData.nik_passport || '',
           emergency_contact_name: userData.emergency_contact_name || '',
           emergency_contact_phone: userData.emergency_contact_phone || '',
-          latitude: userData.latitude && !isNaN(Number(userData.latitude)) ? Number(userData.latitude) : null,
-          longitude: userData.longitude && !isNaN(Number(userData.longitude)) ? Number(userData.longitude) : null,
+          // latitude: userData.latitude && !isNaN(Number(userData.latitude)) ? Number(userData.latitude) : null,
+          // longitude: userData.longitude && !isNaN(Number(userData.longitude)) ? Number(userData.longitude) : null,
         });
       } catch (err) {
         setBackendError(true);
@@ -115,11 +115,23 @@ export default function UserDetailPage() {
       if (photo) {
         const formData = new FormData();
         formData.append('name', form.name);
-        formData.append('email', form.email);
+        // formData.append('email', form.email);
         formData.append('role', form.role);
-        formData.append('date_of_birth', dobIso);
-        formData.append('latitude', form.latitude && !isNaN(Number(form.latitude)) ? Number(form.latitude) : null);
-        formData.append('longitude', form.longitude && !isNaN(Number(form.longitude)) ? Number(form.longitude) : null);
+        // formData.append('date_of_birth', dobIso);
+        if (form.email && form.email.trim() !== "") {
+          formData.append('email', form.email);
+        }
+        if (form.date_of_birth && form.date_of_birth.trim() !== "") {
+          let dobIso = form.date_of_birth;
+          if (dobIso.length === 10) dobIso += "T00:00:00.000Z";
+          formData.append('date_of_birth', dobIso);
+        }
+        if (form.nik_passport && form.nik_passport.trim() !== "") {
+          formData.append('nik_passport', form.nik_passport);
+        }
+
+        // formData.append('latitude', form.latitude && !isNaN(Number(form.latitude)) ? Number(form.latitude) : null);
+        // formData.append('longitude', form.longitude && !isNaN(Number(form.longitude)) ? Number(form.longitude) : null);
         formData.append('photo', photo);
         res = await fetch(`${API_URL}/api/users/${id}`, {
           method: 'PUT',
@@ -128,15 +140,17 @@ export default function UserDetailPage() {
         });
         data = await res.json();
       } else {
+        const cleanForm = {
+          ...form,
+          email: form.email?.trim() === "" ? null : form.email,
+          nik_passport: form.nik_passport?.trim() === "" ? null : form.nik_passport,
+          date_of_birth: form.date_of_birth?.trim() === "" ? null : dobIso,
+        };
+
         res = await fetch(`${API_URL}/api/users/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({
-            ...form,
-            date_of_birth: dobIso,
-            latitude: form.latitude && !isNaN(Number(form.latitude)) ? Number(form.latitude) : null,
-            longitude: form.longitude && !isNaN(Number(form.longitude)) ? Number(form.longitude) : null
-          }),
+          body: JSON.stringify(cleanForm),
         });
         const userData = await res.json();
         data = userData;
@@ -216,25 +230,26 @@ export default function UserDetailPage() {
             </h2>
 
             {/* PHOTO USER */}
-            <div className="flex flex-col items-center mb-8">
-              {(photoPreview || user?.photo) ? (
-                <Image
-                  src={
-                    photoPreview ||
-                    (user.photo.startsWith('http')
-                      ? user.photo
-                      : `${API_URL?.replace(/\/$/, '')}${user.photo}`)
-                  }
-              alt="User Photo"
-                  width={128}
-                  height={128}
-                  className="w-32 h-32 object-cover rounded-full border border-gray-300 shadow mb-3"
-                />
-              ) : (
-                <div className="w-32 h-32 flex items-center justify-center bg-gray-200 rounded-full text-gray-400 mb-3">
-                  No photo available
-                </div>
-              )}
+              <div className="flex flex-col items-center mb-8">
+
+                {(photoPreview || user?.photo) ? (
+                  <Image
+                    src={
+                      photoPreview ||
+                      (user.photo.startsWith("http")
+                        ? user.photo
+                        : `${API_URL?.replace(/\/$/, "")}${user.photo}`)
+                    }
+                    alt="User Photo"
+                    width={128}
+                    height={128}
+                    className="w-32 h-32 object-cover rounded-full border border-gray-300 shadow mb-3"
+                  />
+                ) : (
+                  <div className="w-32 h-32 grid place-items-center bg-gray-200 rounded-full text-gray-400 mb-3 text-center">
+                    No photo available
+                  </div>
+                )}
 
               <span className="text-sm text-gray-200 font-medium">Photo</span>
 
@@ -305,7 +320,7 @@ export default function UserDetailPage() {
                         }}
                         className="px-4 py-2 bg-green-600 text-white rounded"
                       >
-                        Capture
+                        Capture Photo
                       </button>
 
                       <button
@@ -348,6 +363,8 @@ export default function UserDetailPage() {
                   <option value="member">Member</option>
                   <option value="admin">Admin</option>
                   <option value="opscan">Opscan</option>
+                  <option value="trainer">Trainer</option>
+                  <option value="instructor">Instructor</option>
                 </select>
               </div>
               <div>

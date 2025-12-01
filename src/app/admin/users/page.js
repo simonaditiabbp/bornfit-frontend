@@ -49,7 +49,6 @@ function RenewalActionsCell({ row, membership }) {
           'Content-Type': 'application/json',
         },
       });
-      console.log("res", res);
       if (res.ok) {
         alert('Renewal email sent successfully!');
       } else {
@@ -195,11 +194,10 @@ export default function AdminUsersPage() {
         } else {
           const searchQuery = '';
           const usersRes = await fetchWith401(`${API_URL}/api/users?page=${page}&limit=${limit}${searchQuery}`);
-          console.log("usersRes: ", usersRes)
-              setUsers(Array.isArray(usersRes.data.users) ? usersRes.data.users : []);
-              setTotal(usersRes.data.total || 0);
-              setHasNext(usersRes.hasNext || false);
-              setHasPrev(usersRes.hasPrev || false);
+          setUsers(Array.isArray(usersRes.data.users) ? usersRes.data.users : []);
+          setTotal(usersRes.data.total || 0);
+          setHasNext(usersRes.hasNext || false);
+          setHasPrev(usersRes.hasPrev || false);
         }
         // memberships and checkins can still be fetched all at once (or paginated if needed)
         const [membershipsRes, checkinsRes] = await Promise.all([
@@ -237,7 +235,7 @@ export default function AdminUsersPage() {
   // Kolom untuk DataTable
   const startNo = (page - 1) * limit;
   const columns = [
-    { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px', center: true },
+    { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px', center: "true" },
     {
       name: 'Name',
       selector: row => row.name,
@@ -249,18 +247,17 @@ export default function AdminUsersPage() {
       selector: row => row.email,
       sortable: true,
     },
-    {
-      name: 'Status',
-      cell: row => {
-        const membership = getMembership(row.id);
-        // console.log("membership for user ", row.id, membership);
-        return membership && membership.is_active ? (
-          <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-bold">Active</span>
-        ) : (
-          <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-bold">Inactive</span>
-        );
-      },
-    },
+    // {
+    //   name: 'Status',
+    //   cell: row => {
+    //     const membership = getMembership(row.id);
+    //     return membership && membership.is_active ? (
+    //       <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-bold">Active</span>
+    //     ) : (
+    //       <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-bold">Inactive</span>
+    //     );
+    //   },
+    // },
     {
       name: 'Last Check-in',
       cell: row => {

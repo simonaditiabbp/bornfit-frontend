@@ -61,12 +61,19 @@ export default function InsertMembershipPlanPage() {
     setError('');
     try {
       let availableFromIso = form.available_from;
-      if (availableFromIso && availableFromIso.length === 16) {
-        availableFromIso = availableFromIso + ':00.000Z';
+      if (availableFromIso && availableFromIso.length === 10) {
+          availableFromIso = availableFromIso + 'T00:00:00.000Z';
       }
+      else if (availableFromIso && availableFromIso.length === 16) {
+          availableFromIso = availableFromIso + ':00.000Z';
+      }
+
       let availableUntilIso = form.available_until;
-      if (availableUntilIso && availableUntilIso.length === 16) {
-        availableUntilIso = availableUntilIso + ':00.000Z';
+      if (availableUntilIso && availableUntilIso.length === 10) {
+          availableUntilIso = availableUntilIso + 'T00:00:00.000Z';
+      }
+      else if (availableUntilIso && availableUntilIso.length === 16) {
+          availableUntilIso = availableUntilIso + ':00.000Z';
       }
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
       await fetch(`${API_URL}/api/membership-plans`, {
@@ -178,6 +185,26 @@ export default function InsertMembershipPlanPage() {
             <div className="flex-1">
                 <label className="block mb-1">Available From</label>
                 <input
+                type="date"
+                name="available_from"
+                value={form.available_from}
+                onChange={handleChange}
+                className="w-full border border-gray-300 p-2 rounded"
+                />
+            </div>
+            <div className="flex-1">
+                <label className="block mb-1">Available Until</label>
+                <input
+                type="date"
+                name="available_until"
+                value={form.available_until}
+                onChange={handleChange}
+                className="w-full border border-gray-300 p-2 rounded"
+                />
+            </div>
+            {/* <div className="flex-1">
+                <label className="block mb-1">Available From</label>
+                <input
                 type="datetime-local"
                 name="available_from"
                 value={form.available_from}
@@ -194,7 +221,7 @@ export default function InsertMembershipPlanPage() {
                 onChange={handleChange}
                 className="w-full border border-gray-300 p-2 rounded"
                 />
-            </div>
+            </div> */}
         </div>
         <div>
           <label className="block mb-1">Always Available</label>

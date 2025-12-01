@@ -24,9 +24,36 @@ export default function PTBookingDataTable({
     { name: 'Booking Time', selector: row => row.booking_time?.slice(0,16).replace('T',' '), sortable: true },
     { name: 'Status', selector: row => row.status, sortable: true },
     {
+      name: 'Status',
+      cell: row => {
+        const status = row.status?.toLowerCase();
+
+        const styleMap = {
+          completed:   "bg-green-100 text-green-700",
+          cancelled:  "bg-red-100 text-red-700",
+          booked:  "bg-yellow-100 text-yellow-700",
+        };
+
+        const label = status
+          ? status.charAt(0).toUpperCase() + status.slice(1)
+          : "";
+
+        return (
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-bold ${
+              styleMap[status] || "bg-gray-100 text-gray-700"
+            }`}
+          >
+            {label}
+          </span>
+        );
+      },
+      sortable: true
+    },
+    {
       name: 'Aksi',
       cell: row => (
-        <Link href={`/admin/pt/booking/edit?id=${row.id}`} className="bg-gray-400 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">Edit</Link>
+        <Link href={`/admin/pt/booking/edit?id=${row.id}`} className="bg-gray-400 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">Detail</Link>
       ),
       ignoreRowClick: true,
     },

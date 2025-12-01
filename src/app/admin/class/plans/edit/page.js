@@ -104,34 +104,34 @@ export default function ClassPlanEditPage() {
   if (loading || !form) return <div className="text-blue-600 text-center font-medium mt-20">Loading...</div>;
 
   return (
-    <div className="max-w-2xl mx-auto bg-white p-10 rounded-2xl shadow-lg mt-12 border border-gray-100">
-      <h1 className="text-3xl font-bold mb-8 text-blue-700 text-center">Edit Class Plan</h1>
+    <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-10 border border-gray-100">
+      <h1 className="text-3xl font-bold mb-8 text-blue-700 border-b pb-3">Edit Class Plan</h1>
       {success && <div className="text-green-600 mb-2">{success}</div>}
       {error && <div className="text-red-600 mb-2">{error}</div>}
       {/* <form onSubmit={e => { e.preventDefault(); handleSave(); }}> */}
       <div className="space-y-4 mb-4">
         <div className="mb-4">
           <label className="block mb-1">Name</label>
-          <input name="name" type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className={`w-full border px-2 py-1 rounded ${edit ? 'bg-white' : 'bg-gray-100'}`} required disabled={!edit} />
+          <input name="name" type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} required disabled={!edit} />
         </div>
         <div className="mb-4">
           <label className="block mb-1">Access Type</label>
-          <select name="access_type" value={form.access_type} onChange={e => setForm(f => ({ ...f, access_type: e.target.value }))} className={`w-full border px-2 py-1 rounded ${edit ? 'bg-white' : 'bg-gray-100'}`} disabled={!edit}>
+          <select name="access_type" value={form.access_type} onChange={e => setForm(f => ({ ...f, access_type: e.target.value }))} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} disabled={!edit}>
             <option value="Regular">Regular</option>
             <option value="Premium">Premium</option>
           </select>
         </div>
         <div className="mb-4">
           <label className="block mb-1">Max Visitor</label>
-          <input name="max_visitor" type="number" value={form.max_visitor} onChange={e => setForm(f => ({ ...f, max_visitor: Number(e.target.value) }))} className={`w-full border px-2 py-1 rounded ${edit ? 'bg-white' : 'bg-gray-100'}`} min={0} disabled={!edit} />
+          <input name="max_visitor" type="number" value={form.max_visitor} onChange={e => setForm(f => ({ ...f, max_visitor: Number(e.target.value) }))} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} min={0} disabled={!edit} />
         </div>
         <div className="mb-4">
           <label className="block mb-1">Minutes per Session</label>
-          <input name="minutes_per_session" type="number" value={form.minutes_per_session} onChange={e => setForm(f => ({ ...f, minutes_per_session: Number(e.target.value) }))} className={`w-full border px-2 py-1 rounded ${edit ? 'bg-white' : 'bg-gray-100'}`} min={0} disabled={!edit} />
+          <input name="minutes_per_session" type="number" value={form.minutes_per_session} onChange={e => setForm(f => ({ ...f, minutes_per_session: Number(e.target.value) }))} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} min={0} disabled={!edit} />
         </div>
         <div className="mb-4">
           <label className="block mb-1">Description</label>
-          <textarea name="description" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} className={`w-full border px-2 py-1 rounded ${edit ? 'bg-white' : 'bg-gray-100'}`} disabled={!edit} />
+          <textarea name="description" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} disabled={!edit} />
         </div>
         <div className="mb-4 flex items-center gap-2">
           <input id="unlimited_monthly_session" name="unlimited_monthly_session" type="checkbox" checked={form.unlimited_monthly_session} onChange={e => setForm({ ...form, unlimited_monthly_session: e.target.checked })} disabled={!edit} />

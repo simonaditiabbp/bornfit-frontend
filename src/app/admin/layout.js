@@ -230,7 +230,7 @@ export default function AdminLayout({ children }) {
                       className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/membership/session") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
                     >
                       <FaCalendarCheck className="inline-block transition duration-75 mr-2" /> 
-                      <span className={navTextClass}>Session</span>
+                      <span className={navTextClass}>Details</span>
                     </Link>
                   </li>
                   <li>
@@ -281,7 +281,7 @@ export default function AdminLayout({ children }) {
                       href="/admin/pt/session" 
                       className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/pt/session") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}>
                       <FaCalendarCheck className="inline-block transition duration-75 mr-2" />
-                      <span className={navTextClass}>Session</span>
+                      <span className={navTextClass}>Details</span>
                     </Link>
                   </li>
                   <li>
@@ -332,7 +332,7 @@ export default function AdminLayout({ children }) {
                       className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/class/session") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"}`}
                     >
                     <FaCalendarCheck className="inline-block transition duration-75 mr-2" /> 
-                    <span className={navTextClass}>Session</span>
+                    <span className={navTextClass}>Details</span>
                     </Link>
                   </li>
                   <li>
@@ -352,6 +352,18 @@ export default function AdminLayout({ children }) {
                       <FaCheckCircle className="inline-block transition duration-75 mr-2" /> 
                       <span className={navTextClass}>Attendance</span>
                     </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/class/classpurchase"
+                      className={`block py-2 px-2 rounded font-semibold flex items-center gap-2 ${pathname.startsWith("/admin/class/purchase") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
+                    ><FaCheckCircle className="inline-block" /> Class Purchase</Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/class/classpurchase"
+                      className={`block py-2 px-2 rounded font-semibold flex items-center gap-2 ${pathname.startsWith("/admin/class/purchase") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
+                    ><FaCheckCircle className="inline-block" /> Class Purchase</Link>
                   </li>
                 </ul>
               )}

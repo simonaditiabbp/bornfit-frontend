@@ -27,17 +27,20 @@ export default function ClassSessionEditPage() {
       try {
         const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
         const res = await fetch(`${API_URL}/api/eventplans`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        if (res.ok) setPlans(await res.json());
+        const dataPlans = await res.json();
+        if (res.ok) setPlans(dataPlans.data.plans);
       } catch {}
     };
     fetchPlans();
     const fetchUsers = async () => {
       try {
         const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-        const resMember = await fetch(`${API_URL}/api/users/filter?role=member&membership=active`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const resInstructor = await fetch(`${API_URL}/api/users/filter?role=instructor`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        if (resMember.ok) setMembers(await resMember.json());
-        if (resInstructor.ok) setInstructors(await resInstructor.json());
+        const resMember = await fetch(`${API_URL}/api/users?role=member&membership=active`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+        const resInstructor = await fetch(`${API_URL}/api/users?role=instructor`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+        const dataMember = await resMember.json();
+        const dataInstructor = await resInstructor.json();
+        if (resMember.ok) setMembers(dataMember.data.users);
+        if (resInstructor.ok) setInstructors(dataInstructor.data.users);
       } catch {}
     };
     fetchUsers();
@@ -48,7 +51,8 @@ export default function ClassSessionEditPage() {
         const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
         const res = await fetch(`${API_URL}/api/classes/${id}`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
         if (!res.ok) throw new Error("Gagal fetch class");
-        const data = await res.json();
+        const dataClass = await res.json();
+        const data = dataClass.data;
         setSession(data);
         setForm({
           event_plan_id: data.event_plan_id || "",
@@ -96,6 +100,10 @@ export default function ClassSessionEditPage() {
     setSuccess("");
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
+      const class_date_iso = form.class_date ? `${form.class_date}T00:00:00.000Z` : "";
+      const start_time_iso = form.class_date && form.start_time ? `${form.class_date}T${form.start_time}:00.000Z` : "";
+      const end_time_iso = form.class_date && form.end_time ? `${form.class_date}T${form.end_time}:00.000Z` : "";
+      
       const res = await fetch(`${API_URL}/api/classes/${id}`, {
         method: "PUT",
         headers: {
@@ -105,9 +113,9 @@ export default function ClassSessionEditPage() {
         body: JSON.stringify({
           event_plan_id: Number(form.event_plan_id),
           instructor_id: Number(form.instructor_id),
-          class_date: form.class_date,
-          start_time: form.start_time,
-          end_time: form.end_time,
+          class_date: class_date_iso,
+          start_time: start_time_iso,
+          end_time: end_time_iso,
           class_type: form.class_type,
           total_manual_checkin: Number(form.total_manual_checkin),
           notes: form.notes,
@@ -149,12 +157,12 @@ export default function ClassSessionEditPage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto bg-white p-10 rounded-2xl shadow-lg mt-12 border border-gray-100">
-      <h1 className="text-2xl font-bold mb-8 text-blue-700 text-center">Edit Class</h1>
+    <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-10 border border-gray-100">
+      <h1 className="text-3xl font-bold mb-8 text-blue-700 border-b pb-3">Edit Class</h1>
       <div className="space-y-4 mb-4">
         <div>
           <label className="block mb-1">Event Plan</label>
-          <select name="event_plan_id" className={`w-full border rounded px-3 py-2 ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.event_plan_id} onChange={e => setForm(f => ({ ...f, event_plan_id: e.target.value }))} required disabled={!edit}>
+          <select name="event_plan_id" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.event_plan_id} onChange={e => setForm(f => ({ ...f, event_plan_id: e.target.value }))} required disabled={!edit}>
             <option value="">Pilih Event Plan</option>
             {plans.map(plan => (
               <option key={plan.id} value={plan.id}>{plan.name}</option>
@@ -163,7 +171,7 @@ export default function ClassSessionEditPage() {
         </div>
         <div>
           <label className="block mb-1">Instructor</label>
-          <select name="instructor_id" className={`w-full border rounded px-3 py-2 ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.instructor_id} onChange={e => setForm(f => ({ ...f, instructor_id: e.target.value }))} required disabled={!edit}>
+          <select name="instructor_id" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.instructor_id} onChange={e => setForm(f => ({ ...f, instructor_id: e.target.value }))} required disabled={!edit}>
             <option value="">Pilih Instructor</option>
             {instructors.map(i => (
               <option key={i.id} value={i.id}>{i.name}</option>
@@ -172,31 +180,31 @@ export default function ClassSessionEditPage() {
         </div>
         <div>
           <label className="block mb-1">Class Date</label>
-          <input name="class_date" type="date" className={`w-full border rounded px-3 py-2 ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.class_date} onChange={e => setForm(f => ({ ...f, class_date: e.target.value }))} required disabled={!edit} />
+          <input name="class_date" type="date" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.class_date} onChange={e => setForm(f => ({ ...f, class_date: e.target.value }))} required disabled={!edit} />
         </div>
         <div>
           <label className="block mb-1">Start Time</label>
-          <input name="start_time" type="time" className={`w-full border rounded px-3 py-2 ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.start_time} onChange={e => setForm(f => ({ ...f, start_time: e.target.value }))} required disabled={!edit} />
+          <input name="start_time" type="time" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.start_time} onChange={e => setForm(f => ({ ...f, start_time: e.target.value }))} required disabled={!edit} />
         </div>
         <div>
           <label className="block mb-1">End Time</label>
-          <input name="end_time" type="time" className={`w-full border rounded px-3 py-2 ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.end_time} onChange={e => setForm(f => ({ ...f, end_time: e.target.value }))} required disabled={!edit} />
+          <input name="end_time" type="time" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.end_time} onChange={e => setForm(f => ({ ...f, end_time: e.target.value }))} required disabled={!edit} />
         </div>
         <div>
           <label className="block mb-1">Class Type</label>
-          <select name="class_type" className={`w-full border rounded px-3 py-2 ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.class_type} onChange={e => setForm(f => ({ ...f, class_type: e.target.value }))} required disabled={!edit}>
+          <select name="class_type" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.class_type} onChange={e => setForm(f => ({ ...f, class_type: e.target.value }))} required disabled={!edit}>
             <option value="Membership Only">Membership Only</option>
             <option value="Free">Free</option>
             <option value="Both">Both</option>
           </select>
         </div>
-        <div>
+        {/* <div>
           <label className="block mb-1">Total Manual Checkin</label>
-          <input name="total_manual_checkin" type="number" className={`w-full border rounded px-3 py-2 ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.total_manual_checkin} onChange={e => setForm(f => ({ ...f, total_manual_checkin: e.target.value }))} required disabled={!edit} />
-        </div>
+          <input name="total_manual_checkin" type="number" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.total_manual_checkin} onChange={e => setForm(f => ({ ...f, total_manual_checkin: e.target.value }))} required disabled={!edit} />
+        </div> */}
         <div>
           <label className="block mb-1">Notes</label>
-          <textarea name="notes" className={`w-full border rounded px-3 py-2 ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} disabled={!edit} />
+          <textarea name="notes" className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} disabled={!edit} />
         </div>
       </div>
       {success && <div className="text-green-600 font-semibold mb-2">{success}</div>}

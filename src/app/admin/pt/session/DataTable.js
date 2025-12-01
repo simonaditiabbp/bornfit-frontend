@@ -5,7 +5,7 @@ export default function PTSessionDataTable({
   data,
   plans = [],
   members = [],
-  trainners = [],
+  trainers = [],
   setQrSession,
   pagination = false,
   paginationServer = false,
@@ -19,7 +19,7 @@ export default function PTSessionDataTable({
   const startNo = (currentPage - 1) * paginationPerPage;
   const columns = [
   { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px',  },
-    { name: 'Name', selector: row => row.name, sortable: true },
+    // { name: 'Name', selector: row => row.name, sortable: true },
     { name: 'Plan', selector: row => {
       const plan = plans.find(p => p.id === row.pt_session_plan_id);
       return plan ? (plan.name || `Plan #${plan.id}`) : row.pt_session_plan_id;
@@ -29,11 +29,48 @@ export default function PTSessionDataTable({
       return member ? member.name : row.user_member_id;
     }, sortable: true },
     { name: 'Personal Trainer', selector: row => {
-      const pt = trainners.find(t => t.id === row.user_pt_id);
+      const pt = trainers.find(t => t.id === row.user_pt_id);
       return pt ? pt.name : row.user_pt_id;
     }, sortable: true },
     { name: 'Join Date', selector: row => row.join_date?.slice(0,10), sortable: true },
-    { name: 'Status', selector: row => row.status, sortable: true },
+    {
+      name: 'Remaining Session',
+      selector: row => {
+        const plan = plans.find(p => p.id === row.pt_session_plan_id);
+        const max = plan ? plan.max_session : '...';
+        console.log("row.remaining_session:", row.remaining_session);
+        const sisa = typeof row.remaining_session === 'number' ? row.remaining_session : '...';
+        return `${sisa} of ${max} sessions remaining`;
+      },
+      sortable: true
+    },
+    {
+      name: 'Status',
+      cell: row => {
+        const status = row.status?.toLowerCase();
+
+        const styleMap = {
+          active:   "bg-green-100 text-green-700",
+          expired:  "bg-red-100 text-red-700",
+          pending:  "bg-yellow-100 text-yellow-700",
+        };
+
+        const label = status
+          ? status.charAt(0).toUpperCase() + status.slice(1)
+          : "";
+
+        return (
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-bold ${
+              styleMap[status] || "bg-gray-100 text-gray-700"
+            }`}
+          >
+            {label}
+          </span>
+        );
+      },
+      sortable: true
+    },
     {
       name: 'Aksi',
       cell: row => (
