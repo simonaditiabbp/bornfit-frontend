@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { FaCalendar, FaAngleRight } from 'react-icons/fa';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -106,47 +108,63 @@ export default function InsertAttendancePage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto bg-white p-10 rounded-2xl shadow-lg mt-12 border border-gray-100">
-      <h2 className="text-3xl font-bold mb-8 text-blue-700 text-center">Add Attendance</h2>
-      {error && <div className="text-red-600 mb-2">{error}</div>}
-      <form onSubmit={handleSubmit}>
-        <div className="mb-2">
-          <label className="block mb-1">Class</label>
-          <select name="class_id" value={form.class_id} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" required>
-            <option value="">Pilih Class</option>
-            {classes.map(cls => (
-              <option key={cls.id} value={cls.id}>{cls.name ? cls.name : `Class #${cls.id}`}</option>
-            ))}
-          </select>
-        </div>
-        <div className="mb-2">
-          <label className="block mb-1">Member</label>
-          <select name="member_id" value={form.member_id} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" required>
-            <option value="">Pilih Member</option>
-            {members.map(m => (
-              <option key={m.id} value={m.id}>{m.name ? m.name : `Member #${m.id}`}</option>
-            ))}
-          </select>
-        </div>
-        <div className="mb-2">
-          <label className="block mb-1">Checked In At</label>
-          <input name="checked_in_at" type="datetime-local" value={form.checked_in_at} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" />
-        </div>
-        <div className="mb-2">
-          <label className="block mb-1">Status</label>
-          <select name="status" value={form.status} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded">
-            <option value="Booked">Booked</option>
-            <option value="Checked-in">Checked-in</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
-        </div>
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded" disabled={loading}>
-          {loading ? "Saving..." : "Create"}
-        </button>
-        <button type="button" className="bg-gray-400 text-white px-4 py-2 rounded ml-2" onClick={() => router.push('/admin/class/attendance')}>
-          Cancel
-        </button>
-      </form>
+    <div>
+      {/* Breadcrumb Navigation */}
+      <div className="flex items-center gap-2 text-sm mb-6 bg-gray-800 px-4 py-3 rounded-lg">
+        <FaCalendar className="text-amber-300" />
+        <Link href="/admin/dashboard" className="text-gray-400 hover:text-amber-300 transition-colors">
+          Dashboard
+        </Link>
+        <FaAngleRight className="text-gray-500 text-xs" />
+        <Link href="/admin/class/attendance" className="text-gray-400 hover:text-amber-300 transition-colors">
+          Class Attendance
+        </Link>
+        <FaAngleRight className="text-gray-500 text-xs" />
+        <span className="text-gray-200 font-medium">Create</span>
+      </div>
+
+      <div className="max-w-3xl mx-auto bg-gray-800 p-10 rounded-2xl shadow-lg border border-gray-700">
+        <h2 className="text-3xl font-bold mb-8 text-amber-300 text-center">Add Attendance</h2>
+        {error && <div className="text-red-400 mb-2">{error}</div>}
+        <form onSubmit={handleSubmit}>
+          <div className="mb-2">
+            <label className="block mb-1 text-gray-200">Class</label>
+            <select name="class_id" value={form.class_id} onChange={handleChange} className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200" required>
+              <option value="">Pilih Class</option>
+              {classes.map(cls => (
+                <option key={cls.id} value={cls.id}>{cls.name ? cls.name : `Class #${cls.id}`}</option>
+              ))}
+            </select>
+          </div>
+          <div className="mb-2">
+            <label className="block mb-1 text-gray-200">Member</label>
+            <select name="member_id" value={form.member_id} onChange={handleChange} className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200" required>
+              <option value="">Pilih Member</option>
+              {members.map(m => (
+                <option key={m.id} value={m.id}>{m.name ? m.name : `Member #${m.id}`}</option>
+              ))}
+            </select>
+          </div>
+          <div className="mb-2">
+            <label className="block mb-1 text-gray-200">Checked In At</label>
+            <input name="checked_in_at" type="datetime-local" value={form.checked_in_at} onChange={handleChange} className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200" />
+          </div>
+          <div className="mb-2">
+            <label className="block mb-1 text-gray-200">Status</label>
+            <select name="status" value={form.status} onChange={handleChange} className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200">
+              <option value="Booked">Booked</option>
+              <option value="Checked-in">Checked-in</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+          <button type="submit" className="bg-amber-400 text-gray-900 px-4 py-2 rounded font-semibold hover:bg-amber-500" disabled={loading}>
+            {loading ? "Saving..." : "Create"}
+          </button>
+          <button type="button" className="bg-gray-600 text-white px-4 py-2 rounded font-semibold hover:bg-gray-500 ml-2" onClick={() => router.push('/admin/class/attendance')}>
+            Cancel
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

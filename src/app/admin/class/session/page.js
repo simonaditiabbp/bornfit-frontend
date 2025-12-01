@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import BackendErrorFallback from "@/components/BackendErrorFallback";
 import Link from "next/link";
 import { jsPDF } from "jspdf";
+import { FaPlus, FaIdCard, FaAngleRight } from 'react-icons/fa';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -115,28 +116,36 @@ export default function ClassSessionListPage() {
     return <BackendErrorFallback onRetry={() => window.location.reload()} />;
   }
   if (loading) {
-    return <div className="text-blue-600 text-center font-medium mt-20">Loading...</div>;
+    return <div className="text-amber-300 text-center font-medium mt-20">Loading...</div>;
   }
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-blue-700">Class List</h1>
-        <Link
-          href="/admin/class/session/insert"
-          className="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700"
-        >
-          Tambah Class
+      {/* Breadcrumb Navigation */}
+      <div className="flex items-center gap-2 text-sm mb-6 bg-gray-800 px-4 py-3 rounded-lg">
+        <FaIdCard className="text-amber-300" />
+        <Link href="/admin/dashboard" className="text-gray-400 hover:text-amber-300 transition-colors">
+          Dashboard
         </Link>
+        <FaAngleRight className="text-gray-500 text-xs" />
+        <span className="text-gray-200 font-medium">Class Session</span>
       </div>
-      <div className="mb-4 flex items-center justify-between">
+
+      <div className="flex items-center justify-between mb-6">
         <input
           type="text"
           placeholder="Search member/plan/status..."
-          className="w-full max-w-xs p-2 border border-blue-300 rounded focus:outline-blue-500 text-base"
+          className="w-full max-w-md p-3 border-2 border-amber-200 rounded-lg focus:outline-none focus:border-amber-400 text-base bg-gray-700 text-gray-200 placeholder-gray-400"
           value={searchInput}
           onChange={e => { setSearchInput(e.target.value); }}
         />
+        <Link
+          href="/admin/class/session/insert"
+          className="bg-amber-400 text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-amber-500 transition-colors flex items-center gap-2"
+        >
+          <FaPlus />
+          Tambah Class
+        </Link>
       </div>
       <ClassSessionDataTable
         data={sessions}

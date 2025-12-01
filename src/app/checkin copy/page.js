@@ -203,7 +203,7 @@ export default function BarcodePage() {
     }, 400);
   };
 
-  // Handler for booking a class (Gold membership only)
+  // Handler for booking a class
   const handleBookClass = async (classId) => {
     setBookingClassLoading(true);
     setBookingClassError("");
@@ -255,12 +255,6 @@ export default function BarcodePage() {
       setBookingClassError("Gagal booking kelas");
     }
     setBookingClassLoading(false);
-  };
-
-  // Handler for buying a class (Silver/other memberships)
-  const handleBuyClass = (classId) => {
-    // Redirect ke halaman class purchase insert dengan user_id dan class_id
-    router.push(`/admin/class/classpurchase/insert?user_id=${user.id}&class_id=${classId}`);
   };
 
   // Handle response dari backend (dipakai oleh scan dan manual input)
@@ -699,14 +693,14 @@ useEffect(() => {
       }
     }
     return (
-      <div className="mt-6 p-4 bg-gray-700 rounded-lg border border-gray-600 shadow">
-        <div className="font-semibold text-amber-400 mb-2">PT Session Info</div>
-        <div className="mb-1 text-gray-200"><span className="font-semibold">Session Name:</span> {ptsession.name || ptplan?.name}</div>
-        <div className="mb-1 text-gray-200"><span className="font-semibold">Session Period:</span> {ptPeriod}</div>
-        <div className="mb-1 text-gray-200"><span className="font-semibold">Trainer:</span> {trainer?.name}</div>
-        <div className="mb-1 text-gray-200"><span className="font-semibold">Plan Duration:</span> {ptplan?.duration} days</div>
-        <div className="mb-1 text-gray-200"><span className="font-semibold">Max Session:</span> {ptplan?.max_session}</div>
-        <div className="mb-1 text-gray-200">
+      <div className="mt-6 p-4 bg-gray-50 rounded-xl border-1 border-blue-300 shadow">
+        <div className="font-semibold text-blue-600 mb-2">PT Session Info</div>
+        <div className="mb-1"><span className="font-semibold">Session Name:</span> {ptsession.name || ptplan?.name}</div>
+        <div className="mb-1"><span className="font-semibold">Session Period:</span> {ptPeriod}</div>
+        <div className="mb-1"><span className="font-semibold">Trainer:</span> {trainer?.name}</div>
+        <div className="mb-1"><span className="font-semibold">Plan Duration:</span> {ptplan?.duration} days</div>
+        <div className="mb-1"><span className="font-semibold">Max Session:</span> {ptplan?.max_session}</div>
+        <div className="mb-1">
           <span className="font-semibold">Session Status:</span> {' '}
           {ptsession.status === 'active' && (
             <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full font-bold">Active</span>
@@ -722,7 +716,7 @@ useEffect(() => {
           )}
         </div>
         {ptRemainingText && (
-          <div className={`mt-3 font-bold text-lg ${ptDiffMs > 0 ? 'text-red-400' : 'text-gray-500'}`}>
+          <div className={`mt-3 font-bold text-lg ${ptDiffMs > 0 ? 'text-red-600' : 'text-gray-500'}`}>
             <span className="font-semibold">PT Session deadline:</span> {ptRemainingText}
           </div>
         )}
@@ -731,12 +725,12 @@ useEffect(() => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 px-2 py-8">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-2 py-8">
       {/* 🔴 Tombol Logout pojok kanan atas */}
       <div className="absolute top-4 right-6">
         <button
           onClick={handleLogout}
-          className="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-gray-200 px-4 py-2 rounded-lg font-semibold shadow-lg transition-all duration-200"
+          className="flex items-center gap-2 bg-gradient-to-r from-blue-400 to-blue-600 text-white px-4 py-2 rounded-xl font-semibold shadow hover:scale-105 transition-transform duration-200"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -757,7 +751,7 @@ useEffect(() => {
         </button>
       </div>
 
-      <h1 className="text-4xl font-extrabold mb-8 text-amber-400 drop-shadow-lg tracking-tight text-center">
+      <h1 className="text-4xl font-extrabold mb-8 text-blue-700 drop-shadow-lg tracking-tight text-center">
         <span className="inline-block align-middle mr-2">
           <svg width="40" height="40" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-camera"><rect x="3" y="7" width="34" height="26" rx="4" ry="4"/><circle cx="20" cy="22" r="7"/><path d="M8 7V5a4 4 0 0 1 4-4h4"/></svg>
         </span>
@@ -766,11 +760,11 @@ useEffect(() => {
 
       {/* ===== TAMPILAN AWAL: belum ada hasil check-in (atau user belum scan) ===== */}
       {!message && (
-        <div className="bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-md text-center border border-gray-700 flex flex-col items-center">
+        <div className="bg-white/90 p-8 rounded-3xl shadow-2xl w-full max-w-md text-center border border-blue-200 flex flex-col items-center animate-fade-in">
           {!scanMode && (
             <>
               <button
-                className="bg-amber-400 hover:bg-amber-500 text-gray-900 px-8 py-4 rounded-lg font-bold mb-8 shadow-lg transition-all duration-200 text-xl flex items-center gap-2"
+                className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-8 py-4 rounded-2xl font-bold mb-8 shadow-lg hover:scale-105 transition-transform duration-200 text-xl flex items-center gap-2"
                 onClick={() => { setScanMode(true); setMessage(''); }}
                 disabled={loading}
               >
@@ -782,13 +776,13 @@ useEffect(() => {
                 <input
                   type="text"
                   placeholder="Enter QR code manually"
-                  className="w-full p-4 border-2 border-gray-600 rounded-lg text-lg tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-amber-400 bg-gray-700 text-gray-200 placeholder:text-gray-400 shadow"
+                  className="w-full p-4 border-2 border-blue-300 rounded-xl text-lg tracking-widest text-center focus:outline-blue-500 bg-blue-50 placeholder:text-blue-300 shadow"
                   value={buffer} // Show buffered input
                   onChange={(e) => handleBufferedInput(e.target.value)} // Pass the full input value
                   autoFocus
                   ref={manualQrInputRef}
                 />
-                <div className="text-xs text-gray-400 mt-1">
+                <div className="text-xs text-blue-500 mt-1">
                   You can enter the QR code manually if the scanner is not working
                 </div>
               </div>
@@ -803,25 +797,25 @@ useEffect(() => {
                   width: '320px',
                   height: '320px',
                   margin: '0 auto',
-                  borderRadius: '0.75rem',
-                  border: '4px solid #fbbf24',
-                  boxShadow: '0 0 24px rgba(251, 191, 36, 0.4)',
+                  borderRadius: '1.5rem',
+                  border: '4px solid #3b82f6',
+                  boxShadow: '0 0 24px #3b82f6a0',
                   position: 'relative',
                   overflow: 'hidden',
-                  background: '#374151',
+                  background: '#e0e7ff',
                 }}
                 className="animate-pulse"
               />
               <div className="flex gap-4 justify-center mt-6">
                 <button
-                  className="bg-gray-600 hover:bg-gray-500 text-gray-200 px-6 py-2 rounded-lg font-semibold shadow transition"
+                  className="bg-gray-400 text-white px-6 py-2 rounded-xl font-semibold shadow hover:bg-gray-500 transition"
                   onClick={handleCancelScan}
                   disabled={loading}
                 >
                   Cancel
                 </button>
                 <button
-                  className="bg-amber-400 hover:bg-amber-500 text-gray-900 px-6 py-2 rounded-lg font-semibold shadow transition"
+                  className="bg-blue-500 text-white px-6 py-2 rounded-xl font-semibold shadow hover:bg-blue-700 transition"
                   onClick={handleRetryScan}
                   disabled={loading}
                 >
@@ -832,7 +826,7 @@ useEffect(() => {
           )}
 
           {message && (
-            <div className={`mt-6 font-bold text-lg ${messageType === 'error' ? 'text-red-400' : 'text-green-400'} drop-shadow`}>
+            <div className={`mt-6 font-bold text-lg ${messageType === 'error' ? 'text-red-600' : 'text-green-600'} drop-shadow`}>
               {message}
             </div>
           )}
@@ -841,15 +835,15 @@ useEffect(() => {
 
       {/* ===== Layout hasil scan (full width card, grid 3 kolom responsif) ===== */}
       {message && (
-        <div className={`bg-gray-800 rounded-2xl shadow-2xl min-h-[75vh] w-full max-w-[1500px] border ${messageType === 'success' ? 'border-green-500' : 'border-red-500'} p-16 grid grid-cols-1 md:grid-cols-3 gap-20 justify-center items-center`}
+        <div className={`bg-white/90 rounded-3xl shadow-2xl min-h-[75vh] w-full max-w-[1500px] border border-blue-200 p-16 grid grid-cols-1 md:grid-cols-3 gap-20 justify-center items-center animate-fade-in ${messageType === 'success' ? 'border-green-300' : 'border-red-300'}`}
           style={{ minHeight: '75vh', minWidth: '340px' }}
         >
           {/* kolom kiri: foto (tampil hanya jika success) */}
           {messageType === 'success' ? (
             <div className="flex items-center justify-center h-full">
-              <div className="w-96 h-96 bg-gray-700 rounded-2xl flex items-center justify-center text-gray-400 font-medium overflow-hidden border-4 border-amber-400 shadow-2xl p-2">
+              <div className="w-96 h-96 bg-gray-100 rounded-3xl flex items-center justify-center text-gray-600 font-medium overflow-hidden border-4 border-blue-300 shadow-2xl p-2">
                 {user?.photo ? (
-                  <Image src={user.photo.startsWith('http') ? user.photo : `${API_URL?.replace(/\/$/, '')}${user.photo}`} alt="Foto Member" width={300} height={300} className="w-full h-full object-cover scale-105 rounded-xl" />
+                  <Image src={user.photo.startsWith('http') ? user.photo : `${API_URL?.replace(/\/$/, '')}${user.photo}`} alt="Foto Member" width={300} height={300} className="w-full h-full object-cover scale-105 rounded-2xl" />
                 ) : (
                   <span className="text-gray-400 text-lg">No photo available</span>
                 )}
@@ -857,44 +851,44 @@ useEffect(() => {
             </div>
           ) : (
             <div className="flex items-center justify-center h-full">
-              <div className="w-72 h-72 flex items-center justify-center bg-gray-700 rounded-2xl border-4 border-red-500 shadow-xl">
+              <div className="w-72 h-72 flex items-center justify-center bg-gray-100 rounded-3xl border-4 border-red-200 shadow-xl">
                 <svg width="96" height="96" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-alert-triangle text-red-400"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="48" y1="36" x2="48" y2="52"/><line x1="48" y1="68" x2="48.01" y2="68"/></svg>
               </div>
             </div>
           )}
 
           {/* kolom tengah: detail member (hanya jika success) */}
-          <div className="text-left text-lg text-gray-200 flex flex-col justify-center">
+          <div className="text-left text-lg text-gray-700 flex flex-col justify-center">
             {messageType === 'success' ? (
               <>
-                <p className="font-bold text-3xl text-amber-400 mb-4 leading-tight">{user?.name || '-'}</p>
+                <p className="font-bold text-3xl text-blue-700 mb-4 leading-tight">{user?.name || '-'}</p>
                 <p className="mb-2 text-lg"><span className="font-semibold">Email:</span> {user?.email || '-'}</p>
                 <p className="mb-2 text-lg">
                   <span className="font-semibold whitespace-nowrap">Membership period:</span>
                   <span className="whitespace-nowrap"> {startDate}{endDate ? ` - ${endDate}` : ""}</span>
                 </p>
                 <p className="mb-2 text-lg">
-                  <span className="font-semibold">Membership type: </span>
+  <span className="font-semibold">Membership type: </span>
 
-                  <span
-                    className={`
-                      px-3 py-1 rounded-full font-semibold border
-                      ${
-                        user?.membership_plan?.name?.toLowerCase() === "platinum"
-                          ? "bg-gray-100 text-gray-800 border-gray-300"
-                        : user?.membership_plan?.name?.toLowerCase() === "gold"
-                          ? "bg-amber-100 text-amber-700 border-amber-300"
-                        : user?.membership_plan?.name?.toLowerCase() === "silver"
-                          ? "bg-slate-100 text-slate-700 border-slate-300"
-                        : user?.membership_plan?.name?.toLowerCase() === "trial"
-                          ? "bg-blue-100 text-blue-700 border-blue-300"
-                        : "bg-gray-100 text-gray-500 border-gray-300"
-                      }
-                    `}
-                  >
-                    {user?.membership_plan?.name || "-"}
-                  </span>
-                </p>
+  <span
+    className={`
+      px-3 py-1 rounded-full font-semibold border
+      ${
+        user?.membership_plan?.name?.toLowerCase() === "platinum"
+          ? "bg-gray-100 text-gray-800 border-gray-300"
+        : user?.membership_plan?.name?.toLowerCase() === "gold"
+          ? "bg-amber-100 text-amber-700 border-amber-300"
+        : user?.membership_plan?.name?.toLowerCase() === "silver"
+          ? "bg-slate-100 text-slate-700 border-slate-300"
+        : user?.membership_plan?.name?.toLowerCase() === "trial"
+          ? "bg-blue-100 text-blue-700 border-blue-300"
+        : "bg-gray-100 text-gray-500 border-gray-300"
+      }
+    `}
+  >
+    {user?.membership_plan?.name || "-"}
+  </span>
+</p>
                 <p className="mb-2 text-lg"><span className="font-semibold">Membership status:</span> {user?.membership?.status === 'active' ? (
                   <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full font-bold">Active</span>
                 ) : (
@@ -902,10 +896,10 @@ useEffect(() => {
                 )}</p>
                 {diffMs > 0 && remainingDays <= 7 && (
                   <>
-                    <p className="text-red-400 font-bold text-lg mt-4">
+                    <p className="text-red-600 font-bold text-lg mt-4">
                        Membership deadline: {remainingText}
                     </p>
-                    <p className="mt-2 text-amber-400 text-base">
+                    <p className="mt-2 text-orange-600 text-base">
                       Please renew your membership soon by contacting admin 08123123123
                     </p>
                   </>
@@ -913,9 +907,9 @@ useEffect(() => {
                 {renderPTSessionInfo(result)}
               </>
             ) : (
-              <div className="text-gray-400 text-center">
-                <p className="mt-2 text-base text-red-400 font-semibold">{message}</p>
-                <p className="mt-2 text-sm text-gray-500">Please try to check-in again</p>
+              <div className="text-gray-500 text-center">
+                <p className="mt-2 text-base text-orange-600 font-semibold">{message}</p>
+                <p className="mt-2 text-sm text-gray-400">Please try to check-in again</p>
               </div>
             )}
           </div>
@@ -923,7 +917,7 @@ useEffect(() => {
           {/* kolom kanan: tombol check-in / input manual / message */}
           <div className="flex flex-col text-lg items-center justify-center gap-4">
             <button
-              className="flex items-center justify-center gap-2 bg-amber-400 hover:bg-amber-500 text-gray-900 px-6 py-3 rounded-lg font-bold shadow-lg transition-all duration-200 text-lg w-full"
+              className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-blue-700 text-white px-6 py-3 rounded-xl font-bold shadow hover:scale-105 transition-transform duration-200 text-lg"
               onClick={() => { setScanMode(true); setMessage(''); }}
               disabled={loading}
             >
@@ -946,7 +940,7 @@ useEffect(() => {
             <input
               type="text"
               placeholder="Input QR code manual"
-              className="w-full p-3 border-2 border-gray-600 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-amber-400 mb-2 bg-gray-700 text-gray-200 placeholder:text-gray-400 shadow"
+              className="w-full p-3 border-2 border-blue-300 rounded-xl text-center focus:outline-blue-500 mb-2 bg-blue-50 placeholder:text-blue-300 shadow"
               value={buffer}
               onChange={(e) => handleBufferedInput(e.target.value)}
               autoFocus
@@ -955,7 +949,7 @@ useEffect(() => {
 
             {/* Tambahan tombol booking class dan PT session */}
             <button
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold shadow-lg transition w-full"
+              className="bg-green-600 text-white px-6 py-3 rounded-xl font-bold shadow hover:bg-green-700 transition"
               onClick={handleBookingClass}
               disabled={loading || !user}
             >
@@ -970,36 +964,28 @@ useEffect(() => {
     style={{
         overlay: { 
             zIndex: 1000, 
-            backgroundColor: 'rgba(0,0,0,0.7)',
+            backgroundColor: 'rgba(0,0,0,0.5)', // Backdrop lebih gelap
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
         },
         content: { 
             maxWidth: 1200, 
-            minWidth: 750,
+            minWidth: 750, // Melebarkan sedikit untuk tampilan tabel yang lebih baik
             margin: 'auto', 
-            borderRadius: 12, 
+            borderRadius: 16, 
             padding: 32,
-            boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
-            border: 'none',
-            backgroundColor: '#1f2937',
+            boxShadow: '0 10px 25px rgba(0,0,0,0.2)', // Tambah bayangan
+            border: 'none', // Hilangkan border default
         }
     }}
 >
     {/* HEADER MODAL */}
-    <div className="flex justify-between items-center border-b border-gray-700 pb-4 mb-6">
-        <div>
-          <h2 className="text-3xl font-extrabold text-amber-400">🗓️ Booking Class</h2>
-          {user?.membership_plan?.id === 2 ? (
-            <p className="text-sm text-green-400 mt-1">✓ Gold Member - Free Booking Available</p>
-          ) : (
-            <p className="text-sm text-amber-400 mt-1">⚠ {user?.membership_plan?.name || 'Non-Gold'} Member - Purchase Required</p>
-          )}
-        </div>
+    <div className="flex justify-between items-center border-b pb-4 mb-6">
+        <h2 className="text-3xl font-extrabold text-gray-800">🗓️ Booking Class</h2>
         {/* Tombol close di sudut kanan atas */}
         <button
-            className="text-gray-400 hover:text-gray-200 transition duration-150"
+            className="text-gray-500 hover:text-gray-800 transition duration-150"
             onClick={() => setShowClassModal(false)}
         >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -1010,16 +996,19 @@ useEffect(() => {
 
     {/* FEEDBACK AREA */}
     <div className="mb-4">
-        {bookingClassLoading && <div className="p-3 bg-blue-900 text-blue-200 border-l-4 border-blue-500 rounded-md font-medium">Memuat data...</div>}
-        {bookingClassError && <div className="p-3 bg-red-900 text-red-200 border-l-4 border-red-500 rounded-md font-medium">Error: {bookingClassError}</div>}
-        {bookingClassSuccess && <div className="p-3 bg-green-900 text-green-200 border-l-4 border-green-500 rounded-md font-medium">Berhasil: {bookingClassSuccess}</div>}
+        {bookingClassLoading && <div className="p-3 bg-blue-100 text-blue-800 border-l-4 border-blue-500 rounded-md font-medium">Memuat data...</div>}
+        {bookingClassError && <div className="p-3 bg-red-100 text-red-800 border-l-4 border-red-500 rounded-md font-medium">Error: {bookingClassError}</div>}
+        {bookingClassSuccess && <div className="p-3 bg-green-100 text-green-800 border-l-4 border-green-500 rounded-md font-medium">Berhasil: {bookingClassSuccess}</div>}
     </div>
+    
+    {/* LOG PENGEMBANG (dihilangkan dari tampilan final, tapi disisipkan untuk referensi) */}
+    {/* {console.log("availableClasses: ", availableClasses)} */}
     
     {/* SEARCH INPUT & DATA TABLE */}
     <div className="mb-4 flex items-center gap-4">
       <input
         type="text"
-        className="p-3 border-2 border-gray-600 rounded-lg text-lg w-96 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-gray-700 text-gray-200 placeholder:text-gray-400 shadow"
+        className="p-3 border-2 border-blue-300 rounded-xl text-lg w-96 focus:outline-blue-500 bg-blue-50 placeholder:text-blue-300 shadow"
         placeholder="Search class, instructor, date (28/11/2025)"
         value={classSearch}
         onChange={handleClassSearchChange}
@@ -1027,7 +1016,7 @@ useEffect(() => {
       />
       <span className="text-gray-400 text-sm">Press Enter or wait for 0.4 seconds</span>
     </div>
-    <div className="shadow-lg rounded-lg overflow-hidden border border-gray-700">
+    <div className="shadow-lg rounded-lg overflow-hidden border">
       <BookingDataTable
         columns={[
           { name: 'Nama Kelas', selector: row => row.name, sortable: true, grow: 2 },
@@ -1037,42 +1026,19 @@ useEffect(() => {
           { name: 'Instruktur', selector: row => row.instructor?.name || '-', sortable: true, grow: 1.5 },
           { 
             name: 'Aksi', 
-            cell: row => {
-              // Cek apakah user memiliki Gold membership (id=2)
-              const isGoldMember = user?.membership_plan?.id === 2;
-              
-              if (isGoldMember) {
-                // Gold member: tampilkan tombol Book
-                return (
-                  <button
-                    className={`px-4 py-2 rounded-lg font-semibold transition duration-200 ${
-                      bookingClassLoading 
-                        ? 'bg-gray-600 text-gray-400 cursor-not-allowed' 
-                        : 'bg-green-600 text-white hover:bg-green-700 shadow-md hover:shadow-lg'
-                    }`}
-                    onClick={() => handleBookClass(row.id)}
-                    disabled={bookingClassLoading}
-                  >
-                    {bookingClassLoading ? 'Processing...' : 'Book'}
-                  </button>
-                );
-              } else {
-                // Non-Gold member: tampilkan tombol Buy
-                return (
-                  <button
-                    className={`px-4 py-2 rounded-lg font-semibold transition duration-200 ${
-                      bookingClassLoading 
-                        ? 'bg-gray-600 text-gray-400 cursor-not-allowed' 
-                        : 'bg-amber-500 text-white hover:bg-amber-600 shadow-md hover:shadow-lg'
-                    }`}
-                    onClick={() => handleBuyClass(row.id)}
-                    disabled={bookingClassLoading}
-                  >
-                    {bookingClassLoading ? 'Processing...' : 'Buy Class'}
-                  </button>
-                );
-              }
-            }, 
+            cell: row => (
+              <button
+                className={`px-4 py-2 rounded-full font-semibold transition duration-200 ${
+                  bookingClassLoading 
+                    ? 'bg-gray-400 text-gray-700 cursor-not-allowed' 
+                    : 'bg-green-600 text-white hover:bg-green-700 shadow-md hover:shadow-lg'
+                }`}
+                onClick={() => handleBookClass(row.id)}
+                disabled={bookingClassLoading}
+              >
+                {bookingClassLoading ? 'Processing...' : 'Book'}
+              </button>
+            ), 
             ignoreRowClick: true 
           },
         ]}
@@ -1086,19 +1052,16 @@ useEffect(() => {
         onChangeRowsPerPage={handleClassTableRowsPerPageChange}
         paginationRowsPerPageOptions={[10, 25, 50]}
         customStyles={{
-          header: { style: { backgroundColor: '#374151' } },
-          rows: { 
-            style: { backgroundColor: '#1f2937', color: '#e5e7eb' },
-            highlightOnHoverStyle: { backgroundColor: '#374151' } 
-          },
+          header: { style: { backgroundColor: '#f7f7f7' } },
+          rows: { highlightOnHoverStyle: { backgroundColor: '#eef4ff' } },
         }}
       />
     </div>
 
     {/* FOOTER MODAL / BUTTON CLOSE */}
-    <div className="flex justify-end mt-6 pt-4 border-t border-gray-700">
+    <div className="flex justify-end mt-6 pt-4 border-t">
         <button
-            className="bg-gray-600 hover:bg-gray-500 text-gray-200 px-5 py-2 rounded-lg font-bold transition duration-200 shadow-md"
+            className="bg-gray-500 text-white px-5 py-2 rounded-lg font-bold hover:bg-gray-600 transition duration-200 shadow-md"
             onClick={() => setShowClassModal(false)}
         >
             Tutup
@@ -1106,7 +1069,7 @@ useEffect(() => {
     </div>
 </Modal>
             <button
-              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-bold shadow-lg transition w-full"
+              className="bg-purple-600 text-white px-6 py-3 rounded-xl font-bold shadow hover:bg-purple-700 transition"
               onClick={handleBookingPTSession}
               disabled={loading || !user}
             >
@@ -1121,7 +1084,7 @@ useEffect(() => {
               style={{
                 overlay: {
                   zIndex: 1000,
-                  backgroundColor: 'rgba(0,0,0,0.7)',
+                  backgroundColor: 'rgba(0,0,0,0.5)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -1130,18 +1093,17 @@ useEffect(() => {
                   maxWidth: 1200,
                   minWidth: 750,
                   margin: 'auto',
-                  borderRadius: 12,
+                  borderRadius: 16,
                   padding: 32,
-                  boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
                   border: 'none',
-                  backgroundColor: '#1f2937',
                 }
               }}
             >
-              <div className="flex justify-between items-center border-b border-gray-700 pb-4 mb-6">
-                <h2 className="text-3xl font-extrabold text-amber-400">💪 Booking PT Session</h2>
+              <div className="flex justify-between items-center border-b pb-4 mb-6">
+                <h2 className="text-3xl font-extrabold text-gray-800">💪 Booking PT Session</h2>
                 <button
-                  className="text-gray-400 hover:text-gray-200 transition duration-150"
+                  className="text-gray-500 hover:text-gray-800 transition duration-150"
                   onClick={() => setShowPTModal(false)}
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -1150,14 +1112,14 @@ useEffect(() => {
                 </button>
               </div>
               <div className="mb-4">
-                {bookingPTLoading && <div className="p-3 bg-blue-900 text-blue-200 border-l-4 border-blue-500 rounded-md font-medium">Memuat data...</div>}
-                {bookingPTError && <div className="p-3 bg-red-900 text-red-200 border-l-4 border-red-500 rounded-md font-medium">Error: {bookingPTError}</div>}
-                {bookingPTSuccess && <div className="p-3 bg-green-900 text-green-200 border-l-4 border-green-500 rounded-md font-medium">Berhasil: {bookingPTSuccess}</div>}
+                {bookingPTLoading && <div className="p-3 bg-blue-100 text-blue-800 border-l-4 border-blue-500 rounded-md font-medium">Memuat data...</div>}
+                {bookingPTError && <div className="p-3 bg-red-100 text-red-800 border-l-4 border-red-500 rounded-md font-medium">Error: {bookingPTError}</div>}
+                {bookingPTSuccess && <div className="p-3 bg-green-100 text-green-800 border-l-4 border-green-500 rounded-md font-medium">Berhasil: {bookingPTSuccess}</div>}
               </div>
               <div className="mb-4 flex items-center gap-4">
                 <input
                   type="text"
-                  className="p-3 border-2 border-gray-600 rounded-lg text-lg w-96 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-gray-700 text-gray-200 placeholder:text-gray-400 shadow"
+                  className="p-3 border-2 border-blue-300 rounded-xl text-lg w-96 focus:outline-blue-500 bg-blue-50 placeholder:text-blue-300 shadow"
                   placeholder="Search PT session, trainer, date (28/11/2025)"
                   value={ptSearch}
                   onChange={handlePTSearchChange}
@@ -1166,7 +1128,7 @@ useEffect(() => {
                 <span className="text-gray-400 text-sm">Press Enter or wait for 0.4 seconds</span>
               </div>
               {console.log("plans: ", plans)}
-              <div className="shadow-lg rounded-lg overflow-hidden border border-gray-700">
+              <div className="shadow-lg rounded-lg overflow-hidden border">
                 <BookingDataTable
                   columns={[
                     // { name: 'Nama Session', selector: row => row.name, sortable: true },
@@ -1188,9 +1150,9 @@ useEffect(() => {
                       name: 'Aksi',
                       cell: row => (
                         <button
-                          className={`px-4 py-2 rounded-lg font-semibold transition duration-200 ${
+                          className={`px-4 py-2 rounded-full font-semibold transition duration-200 ${
                             bookingPTLoading
-                              ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                              ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
                               : 'bg-purple-600 text-white hover:bg-purple-700 shadow-md hover:shadow-lg'
                           }`}
                           onClick={() => handleBookPTSession(row.id)}
@@ -1212,17 +1174,14 @@ useEffect(() => {
                   onChangeRowsPerPage={handlePTTableRowsPerPageChange}
                   paginationRowsPerPageOptions={[10, 25, 50]}
                   customStyles={{
-                    header: { style: { backgroundColor: '#374151' } },
-                    rows: { 
-                      style: { backgroundColor: '#1f2937', color: '#e5e7eb' },
-                      highlightOnHoverStyle: { backgroundColor: '#374151' } 
-                    },
+                    header: { style: { backgroundColor: '#f7f7f7' } },
+                    rows: { highlightOnHoverStyle: { backgroundColor: '#f3e8ff' } },
                   }}
                 />
               </div>
-              <div className="flex justify-end mt-6 pt-4 border-t border-gray-700">
+              <div className="flex justify-end mt-6 pt-4 border-t">
                 <button
-                  className="bg-gray-600 hover:bg-gray-500 text-gray-200 px-5 py-2 rounded-lg font-bold transition duration-200 shadow-md"
+                  className="bg-gray-500 text-white px-5 py-2 rounded-lg font-bold hover:bg-gray-600 transition duration-200 shadow-md"
                   onClick={() => setShowPTModal(false)}
                 >
                   Tutup

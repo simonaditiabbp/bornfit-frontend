@@ -17,6 +17,15 @@ export default function ClassSessionDataTable({
   paginationRowsPerPageOptions = [10, 25, 50],
 }) {
   const startNo = (currentPage - 1) * paginationPerPage;
+
+  const colors = {
+    primary: '#1f2937',
+    secondary: '#374151',
+    accent: '#fbbf24',
+    text: '#e5e7eb',
+    border: '#4b5563',
+  };
+
   const columns = [
     { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px',  },
       { name: 'Plan', selector: row => {
@@ -38,12 +47,12 @@ export default function ClassSessionDataTable({
       cell: row => (
         <div className="flex gap-2 justify-center">
           <button
-            className="bg-blue-600 text-white px-3 py-1 rounded font-semibold hover:bg-blue-700"
+            className="bg-amber-400 text-gray-900 px-3 py-1 rounded font-semibold hover:bg-amber-500"
             onClick={() => setQrSession && setQrSession(row)}
           >
             Generate QR
           </button>
-          <Link href={`/admin/class/session/edit?id=${row.id}`} className="bg-gray-400 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">Detail</Link>
+          <Link href={`/admin/class/session/edit?id=${row.id}`} className="bg-gray-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">Detail</Link>
         </div>
       ),
       ignoreRowClick: true,
@@ -69,8 +78,69 @@ export default function ClassSessionDataTable({
       direction="auto"
       subHeaderWrap
       customStyles={{
-        headCells: { style: { fontWeight: 'bold', fontSize: '1rem', background: '#eff6ff', color: '#2563eb' } },
-        rows: { style: { fontSize: '1rem' } },
+        table: {
+          style: {
+            backgroundColor: colors.primary,
+            color: colors.text,
+          },
+        },
+        headRow: {
+          style: {
+            backgroundColor: colors.secondary,
+            borderBottomWidth: '2px',
+            borderBottomColor: colors.border,
+            borderBottomStyle: 'solid',
+          },
+        },
+        headCells: {
+          style: {
+            fontSize: '0.875rem',
+            fontWeight: '700',
+            color: colors.accent,
+            paddingLeft: '16px',
+            paddingRight: '16px',
+          },
+        },
+        rows: {
+          style: {
+            fontSize: '0.875rem',
+            color: colors.text,
+            backgroundColor: colors.primary,
+            borderBottomWidth: '1px',
+            borderBottomColor: colors.border,
+            borderBottomStyle: 'solid',
+            '&:hover': {
+              backgroundColor: colors.secondary,
+              cursor: 'pointer',
+            },
+          },
+        },
+        cells: {
+          style: {
+            paddingLeft: '16px',
+            paddingRight: '16px',
+          },
+        },
+        pagination: {
+          style: {
+            backgroundColor: colors.primary,
+            borderTopWidth: '1px',
+            borderTopColor: colors.border,
+            borderTopStyle: 'solid',
+            color: colors.text,
+          },
+          pageButtonsStyle: {
+            color: colors.accent,
+            fill: colors.accent,
+            '&:disabled': {
+              color: colors.border,
+              fill: colors.border,
+            },
+            '&:hover:not(:disabled)': {
+              backgroundColor: colors.secondary,
+            },
+          },
+        },
       }}
     />
   );

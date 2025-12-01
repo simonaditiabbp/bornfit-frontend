@@ -463,7 +463,7 @@ export default function AdminUsersPage() {
         <CreateUserModal 
           isOpen={createUser} 
           onClose={() => setCreateUser(false)} 
-          onRefresh={() => fetchAll()}
+          // onRefresh={() => fetchAll()}
         />
       </div>
     </div>

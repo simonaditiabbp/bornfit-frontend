@@ -200,6 +200,7 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
       if (err.message === "Email is already registered") {
         setError(err.message);
       } else {
+        console.log("err: ", err);
         setError("Something went wrong");
       }
     } finally {

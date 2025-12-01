@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import ClassAttendanceDataTable from './DataTable';
+import { FaPlus, FaCalendar, FaAngleRight } from 'react-icons/fa';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -78,7 +79,7 @@ export default function ClassAttendancePage() {
     return () => clearTimeout(handler);
   }, [searchInput]);
 
-  if (backendError) return <div className="text-red-600">Backend error</div>;
+  if (backendError) return <div className="text-red-400">Backend error</div>;
 
   const startNo = (page - 1) * limit;
   const columns = [
@@ -87,24 +88,43 @@ export default function ClassAttendancePage() {
     { name: 'Class', selector: row => `${row.class.event_plan.name} - ${row.class.instructor.name}` || '', sortable: true },
     { name: 'Checked-in Time', selector: row => row.checked_in_at ? new Date(new Date(row.checked_in_at).getTime() - 7 * 60 * 60 * 1000).toLocaleString('en-GB', { hour12: false }) : '', sortable: true },
     {
-      name: 'Actions',
+      name: 'Aksi',
       cell: row => (
-        <Link href={`/admin/class/attendance/edit?id=${row.id}`} className="bg-gray-400 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">Detail</Link>
+        <Link href={`/admin/class/attendance/edit?id=${row.id}`} className="bg-gray-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">Detail</Link>
       )
     }
   ];
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-blue-700">Class Attendance</h1>
-        <Link href="/admin/class/attendance/insert" className="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700">+ Add Attendance</Link>
+      {/* Breadcrumb Navigation */}
+      <div className="flex items-center gap-2 text-sm mb-6 bg-gray-800 px-4 py-3 rounded-lg">
+        <FaCalendar className="text-amber-300" />
+        <Link href="/admin/dashboard" className="text-gray-400 hover:text-amber-300 transition-colors">
+          Dashboard
+        </Link>
+        <FaAngleRight className="text-gray-500 text-xs" />
+        <span className="text-gray-200 font-medium">Class Attendance</span>
       </div>
-      <div className="mb-4 flex items-center justify-between">
-        <input type="text" placeholder="Search member/class/plan/status..." className="w-full max-w-xs p-2 border border-blue-300 rounded focus:outline-blue-500 text-base" value={searchInput} onChange={e => { setSearchInput(e.target.value); }} />
+
+      <div className="flex items-center justify-between mb-6">
+        <input
+          type="text"
+          placeholder="Search member/class/plan/status..."
+          className="w-full max-w-md p-3 border-2 border-amber-200 rounded-lg focus:outline-none focus:border-amber-400 text-base bg-gray-700 text-gray-200 placeholder-gray-400"
+          value={searchInput}
+          onChange={e => { setSearchInput(e.target.value); }}
+        />
+        <Link
+          href="/admin/class/attendance/insert"
+          className="bg-amber-400 text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-amber-500 transition-colors flex items-center gap-2"
+        >
+          <FaPlus />
+          Add Attendance
+        </Link>
       </div>
       {loading ? (
-        <div className="text-center text-blue-500">Loading...</div>
+        <div className="text-center text-amber-300">Loading...</div>
       ) : (
         <ClassAttendanceDataTable
           columns={columns}

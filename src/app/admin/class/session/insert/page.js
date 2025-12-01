@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { FaIdCard, FaAngleRight } from 'react-icons/fa';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -95,58 +97,74 @@ export default function ClassSessionInsertPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto bg-white p-10 rounded-2xl shadow-lg mt-12 border border-gray-100">
-      <h1 className="text-3xl font-bold mb-8 text-blue-700 text-center">Create Detail Class</h1>
-      {success && <div className="text-green-600 font-semibold mb-2 text-center">{success}</div>}
-      {error && <div className="text-red-600 font-semibold mb-2 text-center">{error}</div>}
-      <form className="space-y-4" onSubmit={handleSave}>
-        <div>
-          <label className="block mb-1">Event Plan</label>
-          <select name="event_plan_id" value={form.event_plan_id} onChange={e => setForm({ ...form, event_plan_id: e.target.value })} className="w-full border border-gray-300 p-2 rounded">
-            <option value="">Pilih Event Plan</option>
-            {plans.map(plan => <option key={plan.id} value={plan.id}>{plan.name}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="block mb-1">Instructor</label>
-          <select name="instructor_id" value={form.instructor_id} onChange={e => setForm({ ...form, instructor_id: e.target.value })} className="w-full border border-gray-300 p-2 rounded">
-            <option value="">Pilih Instructor</option>
-            {instructors.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="block mb-1">Class Date</label>
-          <input name="class_date" type="date" value={form.class_date} onChange={e => setForm({ ...form, class_date: e.target.value })} className="w-full border border-gray-300 p-2 rounded" />
-        </div>
-        <div>
-          <label className="block mb-1">Start Time</label>
-          <input name="start_time" type="time" value={form.start_time} onChange={e => setForm({ ...form, start_time: e.target.value })} className="w-full border border-gray-300 p-2 rounded" />
-        </div>
-        <div>
-          <label className="block mb-1">Class Type</label>
-          <select name="class_type" value={form.class_type} onChange={e => setForm({ ...form, class_type: e.target.value })} className="w-full border border-gray-300 p-2 rounded">
-            <option value="membership_only">Membership Only</option>
-            <option value="free">Free</option>
-            <option value="both">Both</option>
-          </select>
-        </div>
-        {/* <div>
-          <label className="block mb-1">Total Manual Checkin</label>
-          <input name="total_manual_checkin" type="number" value={form.total_manual_checkin} onChange={e => setForm({ ...form, total_manual_checkin: e.target.value })} className="w-full border border-gray-300 p-2 rounded" />
-        </div> */}
-        <div>
-          <label className="block mb-1">Notes</label>
-          <textarea name="notes" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className="w-full border border-gray-300 p-2 rounded" />
-        </div>
-        <div className="flex gap-2">
-          <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded" disabled={loading}>
-            {loading ? "Saving..." : "Create"}
-          </button>
-          <button type="button" className="bg-gray-400 text-white px-4 py-2 rounded" onClick={() => router.push('/admin/class/session')}>
-            Cancel
-          </button>
-        </div>
-      </form>
+    <div>
+      {/* Breadcrumb Navigation */}
+      <div className="flex items-center gap-2 text-sm mb-6 bg-gray-800 px-4 py-3 rounded-lg">
+        <FaIdCard className="text-amber-300" />
+        <Link href="/admin/dashboard" className="text-gray-400 hover:text-amber-300 transition-colors">
+          Dashboard
+        </Link>
+        <FaAngleRight className="text-gray-500 text-xs" />
+        <Link href="/admin/class/session" className="text-gray-400 hover:text-amber-300 transition-colors">
+          Class Session
+        </Link>
+        <FaAngleRight className="text-gray-500 text-xs" />
+        <span className="text-gray-200 font-medium">Create</span>
+      </div>
+
+      <div className="max-w-3xl mx-auto bg-gray-800 p-10 rounded-2xl shadow-lg border border-gray-700">
+        <h1 className="text-3xl font-bold mb-8 text-amber-300 text-center">Create Detail Class</h1>
+        {success && <div className="text-green-400 font-semibold mb-2 text-center">{success}</div>}
+        {error && <div className="text-red-400 font-semibold mb-2 text-center">{error}</div>}
+        <form className="space-y-4" onSubmit={handleSave}>
+          <div>
+            <label className="block mb-1 text-gray-200">Event Plan</label>
+            <select name="event_plan_id" value={form.event_plan_id} onChange={e => setForm({ ...form, event_plan_id: e.target.value })} className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200">
+              <option value="">Pilih Event Plan</option>
+              {plans.map(plan => <option key={plan.id} value={plan.id}>{plan.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block mb-1 text-gray-200">Instructor</label>
+            <select name="instructor_id" value={form.instructor_id} onChange={e => setForm({ ...form, instructor_id: e.target.value })} className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200">
+              <option value="">Pilih Instructor</option>
+              {instructors.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block mb-1 text-gray-200">Class Date</label>
+            <input name="class_date" type="date" value={form.class_date} onChange={e => setForm({ ...form, class_date: e.target.value })} className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200" />
+          </div>
+          <div>
+            <label className="block mb-1 text-gray-200">Start Time</label>
+            <input name="start_time" type="time" value={form.start_time} onChange={e => setForm({ ...form, start_time: e.target.value })} className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200" />
+          </div>
+          <div>
+            <label className="block mb-1 text-gray-200">Class Type</label>
+            <select name="class_type" value={form.class_type} onChange={e => setForm({ ...form, class_type: e.target.value })} className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200">
+              <option value="membership_only">Membership Only</option>
+              <option value="free">Free</option>
+              <option value="both">Both</option>
+            </select>
+          </div>
+          {/* <div>
+            <label className="block mb-1 text-gray-200">Total Manual Checkin</label>
+            <input name="total_manual_checkin" type="number" value={form.total_manual_checkin} onChange={e => setForm({ ...form, total_manual_checkin: e.target.value })} className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200" />
+          </div> */}
+          <div>
+            <label className="block mb-1 text-gray-200">Notes</label>
+            <textarea name="notes" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200" />
+          </div>
+          <div className="flex gap-2">
+            <button type="submit" className="bg-amber-400 text-gray-900 px-4 py-2 rounded font-semibold hover:bg-amber-500" disabled={loading}>
+              {loading ? "Saving..." : "Create"}
+            </button>
+            <button type="button" className="bg-gray-600 text-white px-4 py-2 rounded font-semibold hover:bg-gray-500" onClick={() => router.push('/admin/class/session')}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { FaAngleRight, FaFileInvoice } from 'react-icons/fa';
+import Link from 'next/link';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -74,66 +76,94 @@ export default function ClassPlanInsertPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto bg-white p-10 rounded-2xl shadow-lg mt-12 border border-gray-100">
-      <h1 className="text-3xl font-bold mb-8 text-blue-700 text-center">Add Class Plan</h1>
-      {error && <div className="text-red-600 mb-2">{error}</div>}
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block mb-1">Name</label>
-          <input name="name" type="text" value={form.name} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" required />
+    <div>
+      <div className="bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-600">
+        <nav className="flex" aria-label="Breadcrumb">
+          <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+            <li>
+              <div className="inline-flex items-center">
+                <FaFileInvoice className="w-3 h-3 me-2.5 text-amber-300" /> 
+                <Link href="/admin/class/plans" className="ms-1 text-sm font-medium text-gray-400 hover:text-gray-200 md:ms-2">Class Plans</Link>
+              </div>
+            </li>
+            <li aria-current="page">
+              <div className="flex items-center">
+                <FaAngleRight className="w-3 h-3 text-gray-400 mx-1" />
+                <span className="ms-1 text-sm font-medium text-gray-400 md:ms-2">Add Plan</span>
+              </div>
+            </li>
+          </ol>
+        </nav>
+      </div>
+
+      <div className="p-5">
+        <div className="max-w-3xl mx-auto bg-gray-800 p-10 rounded-2xl shadow-lg border border-gray-600">
+          <h1 className="text-3xl font-bold mb-8 text-gray-200 border-b border-gray-600 pb-3">Add Class Plan</h1>
+          {error && <div className="text-red-400 mb-2">{error}</div>}
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <label className="block mb-1 text-gray-200">Name</label>
+              <input name="name" type="text" value={form.name} onChange={handleChange} className="w-full border border-gray-600 p-3 rounded-lg bg-gray-700 text-gray-200" required />
+            </div>
+            <div className="mb-4">
+              <label className="block mb-1 text-gray-200">Access Type</label>
+              <select name="access_type" value={form.access_type} onChange={handleChange} className="w-full border border-gray-600 p-3 rounded-lg bg-gray-700 text-gray-200">
+                <option value="Regular">Regular</option>
+                <option value="Premium">Premium</option>
+              </select>
+            </div>
+            <div className="mb-4">
+              <label className="block mb-1 text-gray-200">Max Visitor</label>
+              <input name="max_visitor" type="number" value={form.max_visitor} onChange={handleChange} className="w-full border border-gray-600 p-3 rounded-lg bg-gray-700 text-gray-200" min={0} />
+            </div>
+            <div className="mb-4">
+              <label className="block mb-1 text-gray-200">Minutes per Session</label>
+              <input name="minutes_per_session" type="number" value={form.minutes_per_session} onChange={handleChange} className="w-full border border-gray-600 p-3 rounded-lg bg-gray-700 text-gray-200" min={0} />
+            </div>
+            <div className="mb-4">
+              <label className="block mb-1 text-gray-200">Description</label>
+              <textarea name="description" value={form.description} onChange={handleChange} className="w-full border border-gray-600 p-3 rounded-lg bg-gray-700 text-gray-200" />
+            </div>
+            <div className="mb-4 flex items-center gap-2">
+              <input id="unlimited_monthly_session" name="unlimited_monthly_session" type="checkbox" checked={form.unlimited_monthly_session} onChange={e => setForm({ ...form, unlimited_monthly_session: e.target.checked })} />
+              <label htmlFor="unlimited_monthly_session" className="block mb-0 text-gray-200">Unlimited Monthly Session</label>
+            </div>
+            {!form.unlimited_monthly_session && (
+              <div className="mb-4">
+                <label className="block mb-1 text-gray-200">Monthly Limit</label>
+                <input name="monthly_limit" type="number" value={form.monthly_limit} onChange={handleChange} className="w-full border border-gray-600 p-3 rounded-lg bg-gray-700 text-gray-200" min={0} />
+              </div>
+            )}
+            <div className="mb-4 flex items-center gap-2">
+              <input id="unlimited_daily_session" name="unlimited_daily_session" type="checkbox" checked={form.unlimited_daily_session} onChange={e => setForm({ ...form, unlimited_daily_session: e.target.checked })} />
+              <label htmlFor="unlimited_daily_session" className="block mb-0 text-gray-200">Unlimited Daily Session</label>
+            </div>
+            {!form.unlimited_daily_session && (
+              <div className="mb-4">
+                <label className="block mb-1 text-gray-200">Daily Limit</label>
+                <input name="daily_limit" type="number" value={form.daily_limit} onChange={handleChange} className="w-full border border-gray-600 p-3 rounded-lg bg-gray-700 text-gray-200" min={0} />
+              </div>
+            )}
+            <div className="mb-4 flex items-center gap-2">
+              <input id="is_active" name="is_active" type="checkbox" checked={form.is_active} onChange={e => setForm({ ...form, is_active: e.target.checked })} />
+              <label htmlFor="is_active" className="block mb-0 text-gray-200">Active</label>
+            </div>
+            <div className="flex justify-between mt-8">
+              <div className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-semibold transition">
+                <Link href="/admin/class/plans">Back</Link>
+              </div>
+              <div className="flex gap-3">
+                <button type="submit" className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition" disabled={loading}>
+                  {loading ? "Saving..." : "Create"}
+                </button>
+                <button type="button" className="bg-gray-400 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-500 transition" onClick={() => router.push('/admin/class/plans')}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </form>
         </div>
-        <div className="mb-4">
-          <label className="block mb-1">Access Type</label>
-          <select name="access_type" value={form.access_type} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded">
-            <option value="Regular">Regular</option>
-            <option value="Premium">Premium</option>
-          </select>
-        </div>
-        <div className="mb-4">
-          <label className="block mb-1">Max Visitor</label>
-          <input name="max_visitor" type="number" value={form.max_visitor} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" min={0} />
-        </div>
-        <div className="mb-4">
-          <label className="block mb-1">Minutes per Session</label>
-          <input name="minutes_per_session" type="number" value={form.minutes_per_session} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" min={0} />
-        </div>
-        <div className="mb-4">
-          <label className="block mb-1">Description</label>
-          <textarea name="description" value={form.description} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" />
-        </div>
-        <div className="mb-4 flex items-center gap-2">
-          <input id="unlimited_monthly_session" name="unlimited_monthly_session" type="checkbox" checked={form.unlimited_monthly_session} onChange={e => setForm({ ...form, unlimited_monthly_session: e.target.checked })} />
-          <label htmlFor="unlimited_monthly_session" className="block mb-0">Unlimited Monthly Session</label>
-        </div>
-        {!form.unlimited_monthly_session && (
-          <div className="mb-4">
-            <label className="block mb-1">Monthly Limit</label>
-            <input name="monthly_limit" type="number" value={form.monthly_limit} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" min={0} />
-          </div>
-        )}
-        <div className="mb-4 flex items-center gap-2">
-          <input id="unlimited_daily_session" name="unlimited_daily_session" type="checkbox" checked={form.unlimited_daily_session} onChange={e => setForm({ ...form, unlimited_daily_session: e.target.checked })} />
-          <label htmlFor="unlimited_daily_session" className="block mb-0">Unlimited Daily Session</label>
-        </div>
-        {!form.unlimited_daily_session && (
-          <div className="mb-4">
-            <label className="block mb-1">Daily Limit</label>
-            <input name="daily_limit" type="number" value={form.daily_limit} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" min={0} />
-          </div>
-        )}
-        <div className="mb-4 flex items-center gap-2">
-          <input id="is_active" name="is_active" type="checkbox" checked={form.is_active} onChange={e => setForm({ ...form, is_active: e.target.checked })} />
-          <label htmlFor="is_active" className="block mb-0">Active</label>
-        </div>
-        <div className="flex gap-2">
-          <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded" disabled={loading}>
-            {loading ? "Saving..." : "Create"}
-          </button>
-          <button type="button" className="bg-gray-400 text-white px-4 py-2 rounded" onClick={() => router.push('/admin/class/plans')}>
-            Cancel
-          </button>
-        </div>
-      </form>
+      </div>
     </div>
   );
 }

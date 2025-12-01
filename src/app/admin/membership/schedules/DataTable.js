@@ -3,19 +3,127 @@
 import Link from "next/link";
 import DataTable from 'react-data-table-component';
 
+const colors = {
+  gray900: '#111827',
+  gray800: '#1f2937',
+  gray700: '#374151',
+  gray600: '#4b5563',
+  gray300: '#d1d5db',
+  gray100: '#f3f4f6',
+  blue600: '#2563eb',
+};
+
+const tailwindStyles = {
+  table: {
+    style: {
+      backgroundColor: colors.gray800,
+      color: colors.gray100,
+    },
+  },
+  header: {
+    style: {
+      backgroundColor: colors.gray800,
+      color: colors.gray100,
+      fontSize: '1.25rem',
+      fontWeight: '700',
+    },
+  },
+  headRow: {
+    style: {
+      backgroundColor: colors.gray700,
+      borderBottomWidth: '1px',
+      borderBottomColor: colors.gray600,
+      minHeight: '52px',
+    },
+  },
+  headCells: {
+    style: {
+      color: colors.gray100,
+      fontWeight: '600',
+      fontSize: '0.875rem',
+      paddingLeft: '16px',
+      paddingRight: '16px',
+    },
+  },
+  rows: {
+    style: {
+      backgroundColor: colors.gray800,
+      color: colors.gray300,
+      fontSize: '0.875rem',
+      borderBottomWidth: '1px',
+      borderBottomColor: colors.gray700,
+      minHeight: '60px',
+      '&:hover': {
+        backgroundColor: colors.gray700,
+        transition: 'all 0.2s',
+        color: '#fff',
+      },
+    },
+    highlightOnHoverStyle: {
+      backgroundColor: colors.gray700,
+      color: '#fff',
+      transitionDuration: '0.15s',
+      transitionProperty: 'background-color',
+      borderBottomColor: colors.gray600,
+      outline: 'none',
+    },
+  },
+  cells: {
+    style: {
+      paddingLeft: '16px',
+      paddingRight: '16px',
+    },
+  },
+  pagination: {
+    style: {
+      backgroundColor: colors.gray800,
+      color: colors.gray300,
+      borderTopWidth: '1px',
+      borderTopColor: colors.gray600,
+    },
+    pageButtonsStyle: {
+      borderRadius: '50%',
+      height: '32px',
+      width: '32px',
+      padding: '6px',
+      margin: '2px',
+      cursor: 'pointer',
+      transition: '0.2s',
+      color: colors.gray300,
+      fill: colors.gray300,
+      backgroundColor: 'transparent',
+      '&:hover:not(:disabled)': {
+        backgroundColor: colors.gray700,
+      },
+      '&:focus': {
+        outline: 'none',
+        backgroundColor: colors.gray700,
+      },
+    },
+  },
+};
+
 export default function MembershipSchedulesDataTable({ data }) {
   const columns = [
-    { name: 'No', cell: (row, i) => i + 1, width: '70px' },
-    { name: 'Plan', selector: row => row.membershipPlan?.name || '-', sortable: true },
+    { name: 'No', cell: (row, i) => i + 1, width: '70px', center: true },
+    { 
+      name: 'Plan', 
+      selector: row => row.membershipPlan?.name || '-', 
+      sortable: true,
+      cell: row => <span className="font-semibold">{row.membershipPlan?.name || '-'}</span>,
+    },
     { name: 'Hari', selector: row => row.day_of_week || '-', sortable: true },
     { name: 'Jam Mulai', selector: row => row.start_time || '-', sortable: true },
     { name: 'Jam Selesai', selector: row => row.end_time || '-', sortable: true },
     { name: 'Tanggal Dibuat', selector: row => row.created_at ? row.created_at.slice(0,10) : '-', sortable: true },
     {
-      name: 'Aksi',
+      name: 'Actions',
+      minWidth: '150px',
       cell: row => (
         <div className="flex gap-2 justify-center">
-          <Link href={`/admin/membership/schedules/edit?id=${row.id}`} className="bg-gray-400 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">Detail</Link>
+          <Link href={`/admin/membership/schedules/edit?id=${row.id}`} className="bg-gray-400 text-white px-3 py-1 rounded-md font-semibold hover:bg-gray-500">
+            Detail
+          </Link>
         </div>
       ),
       ignoreRowClick: true,
@@ -28,15 +136,22 @@ export default function MembershipSchedulesDataTable({ data }) {
       data={data}
       pagination
       highlightOnHover
-      striped
       responsive
       fixedHeaderScrollHeight="300px"
       direction="auto"
       subHeaderWrap
-      customStyles={{
-        headCells: { style: { fontWeight: 'bold', fontSize: '1rem', background: '#eff6ff', color: '#2563eb' } },
-        rows: { style: { fontSize: '1rem' } },
-      }}
+      customStyles={tailwindStyles}
+      progressComponent={
+        <div className="p-4 text-gray-300 bg-gray-800 w-full text-center">
+          Loading data...
+        </div>
+      }
+      noDataComponent={
+        <div className="p-4 text-gray-400 bg-gray-800 w-full text-center">
+          Tidak ada data yang ditemukan.
+        </div>
+      }
+      theme="dark"
     />
   );
 }

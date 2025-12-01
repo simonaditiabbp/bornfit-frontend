@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { FaTachometerAlt, FaUsers, FaDumbbell, FaClipboardList, FaCalendarCheck, FaBarcode, FaCheckCircle, FaSignOutAlt, FaBars, FaAngleRight, FaAngleDoubleLeft, FaMoon, FaAngleDoubleRight, FaUps, FaAngleUp, FaAngleDown, FaCalendar, FaUserCheck, FaChalkboardTeacher } from 'react-icons/fa';
+import { FaTachometerAlt, FaUsers, FaDumbbell, FaClipboardList, FaCalendarCheck, FaBarcode, FaCheckCircle, FaSignOutAlt, FaBars, FaAngleRight, FaAngleDoubleLeft, FaMoon, FaAngleDoubleRight, FaUps, FaAngleUp, FaAngleDown, FaCalendar, FaUserCheck, FaChalkboardTeacher, FaShoppingBag, FaExchangeAlt, FaSnowflake  } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
@@ -99,7 +99,7 @@ export default function AdminLayout({ children }) {
               <div className="hidden sm:flex">
                 <a href="" className="flex ms-2 md:me-24">
                   <Image
-                    src={"../logo.svg"}
+                    src={"/logo.svg"}
                     alt="BornFit Logo"
                     width={128}
                     height={128}
@@ -126,7 +126,7 @@ export default function AdminLayout({ children }) {
                 >
                   <span className="sr-only">Open user menu</span>
                   <Image
-                    src={"../logo.svg"}
+                    src={"/logo.svg"}
                     alt="User Profile"
                     width={128}
                     height={128}
@@ -176,7 +176,7 @@ export default function AdminLayout({ children }) {
             <li className="sm:hidden mb-4 border-b-2 p-4">
               <a href="" className="flex ms-2">
                 <Image
-                  src={"../logo.svg"}
+                  src={"/logo.svg"}
                   alt="BornFit Logo"
                   width={128}
                   height={128}
@@ -249,6 +249,24 @@ export default function AdminLayout({ children }) {
                     >
                       <FaCalendar className="inline-block transition duration-75 mr-2" /> 
                       <span className={navTextClass}>Schedule</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/membership/transfer"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/membership/transfer") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaExchangeAlt className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Transfer</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/membership/freeze"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/membership/freeze") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaSnowflake  className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Freeze</span>
                     </Link>
                   </li>
                 </ul>
@@ -356,14 +374,10 @@ export default function AdminLayout({ children }) {
                   <li>
                     <Link
                       href="/admin/class/classpurchase"
-                      className={`block py-2 px-2 rounded font-semibold flex items-center gap-2 ${pathname.startsWith("/admin/class/purchase") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
-                    ><FaCheckCircle className="inline-block" /> Class Purchase</Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/admin/class/classpurchase"
-                      className={`block py-2 px-2 rounded font-semibold flex items-center gap-2 ${pathname.startsWith("/admin/class/purchase") ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-700"}`}
-                    ><FaCheckCircle className="inline-block" /> Class Purchase</Link>
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/class/purchase") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"}`}
+                    ><FaShoppingBag className="inline-block transition duration-75 mr-2" /> 
+                    <span className={navTextClass}>Class Purchase</span>
+                    </Link>
                   </li>
                 </ul>
               )}

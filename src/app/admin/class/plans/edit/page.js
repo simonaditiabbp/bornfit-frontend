@@ -2,6 +2,8 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import BackendErrorFallback from "../../../../../components/BackendErrorFallback";
+import { FaAngleRight, FaFileInvoice } from 'react-icons/fa';
+import Link from 'next/link';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -101,76 +103,104 @@ export default function ClassPlanEditPage() {
   };
 
   if (backendError) return <BackendErrorFallback onRetry={() => window.location.reload()} />;
-  if (loading || !form) return <div className="text-blue-600 text-center font-medium mt-20">Loading...</div>;
+  if (loading || !form) return <div className="text-amber-300 text-center font-medium mt-20">Loading...</div>;
 
   return (
-    <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-10 border border-gray-100">
-      <h1 className="text-3xl font-bold mb-8 text-blue-700 border-b pb-3">Edit Class Plan</h1>
-      {success && <div className="text-green-600 mb-2">{success}</div>}
-      {error && <div className="text-red-600 mb-2">{error}</div>}
-      {/* <form onSubmit={e => { e.preventDefault(); handleSave(); }}> */}
-      <div className="space-y-4 mb-4">
-        <div className="mb-4">
-          <label className="block mb-1">Name</label>
-          <input name="name" type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} required disabled={!edit} />
-        </div>
-        <div className="mb-4">
-          <label className="block mb-1">Access Type</label>
-          <select name="access_type" value={form.access_type} onChange={e => setForm(f => ({ ...f, access_type: e.target.value }))} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} disabled={!edit}>
-            <option value="Regular">Regular</option>
-            <option value="Premium">Premium</option>
-          </select>
-        </div>
-        <div className="mb-4">
-          <label className="block mb-1">Max Visitor</label>
-          <input name="max_visitor" type="number" value={form.max_visitor} onChange={e => setForm(f => ({ ...f, max_visitor: Number(e.target.value) }))} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} min={0} disabled={!edit} />
-        </div>
-        <div className="mb-4">
-          <label className="block mb-1">Minutes per Session</label>
-          <input name="minutes_per_session" type="number" value={form.minutes_per_session} onChange={e => setForm(f => ({ ...f, minutes_per_session: Number(e.target.value) }))} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} min={0} disabled={!edit} />
-        </div>
-        <div className="mb-4">
-          <label className="block mb-1">Description</label>
-          <textarea name="description" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} className={`w-full p-3 border rounded-lg ${edit ? 'bg-white' : 'bg-gray-100'}`} disabled={!edit} />
-        </div>
-        <div className="mb-4 flex items-center gap-2">
-          <input id="unlimited_monthly_session" name="unlimited_monthly_session" type="checkbox" checked={form.unlimited_monthly_session} onChange={e => setForm({ ...form, unlimited_monthly_session: e.target.checked })} disabled={!edit} />
-          <label htmlFor="unlimited_monthly_session" className="block mb-0">Unlimited Monthly Session</label>
-        </div>
-        {!form.unlimited_monthly_session && (
-          <div className="mb-4">
-            <label className="block mb-1">Monthly Limit</label>
-            <input name="monthly_limit" type="number" value={form.monthly_limit} onChange={handleChange} className="w-full border px-2 py-1 rounded" min={0} disabled={!edit} />
+    <div>
+      <div className="bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-600">
+        <nav className="flex" aria-label="Breadcrumb">
+          <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+            <li>
+              <div className="inline-flex items-center">
+                <FaFileInvoice className="w-3 h-3 me-2.5 text-amber-300" /> 
+                <Link href="/admin/class/plans" className="ms-1 text-sm font-medium text-gray-400 hover:text-gray-200 md:ms-2">Class Plans</Link>
+              </div>
+            </li>
+            <li aria-current="page">
+              <div className="flex items-center">
+                <FaAngleRight className="w-3 h-3 text-gray-400 mx-1" />
+                <span className="ms-1 text-sm font-medium text-gray-400 md:ms-2">Detail</span>
+              </div>
+            </li>
+          </ol>
+        </nav>
+      </div>
+
+      <div className="p-5">
+        <div className="max-w-4xl mx-auto bg-gray-800 rounded-2xl shadow-lg p-10 border border-gray-600">
+          <h1 className="text-3xl font-bold mb-8 text-gray-200 border-b border-gray-600 pb-3">Edit Class Plan</h1>
+          {success && <div className="text-green-400 mb-2">{success}</div>}
+          {error && <div className="text-red-400 mb-2">{error}</div>}
+          {/* <form onSubmit={e => { e.preventDefault(); handleSave(); }}> */}
+          <div className="space-y-4 mb-4">
+            <div className="mb-4">
+              <label className="block mb-1 text-gray-200">Name</label>
+              <input name="name" type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 border-gray-200' : 'bg-gray-700 border-gray-600'} text-gray-200`} required disabled={!edit} />
+            </div>
+            <div className="mb-4">
+              <label className="block mb-1 text-gray-200">Access Type</label>
+              <select name="access_type" value={form.access_type} onChange={e => setForm(f => ({ ...f, access_type: e.target.value }))} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 border-gray-200' : 'bg-gray-700 border-gray-600'} text-gray-200`} disabled={!edit}>
+                <option value="Regular">Regular</option>
+                <option value="Premium">Premium</option>
+              </select>
+            </div>
+            <div className="mb-4">
+              <label className="block mb-1 text-gray-200">Max Visitor</label>
+              <input name="max_visitor" type="number" value={form.max_visitor} onChange={e => setForm(f => ({ ...f, max_visitor: Number(e.target.value) }))} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 border-gray-200' : 'bg-gray-700 border-gray-600'} text-gray-200`} min={0} disabled={!edit} />
+            </div>
+            <div className="mb-4">
+              <label className="block mb-1 text-gray-200">Minutes per Session</label>
+              <input name="minutes_per_session" type="number" value={form.minutes_per_session} onChange={e => setForm(f => ({ ...f, minutes_per_session: Number(e.target.value) }))} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 border-gray-200' : 'bg-gray-700 border-gray-600'} text-gray-200`} min={0} disabled={!edit} />
+            </div>
+            <div className="mb-4">
+              <label className="block mb-1 text-gray-200">Description</label>
+              <textarea name="description" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 border-gray-200' : 'bg-gray-700 border-gray-600'} text-gray-200`} disabled={!edit} />
+            </div>
+            <div className="mb-4 flex items-center gap-2">
+              <input id="unlimited_monthly_session" name="unlimited_monthly_session" type="checkbox" checked={form.unlimited_monthly_session} onChange={e => setForm({ ...form, unlimited_monthly_session: e.target.checked })} disabled={!edit} />
+              <label htmlFor="unlimited_monthly_session" className="block mb-0 text-gray-200">Unlimited Monthly Session</label>
+            </div>
+            {!form.unlimited_monthly_session && (
+              <div className="mb-4">
+                <label className="block mb-1 text-gray-200">Monthly Limit</label>
+                <input name="monthly_limit" type="number" value={form.monthly_limit} onChange={handleChange} className={`w-full border p-3 rounded-lg ${edit ? 'bg-gray-700 border-gray-200' : 'bg-gray-700 border-gray-600'} text-gray-200`} min={0} disabled={!edit} />
+              </div>
+            )}
+            <div className="mb-4 flex items-center gap-2">
+              <input id="unlimited_daily_session" name="unlimited_daily_session" type="checkbox" checked={form.unlimited_daily_session} onChange={e => setForm({ ...form, unlimited_daily_session: e.target.checked })} disabled={!edit} />
+              <label htmlFor="unlimited_daily_session" className="block mb-0 text-gray-200">Unlimited Daily Session</label>
+            </div>
+            {!form.unlimited_daily_session && (
+              <div className="mb-4">
+                <label className="block mb-1 text-gray-200">Daily Limit</label>
+                <input name="daily_limit" type="number" value={form.daily_limit} onChange={handleChange} className={`w-full border p-3 rounded-lg ${edit ? 'bg-gray-700 border-gray-200' : 'bg-gray-700 border-gray-600'} text-gray-200`} min={0} disabled={!edit} />
+              </div>
+            )}
+            <div className="mb-4 flex items-center gap-2">
+              <input id="is_active" name="is_active" type="checkbox" checked={form.is_active} onChange={e => setForm(f => ({ ...f, is_active: e.target.checked }))} disabled={!edit} />
+              <label htmlFor="is_active" className="block mb-0 text-gray-200">Active</label>
+            </div>
+            <div className="flex justify-between mt-8">
+              <div className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-semibold transition">
+                <Link href="/admin/class/plans">Back</Link>
+              </div>
+              <div className="flex gap-3">
+                {!edit ? (
+                  <>
+                    <button type="button" className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition" onClick={handleEdit}>Edit</button>
+                    <button type="button" className="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-700 transition" onClick={handleDelete} disabled={formLoading}>Delete</button>
+                  </>
+                ) : (
+                  <>
+                    <button type="submit" className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition" onClick={handleSave} disabled={formLoading}>{formLoading ? "Saving..." : "Save"}</button>
+                    <button type="button" className="bg-gray-400 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-500 transition" onClick={handleCancel}>Cancel</button>
+                  </>
+                )}
+              </div>
+            </div>
+          {/* </form> */}
           </div>
-        )}
-        <div className="mb-4 flex items-center gap-2">
-          <input id="unlimited_daily_session" name="unlimited_daily_session" type="checkbox" checked={form.unlimited_daily_session} onChange={e => setForm({ ...form, unlimited_daily_session: e.target.checked })} disabled={!edit} />
-          <label htmlFor="unlimited_daily_session" className="block mb-0">Unlimited Daily Session</label>
         </div>
-        {!form.unlimited_daily_session && (
-          <div className="mb-4">
-            <label className="block mb-1">Daily Limit</label>
-            <input name="daily_limit" type="number" value={form.daily_limit} onChange={handleChange} className="w-full border px-2 py-1 rounded" min={0} disabled={!edit} />
-          </div>
-        )}
-        <div className="mb-4 flex items-center gap-2">
-          <input id="is_active" name="is_active" type="checkbox" checked={form.is_active} onChange={e => setForm(f => ({ ...f, is_active: e.target.checked }))} disabled={!edit} />
-          <label htmlFor="is_active" className="block mb-0">Active</label>
-        </div>
-        <div className="flex gap-2">
-          {!edit ? (
-            <>
-              <button type="button" className="bg-blue-600 text-white px-4 py-2 rounded" onClick={handleEdit}>Edit</button>
-              <button type="button" className="bg-red-600 text-white px-4 py-2 rounded" onClick={handleDelete} disabled={formLoading}>Delete</button>
-            </>
-          ) : (
-            <>
-              <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded" onClick={handleSave} disabled={formLoading}>{formLoading ? "Saving..." : "Save"}</button>
-              <button type="button" className="bg-gray-400 text-white px-4 py-2 rounded" onClick={handleCancel}>Cancel</button>
-            </>
-          )}
-        </div>
-      {/* </form> */}
       </div>
     </div>
   );

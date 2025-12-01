@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import BackendErrorFallback from '../../../../components/BackendErrorFallback';
 import MembershipSchedulesDataTable from './DataTable';
+import { FaPlus, FaCalendar } from 'react-icons/fa';
+import Link from 'next/link';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -38,22 +40,37 @@ export default function MembershipSchedulesPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6 text-blue-700">Membership Schedules</h1>
-      <div className="mb-4 flex items-center justify-between">
-        <input
-          type="text"
-          placeholder="Search member/plan/status..."
-          className="w-full max-w-xs p-2 border border-blue-300 rounded focus:outline-blue-500 text-base"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
-        <a href="/admin/membership/schedules/insert" className="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 ml-2">+ Add Schedule</a>
+      <div className="bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-600">
+        <nav className="flex" aria-label="Breadcrumb">
+          <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+            <li className="inline-flex items-center">
+              <FaCalendar className="w-3 h-3 me-2.5 text-amber-300" /> 
+              <span className="ms-1 text-sm font-medium text-gray-400 md:ms-2 dark:text-gray-400">Membership Schedules</span>
+            </li>
+          </ol>
+        </nav>
       </div>
-      {loading ? <div className="text-blue-600">Loading...</div> : (
-        <div className="bg-white rounded-xl shadow p-6">
-          <MembershipSchedulesDataTable data={filteredSchedules} />
+      
+      <div className="m-5 p-5 bg-gray-800 border border-gray-600 rounded-lg">
+        <div className="mb-4 flex items-center justify-between">
+          <input
+            type="text"
+            placeholder="Search member/plan/status..."
+            className="w-full max-w-xs p-2 border text-gray-100 bg-gray-700 border-amber-200 rounded focus:outline-none text-base"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          <Link href="/admin/membership/schedules/insert" className="flex items-center gap-2 bg-amber-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-amber-500">
+            <FaPlus className="inline-block" />
+            Add Schedule
+          </Link>
         </div>
-      )}
+        {loading ? (
+          <div className="text-center text-amber-300">Loading...</div>
+        ) : (
+          <MembershipSchedulesDataTable data={filteredSchedules} />
+        )}
+      </div>
     </div>
   );
 }
