@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {QRCodeCanvas, QRCodeSVG } from 'qrcode.react';
 import Link from 'next/link';
+import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { jsPDF } from "jspdf";
 import dayjs from 'dayjs';
@@ -353,109 +354,221 @@ export default function AdminUsersPage() {
         )}
         {/* Modal QR Code */}
         {qrUser && (
-          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-            <div className="bg-white p-8 rounded-2xl shadow-xl text-center relative min-w-[340px]">
-              <h2 className="text-2xl font-extrabold mb-4 text-blue-700 drop-shadow">QR Code for {qrUser.name}</h2>
-              <div className="flex flex-col items-center justify-center">
-                <div id="qr-download-area" className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200 mb-2 shadow">
-                  <QRCodeCanvas id="qr-canvas" value={qrUser.qr_code || ''} size={220} level="H" includeMargin={true} />
-                  <QRCodeSVG  id="qr-canvas-svg" value={qrUser.qr_code || ''} size={220} level="H" includeMargin={true}  style={{ display: 'none' }} />
+          <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-3xl shadow-2xl text-center relative max-w-lg w-full overflow-hidden">
+              {/* Header with Branding */}
+              <div className="bg-gradient-to-r from-amber-400 to-amber-500 py-6 px-8">
+                <div className="flex items-center justify-center gap-3 mb-2">
+                  <Image src="/logo.svg" alt="BornFit Logo" width={48} height={48} />
+                  <h1 className="text-3xl font-black text-white tracking-tight">BORNFIT GYM</h1>
                 </div>
-                <div className="mt-2 text-base text-blue-700 font-mono tracking-wider">{qrUser.qr_code}</div>
-                <div className="flex gap-2 mt-4 justify-center">
+                <p className="text-white/90 font-medium">Member Access QR Code</p>
+              </div>
+
+              {/* Body */}
+              <div className="p-8">
+                <h2 className="text-2xl font-bold mb-1 text-gray-800">{qrUser.name}</h2>
+                <p className="text-sm text-gray-500 mb-6">Scan to check in at the gym</p>
+                
+                {/* QR Code Container with Logo Overlay */}
+                <div className="flex flex-col items-center justify-center mb-6">
+                  <div id="qr-download-area" className="relative bg-white p-6 rounded-2xl border-4 border-amber-400 shadow-lg">
+                    {/* QR Code Canvas */}
+                    <QRCodeCanvas 
+                      id="qr-canvas" 
+                      value={qrUser.qr_code || ''} 
+                      size={300} 
+                      level="H" 
+                      includeMargin={true}
+                      style={{ background: 'transparent' }}
+                      imageSettings={{
+                        src: '/logo.svg',
+                        height: 60,
+                        width: 60,
+                        // excavate: true,
+                      }}
+                    />
+                    {/* Hidden SVG for download */}
+                    <div style={{ display: 'none' }}>
+                      <QRCodeSVG  
+                        id="qr-canvas-svg" 
+                        value={qrUser.qr_code || ''} 
+                        size={300} 
+                        level="H" 
+                        includeMargin={true}
+                        style={{ background: 'transparent' }}
+                        imageSettings={{
+                          src: '/logo.svg',
+                          height: 60,
+                          width: 60,
+                          // excavate: true,
+                        }}
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Member ID */}
+                  <div className="mt-4 px-4 py-2 bg-gray-100 rounded-lg">
+                    <p className="text-xs text-gray-500 font-medium">Member ID</p>
+                    <p className="text-sm text-gray-700 font-mono font-semibold">{qrUser.qr_code}</p>
+                  </div>
+                </div>
+
+                {/* Instructions */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                  <p className="text-sm text-blue-800 font-medium mb-2">📱 How to use:</p>
+                  <ul className="text-xs text-blue-700 text-left space-y-1">
+                    <li>• Show this QR code at gym entrance</li>
+                    <li>• Keep your QR code secure</li>
+                    <li>• Do not share with others</li>
+                  </ul>
+                </div>
+
+                {/* Download Buttons */}
+                <div className="grid grid-cols-3 gap-3 mb-4">
                   <button
-                    className="bg-blue-600 text-white px-3 py-1 rounded font-semibold hover:bg-blue-700"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 shadow-md"
                     onClick={() => {
-                      // Download PNG
                       const canvas = document.getElementById('qr-canvas');
                       const url = canvas.toDataURL('image/png');
                       const a = document.createElement('a');
                       a.href = url;
-                      a.download = `qrcode_${qrUser.qr_code}.png`;
+                      a.download = `BornFit_QR_${qrUser.name.replace(/\s/g, '_')}.png`;
                       a.click();
                     }}
                   >
-                    Download PNG
+                    <svg className="w-5 h-5 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    PNG
                   </button>
+                  
                   <button
-                      className="bg-green-600 text-white px-3 py-1 rounded font-semibold hover:bg-green-700 transition-all"
-                      onClick={() => {
-                          // Download SVG
-                          const svgElem = document.querySelector("#qr-download-area svg");
-                          if (!svgElem) {
-                          alert("SVG element not found");
-                          return;
-                          }
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 shadow-md"
+                    onClick={() => {
+                      const svgElem = document.getElementById("qr-canvas-svg");
+                      if (!svgElem) {
+                        alert("SVG element not found");
+                        return;
+                      }
 
-                          const serializer = new XMLSerializer();
-                          let svgStr = serializer.serializeToString(svgElem);
+                      const serializer = new XMLSerializer();
+                      let svgStr = serializer.serializeToString(svgElem);
 
-                          // Tambahkan XML header biar valid SVG
-                          if (!svgStr.startsWith('<?xml')) {
-                          svgStr = '<?xml version="1.0" standalone="no"?>\r\n' + svgStr;
-                          }
+                      if (!svgStr.startsWith('<?xml')) {
+                        svgStr = '<?xml version="1.0" standalone="no"?>\r\n' + svgStr;
+                      }
 
-                          const blob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
-                          const url = URL.createObjectURL(blob);
+                      const blob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
+                      const url = URL.createObjectURL(blob);
 
-                          // Buat elemen <a> untuk download
-                          const a = document.createElement("a");
-                          a.href = url;
-                          a.download = `qrcode_${qrUser.qr_code}.svg`;
-                          document.body.appendChild(a); // penting: tambahkan ke DOM
-                          a.click();
-                          document.body.removeChild(a); // bersihkan lagi
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = `BornFit_QR_${qrUser.name.replace(/\s/g, '_')}.svg`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
 
-                          // Lepaskan URL object setelah delay singkat
-                          setTimeout(() => URL.revokeObjectURL(url), 1000);
-                      }}
-                      >
-                      Download SVG
+                      setTimeout(() => URL.revokeObjectURL(url), 1000);
+                    }}
+                  >
+                    <svg className="w-5 h-5 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                    </svg>
+                    SVG
                   </button>
+                  
                   <button
-                      className="bg-red-600 text-white px-3 py-1 rounded font-semibold hover:bg-red-700 transition-all"
-                      onClick={async () => {
-                          const canvas = document.getElementById("qr-canvas");
-                          if (!canvas) {
-                          alert("QR canvas not found");
-                          return;
-                          }
+                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 shadow-md"
+                    onClick={async () => {
+                      const canvas = document.getElementById("qr-canvas");
+                      if (!canvas) {
+                        alert("QR canvas not found");
+                        return;
+                      }
 
-                          const imgData = canvas.toDataURL("image/png");
-                          const pdf = new jsPDF({
-                          orientation: "portrait",
-                          unit: "mm",
-                          format: [80, 100], // small size like label
-                          });
+                      const imgData = canvas.toDataURL("image/png");
+                      const pdf = new jsPDF({
+                        orientation: "portrait",
+                        unit: "mm",
+                        format: "a4",
+                      });
 
-                          // Header
-                          pdf.setFont("helvetica", "bold");
-                          pdf.setFontSize(14);
-                          pdf.text("QR CODE", 40, 10, { align: "center" });
+                      const pageWidth = pdf.internal.pageSize.getWidth();
+                      const pageHeight = pdf.internal.pageSize.getHeight();
 
-                          // Gambar QR
-                          pdf.addImage(imgData, "PNG", 15, 20, 50, 50);
+                      // Header with branding color
+                      pdf.setFillColor(236, 193, 33); // #ECC121 amber color
+                      pdf.rect(0, 0, pageWidth, 30, 'F');
+                      
+                      pdf.setTextColor(255, 255, 255);
+                      pdf.setFont("helvetica", "bold");
+                      pdf.setFontSize(28);
+                      pdf.text("BORNFIT GYM", pageWidth / 2, 15, { align: "center" });
+                      
+                      pdf.setFontSize(12);
+                      pdf.text("Member Access QR Code", pageWidth / 2, 23, { align: "center" });
 
-                          // Kode QR di bawah gambar
-                          pdf.setFont("courier", "normal");
-                          pdf.setFontSize(12);
-                          pdf.setTextColor(37, 99, 235); // blue color (#2563eb)
-                          pdf.text(qrUser.qr_code, 40, 80, { align: "center" });
+                      // User name
+                      pdf.setTextColor(0, 0, 0);
+                      pdf.setFont("helvetica", "bold");
+                      pdf.setFontSize(18);
+                      pdf.text(qrUser.name, pageWidth / 2, 45, { align: "center" });
 
-                          // Simpan PDF
-                          pdf.save(`${qrUser.qr_code}.pdf`);
-                      }}
-                      >
-                      Download PDF
-                </button>
+                      pdf.setFont("helvetica", "normal");
+                      pdf.setFontSize(11);
+                      pdf.setTextColor(100, 100, 100);
+                      pdf.text("Scan to check in at the gym", pageWidth / 2, 52, { align: "center" });
+
+                      // QR Code (centered, larger)
+                      const qrSize = 100;
+                      const qrX = (pageWidth - qrSize) / 2;
+                      pdf.addImage(imgData, "PNG", qrX, 65, qrSize, qrSize);
+
+                      // Instructions box
+                      pdf.setDrawColor(59, 130, 246); // blue
+                      pdf.setFillColor(239, 246, 255); // light blue
+                      pdf.roundedRect(20, 175, pageWidth - 40, 35, 3, 3, 'FD');
+                      
+                      pdf.setTextColor(30, 64, 175);
+                      pdf.setFont("helvetica", "bold");
+                      pdf.setFontSize(11);
+                      pdf.text("📱 How to use:", 25, 183);
+                      
+                      pdf.setFont("helvetica", "normal");
+                      pdf.setFontSize(9);
+                      pdf.text("• Show this QR code at gym entrance", 25, 190);
+                      pdf.text("• Keep your QR code secure", 25, 196);
+                      pdf.text("• Do not share with others", 25, 202);
+
+                      // Footer
+                      pdf.setTextColor(150, 150, 150);
+                      pdf.setFontSize(9);
+                      pdf.text(`Member ID: ${qrUser.qr_code}`, pageWidth / 2, pageHeight - 20, { align: "center" });
+                      pdf.setFontSize(8);
+                      pdf.text(`Generated on ${new Date().toLocaleDateString('id-ID')}`, pageWidth / 2, pageHeight - 15, { align: "center" });
+
+                      pdf.save(`BornFit_QR_${qrUser.name.replace(/\s/g, '_')}.pdf`);
+                    }}
+                  >
+                    <svg className="w-5 h-5 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    PDF
+                  </button>
                 </div>
+
+                {/* Close Button */}
                 <button
-                  className="mt-8 bg-gray-400 text-white px-4 py-2 rounded font-semibold hover:bg-gray-500"
+                  className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-xl font-semibold transition-all"
                   onClick={() => setQrUser(null)}
                 >
                   Close
                 </button>
               </div>
+
+              {/* Footer decoration */}
+              <div className="bg-gradient-to-r from-amber-400 to-amber-500 h-2"></div>
             </div>
           </div>
         )}

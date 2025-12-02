@@ -5,7 +5,7 @@ import BookingDataTable from './BookingDataTable';
 import Image from 'next/image';
 import { Html5Qrcode } from 'html5-qrcode';
 import { format, differenceInDays, parseISO } from "date-fns";
-import { enUS } from "date-fns/locale";
+import { de, enUS } from "date-fns/locale";
 import { useRouter } from 'next/navigation';
 import BackendErrorFallback from '../../components/BackendErrorFallback';
 
@@ -483,11 +483,12 @@ export default function BarcodePage() {
                 setMessage('');
                 setMessageType('success');
                 const { latitude, longitude } = getUserLocation();
+                let qr_code = decodedText;
                 try {
                   const res = await fetch(`${API_URL}/api/checkinptsession/checkin`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ qr_code: decodedText, latitude, longitude }),
+                    body: JSON.stringify({ qr_code, latitude, longitude }),
                   });
                   const result = await res.json();
                   if (res.status === 201 && result.data) {
@@ -495,7 +496,10 @@ export default function BarcodePage() {
                     setMessage(result.message || 'Check-in successful');
                     setMessageType('success');
                   } else {
-                    setUser(null);                    
+                    setUser(null);  
+                    console.log("DISINI GANN")                  
+                    console.log("decodedText:", decodedText)
+                    // console.log("qr_code:", decodedText)
                     if (qr_code.startsWith("member")) {
                       setMessage(result.message || 'Member not found');
                     } else if (qr_code.startsWith("pt")) {
@@ -658,6 +662,7 @@ useEffect(() => {
 
   // Helper untuk render info PT Session
   const renderPTSessionInfo = (result) => {
+    // console.log("result di renderPTSessionInfo:", result);
     // if (!result?.data?.type?.toLowerCase().includes('pt')) return null;
     const ptsession = Array.isArray(result.data?.ptsessions) ? result.data.ptsessions[0] : null;
     if (!ptsession) return null;

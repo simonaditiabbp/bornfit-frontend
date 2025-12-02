@@ -188,13 +188,19 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
         throw new Error(data.message || "Failed to create user");
       }
 
-      setSuccess("User created successfully!");
+      // Check if user has email for QR code notification
+      const hasValidEmail = form.email && form.email.trim() !== '';
+      const successMessage = hasValidEmail 
+        ? "User created successfully! QR code has been sent to email." 
+        : "User created successfully! No email provided, QR code not sent.";
+      
+      setSuccess(successMessage);
       if (onRefresh) onRefresh(); // Refresh data di parent
       
       // Delay sedikit sebelum menutup modal
       setTimeout(() => {
         handleCloseInternal();
-      }, 1500);
+      }, 2000);
 
     } catch (err) {
       if (err.message === "Email is already registered") {
@@ -228,7 +234,7 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
 
             <div>
               <label className="block font-medium text-gray-200 mb-1">Name <span className="text-red-600">*</span></label>
-              <input type="text" name="name" value={form.name} onChange={handleChange} required className="w-full text-gray-200 bg-gray-700 focus:bg-gray-600 border border-gray-400 p-2 rounded focus:ring-0 outline-none" />
+              <input type="text" name="name" value={form.name} onChange={handleChange} required className="w-full text-gray-200 bg-gray-700 focus:bg-gray-600 border border-gray-400 p-2 rounded focus:ring-0 outline-none" autoFocus />
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

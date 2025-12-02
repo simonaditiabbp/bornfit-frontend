@@ -4,9 +4,10 @@ import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
 import BackendErrorFallback from '../../../../components/BackendErrorFallback';
-import { FaAngleLeft, FaAngleRight, FaUser } from 'react-icons/fa';
+import { FaAngleLeft, FaAngleRight, FaUser, FaEnvelope } from 'react-icons/fa';
 import Link from 'next/link';
 import Webcam from 'react-webcam';
+import SendQRCodeModal from '../../../../components/SendQRCodeModal';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -37,6 +38,7 @@ export default function UserDetailPage() {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const webcamRef = useRef(null);
   const [backendError, setBackendError] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -225,9 +227,20 @@ export default function UserDetailPage() {
             <div className="text-blue-600 text-center font-medium">Loading...</div>
           ) : (
           <>            
-            <h2 className="text-3xl font-bold mb-8 text-gray-200 border-b pb-3">
-              User Details
-            </h2>
+            <div className="flex justify-between items-center mb-8 border-b pb-3">
+              <h2 className="text-3xl font-bold text-gray-200">
+                User Details
+              </h2>
+              {!edit && user?.qr_code && (
+                <button
+                  onClick={() => setShowQRModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+                >
+                  <FaEnvelope className="w-4 h-4" />
+                  Send QR Code
+                </button>
+              )}
+            </div>
 
             {/* PHOTO USER */}
               <div className="flex flex-col items-center mb-8">
@@ -453,6 +466,15 @@ export default function UserDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Send QR Code Modal */}
+      <SendQRCodeModal
+        isOpen={showQRModal}
+        onClose={() => setShowQRModal(false)}
+        userId={id}
+        userEmail={user?.email}
+        userName={user?.name}
+      />
     </div>
   );
 }

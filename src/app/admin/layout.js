@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { FaTachometerAlt, FaUsers, FaDumbbell, FaClipboardList, FaCalendarCheck, FaBarcode, FaCheckCircle, FaSignOutAlt, FaBars, FaAngleRight, FaAngleDoubleLeft, FaMoon, FaAngleDoubleRight, FaUps, FaAngleUp, FaAngleDown, FaCalendar, FaUserCheck, FaChalkboardTeacher, FaShoppingBag, FaExchangeAlt, FaSnowflake  } from 'react-icons/fa';
+import { FaTachometerAlt, FaUsers, FaDumbbell, FaClipboardList, FaCalendarCheck, FaBarcode, FaCheckCircle, FaSignOutAlt, FaBars, FaAngleRight, FaAngleDoubleLeft, FaMoon, FaAngleDoubleRight, FaUps, FaAngleUp, FaAngleDown, FaCalendar, FaUserCheck, FaChalkboardTeacher, FaShoppingBag, FaExchangeAlt, FaSnowflake, FaIdCard, FaChartLine, FaFileAlt } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
@@ -14,6 +14,7 @@ export default function AdminLayout({ children }) {
   const [membershipDropdownOpen, setMembershipDropdownOpen] = useState(false);
   const [ptDropdownOpen, setPtDropdownOpen] = useState(false);
   const [classDropdownOpen, setClassDropdownOpen] = useState(false);
+  const [reportDropdownOpen, setReportDropdownOpen] = useState(false);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -377,6 +378,77 @@ export default function AdminLayout({ children }) {
                       className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/class/purchase") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"}`}
                     ><FaShoppingBag className="inline-block transition duration-75 mr-2" /> 
                     <span className={navTextClass}>Class Purchase</span>
+                    </Link>
+                  </li>
+                </ul>
+              )}
+            </li>
+
+            {/* Report Dropdown */}
+            <li>
+              <button
+                type="button"
+                className={`flex items-center w-full py-2 px-4 text-base transition duration-75 rounded-lg font-bold ${reportDropdownOpen ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"}`}
+                aria-expanded={reportDropdownOpen}
+                aria-controls="report-dropdown"
+                onClick={() => setReportDropdownOpen((open) => !open)}
+                data-collapse-toggle="report-dropdown"
+              >
+                <FaChartLine className="inline-block transition duration-75" />
+                <span className={`${navTextClass} flex-1 ms-3 text-left rtl:text-right whitespace-nowrap`}>Reports</span>
+                <span className={`${dropdownArrowClass} w-3 h-3 transition-transform duration-300`}>
+                  {reportDropdownOpen ? (
+                    <FaAngleUp />
+                  ) : (
+                    <FaAngleDown />
+                  )}
+                </span>
+              </button>
+              {reportDropdownOpen && (
+                <ul id="report-dropdown" className={`py-2 space-y-2 ${isCollapsed ? 'pl-0 text-center' : 'pl-6 border-l-2 border-gray-600'}`}>
+                  <li>
+                    <Link
+                      href="/admin/report/revenue"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/report/revenue") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaChartLine className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Revenue</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/report/checkin"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/report/checkin") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaUserCheck className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Check-in</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/report/membership"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/report/membership") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaIdCard className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Membership</span>
+                    </Link>
+                  </li>                                   
+                  <li>
+                    <Link
+                      href="/admin/report/pt-session"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/report/pt-session") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaChalkboardTeacher className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>PT Session</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/report/class"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/report/class") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaDumbbell className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Class</span>
                     </Link>
                   </li>
                 </ul>
