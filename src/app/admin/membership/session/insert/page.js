@@ -147,7 +147,30 @@ export default function InsertMembershipSessionPage() {
             </div>
             <div>
               <label className="block font-medium text-gray-200 mb-1">Final Price <span className="text-red-400">*</span></label>
-              <input type="number" name="final_price" value={form.final_price || ''} onChange={handleChange} className="w-full bg-gray-700 text-gray-100 border border-gray-600 p-2 rounded" required />
+              <div className="flex gap-2">
+                <input 
+                  type="number" 
+                  name="final_price" 
+                  value={form.final_price || 0} 
+                  onChange={handleChange} 
+                  className="flex-1 bg-gray-700 text-gray-100 border border-gray-600 p-2 rounded" 
+                  required 
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const selectedPlan = plans.find(p => p.id === Number(form.membership_plan_id));
+                    if (selectedPlan) {
+                      console.log("selectedPlan.price: ", selectedPlan.price);
+                      setForm(f => ({ ...f, final_price: selectedPlan.price ? selectedPlan.price : 0 }));
+                    }
+                  }}
+                  className="bg-amber-600 text-white px-4 py-2 rounded font-medium hover:bg-amber-700 whitespace-nowrap"
+                  disabled={!form.membership_plan_id}
+                >
+                  Plan Price
+                </button>
+              </div>
             </div>
             <div>
               <label className="block font-medium text-gray-200 mb-1">Referral Staff/Sales</label>

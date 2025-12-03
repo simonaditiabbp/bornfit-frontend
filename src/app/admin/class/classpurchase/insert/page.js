@@ -13,7 +13,7 @@ export default function ClassPurchaseInsertPage() {
   const [users, setUsers] = useState([]);
   const [classes, setClasses] = useState([]);
   const [price, setPrice] = useState('');
-  const [purchaseDate, setPurchaseDate] = useState('');
+  // const [purchaseDate, setPurchaseDate] = useState('');
   const [loading, setLoading] = useState(false);
   const [fetchingData, setFetchingData] = useState(false);
   const [error, setError] = useState('');
@@ -86,7 +86,7 @@ export default function ClassPurchaseInsertPage() {
           user_id: parseInt(userId, 10),
           class_id: parseInt(classId, 10),
           price: parseInt(price, 10),
-          ...(purchaseDate ? { purchase_date: purchaseDate } : {})
+          // ...(purchaseDate ? { purchase_date: purchaseDate } : {})
         })
       });
       if (res.ok) {
@@ -158,10 +158,10 @@ export default function ClassPurchaseInsertPage() {
             <label className="block mb-1 text-gray-200">Price</label>
             <input type="number" className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-400" value={price} onChange={e => setPrice(e.target.value)} required />
           </div>
-          <div className="mb-8">
+          {/* <div className="mb-8">
             <label className="block mb-1 text-gray-200">Purchase Date <span className="text-gray-400">(optional)</span></label>
             <input type="datetime-local" className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-400" value={purchaseDate} onChange={e => setPurchaseDate(e.target.value)} />
-          </div>
+          </div> */}
           <button type="submit" className="w-full py-3 bg-amber-400 hover:bg-amber-500 text-gray-900 rounded-xl font-bold text-lg transition-all" disabled={loading || fetchingData}>{loading ? 'Saving...' : 'Simpan'}</button>
         </form>
       </div>

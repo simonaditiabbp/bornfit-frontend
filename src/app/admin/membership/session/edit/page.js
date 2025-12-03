@@ -181,7 +181,22 @@ export default function EditMembershipSessionPage() {
             </div>
             <div>
               <label className={`block font-medium text-gray-200 mb-1`}>Final Price <span className="text-red-400">*</span></label>
-              <input type="number" name="final_price" value={form.final_price || ''} onChange={handleChange} className={`w-full p-3 text-gray-200 border rounded-lg ${edit ? 'bg-gray-700 border-gray-200' : 'bg-gray-700 border-gray-600'}`} required disabled={!edit} />
+              <div className="flex gap-2">
+                <input type="number" name="final_price" value={form.final_price || ''} onChange={handleChange} className={`flex-1 p-3 text-gray-200 border rounded-lg ${edit ? 'bg-gray-700 border-gray-200' : 'bg-gray-700 border-gray-600'}`} required disabled={!edit} />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const selectedPlan = plans.find(p => p.id === Number(form.membership_plan_id));
+                    if (selectedPlan) {
+                      setForm(f => ({ ...f, final_price: selectedPlan.price }));
+                    }
+                  }}
+                  disabled={!form.membership_plan_id || !edit}
+                  className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-semibold transition whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Plan Price
+                </button>
+              </div>
             </div>
             <div>
                   <label className={`block font-medium text-gray-200 mb-1`}>Referral Staff/Sales</label>
