@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { FaTachometerAlt, FaUsers, FaDumbbell, FaClipboardList, FaCalendarCheck, FaBarcode, FaCheckCircle, FaSignOutAlt, FaBars, FaAngleRight, FaAngleDoubleLeft, FaMoon, FaAngleDoubleRight, FaUps, FaAngleUp, FaAngleDown, FaCalendar, FaUserCheck, FaChalkboardTeacher, FaShoppingBag, FaExchangeAlt, FaSnowflake, FaIdCard, FaChartLine, FaFileAlt } from 'react-icons/fa';
+import { FaTachometerAlt, FaUsers, FaDumbbell, FaClipboardList, FaCalendarCheck, FaBarcode, FaCheckCircle, FaSignOutAlt, FaBars, FaAngleRight, FaAngleDoubleLeft, FaMoon, FaAngleDoubleRight, FaUps, FaAngleUp, FaAngleDown, FaCalendar, FaUserCheck, FaChalkboardTeacher, FaShoppingBag, FaExchangeAlt, FaSnowflake, FaIdCard, FaChartLine, FaFileAlt, FaCalendarAlt } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
@@ -472,6 +472,26 @@ export default function AdminLayout({ children }) {
               >
                 <FaBarcode className="inline-block transition duration-75" /> 
                 <span className={navTextClass}>Checkin</span>
+              </Link>
+            </li>
+
+            <li>
+              <Link 
+                href="/admin/staff-schedule" 
+                className={`flex items-center py-2 px-4 gap-2 rounded-lg font-semibold ${pathname.startsWith("/admin/staff-schedule") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"}`}
+              >
+                <FaCalendarAlt className="inline-block transition duration-75" /> 
+                <span className={navTextClass}>Staff Schedule</span>
+              </Link>
+            </li>
+
+            <li>
+              <Link 
+                href="/admin/class-schedule" 
+                className={`flex items-center py-2 px-4 gap-2 rounded-lg font-semibold ${pathname.startsWith("/admin/class-schedule") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"}`}
+              >
+                <FaDumbbell className="inline-block transition duration-75" /> 
+                <span className={navTextClass}>Class Schedule</span>
               </Link>
             </li>
 

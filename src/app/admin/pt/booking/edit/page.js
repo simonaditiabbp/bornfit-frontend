@@ -36,7 +36,8 @@ export default function PTBookingEditPage() {
         headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
       });
       const data = await res.json();
-      if (res.ok) setPTSessions(data.data);
+      console.log("Fetched PT sessions: ", data);
+      if (res.ok) setPTSessions(data.data.sessions);
       else setPTSessions([]);
     };
     fetchPTSessions();

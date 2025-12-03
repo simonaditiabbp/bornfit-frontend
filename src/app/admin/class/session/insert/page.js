@@ -52,7 +52,13 @@ export default function ClassSessionInsertPage() {
     start_time: "",
     class_type: "membership_only",
     total_manual_checkin: 0,
-    notes: ""
+    notes: "",
+    is_recurring: false,
+    recurrence_days: [],
+    recurrence_start_time: "",
+    recurrence_end_time: "",
+    valid_from: "",
+    valid_until: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -68,24 +74,46 @@ export default function ClassSessionInsertPage() {
     console.log("class_type: ", form.class_type);
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      // Format ISO-8601 for class_date, start_time
-      const class_date_iso = form.class_date ? `${form.class_date}T00:00:00.000Z` : "";
-      const start_time_iso = form.class_date && form.start_time ? `${form.class_date}T${form.start_time}:00.000Z` : "";
-      const res = await fetch(`${API_URL}/api/classes`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({
+      
+      let payload = {};
+      
+      if (form.is_recurring) {
+        // Recurring class
+        payload = {
+          event_plan_id: Number(form.event_plan_id),
+          instructor_id: Number(form.instructor_id),
+          class_type: form.class_type,
+          notes: form.notes,
+          is_recurring: true,
+          recurrence_days: JSON.stringify(form.recurrence_days),
+          recurrence_start_time: form.recurrence_start_time,
+          recurrence_end_time: form.recurrence_end_time,
+          valid_from: `${form.valid_from}T00:00:00.000Z`,
+          valid_until: `${form.valid_until}T23:59:59.999Z`,
+        };
+      } else {
+        // Single class
+        const class_date_iso = form.class_date ? `${form.class_date}T00:00:00.000Z` : "";
+        const start_time_iso = form.class_date && form.start_time ? `${form.class_date}T${form.start_time}:00.000Z` : "";
+        payload = {
           event_plan_id: Number(form.event_plan_id),
           instructor_id: Number(form.instructor_id),
           class_date: class_date_iso,
           start_time: start_time_iso,
           class_type: form.class_type,
           total_manual_checkin: Number(form.total_manual_checkin),
-          notes: form.notes
-        }),
+          notes: form.notes,
+          is_recurring: false,
+        };
+      }
+      
+      const res = await fetch(`${API_URL}/api/classes`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error("Gagal simpan");
       setSuccess("Berhasil simpan");
@@ -132,14 +160,6 @@ export default function ClassSessionInsertPage() {
             </select>
           </div>
           <div>
-            <label className="block mb-1 text-gray-200">Class Date</label>
-            <input name="class_date" type="date" value={form.class_date} onChange={e => setForm({ ...form, class_date: e.target.value })} className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200" />
-          </div>
-          <div>
-            <label className="block mb-1 text-gray-200">Start Time</label>
-            <input name="start_time" type="time" value={form.start_time} onChange={e => setForm({ ...form, start_time: e.target.value })} className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200" />
-          </div>
-          <div>
             <label className="block mb-1 text-gray-200">Class Type</label>
             <select name="class_type" value={form.class_type} onChange={e => setForm({ ...form, class_type: e.target.value })} className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200">
               <option value="membership_only">Membership Only</option>
@@ -147,6 +167,118 @@ export default function ClassSessionInsertPage() {
               <option value="both">Both</option>
             </select>
           </div>
+          
+          {/* Recurring Checkbox */}
+          <div className="flex items-center gap-3 p-4 bg-gray-700 rounded-lg border border-gray-600">
+            <input
+              type="checkbox"
+              id="is_recurring"
+              checked={form.is_recurring}
+              onChange={e => setForm({ ...form, is_recurring: e.target.checked })}
+              className="w-5 h-5 accent-amber-400"
+            />
+            <label htmlFor="is_recurring" className="text-gray-200 font-semibold">
+              Recurring Schedule (Repeat Weekly)
+            </label>
+          </div>
+
+          {/* Single Class Fields */}
+          {!form.is_recurring && (
+            <>
+              <div>
+                <label className="block mb-1 text-gray-200">Class Date</label>
+                <input name="class_date" type="date" value={form.class_date} onChange={e => setForm({ ...form, class_date: e.target.value })} className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200" required />
+              </div>
+              <div>
+                <label className="block mb-1 text-gray-200">Start Time</label>
+                <input name="start_time" type="time" value={form.start_time} onChange={e => setForm({ ...form, start_time: e.target.value })} className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200" required />
+              </div>
+            </>
+          )}
+
+          {/* Recurring Class Fields */}
+          {form.is_recurring && (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block mb-1 text-gray-200">Valid From *</label>
+                  <input
+                    type="date"
+                    value={form.valid_from}
+                    onChange={e => setForm({ ...form, valid_from: e.target.value })}
+                    className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-gray-200">Valid Until *</label>
+                  <input
+                    type="date"
+                    value={form.valid_until}
+                    onChange={e => setForm({ ...form, valid_until: e.target.value })}
+                    className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block mb-2 text-gray-200">Repeat On (Days) *</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => (
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() => {
+                        const newDays = form.recurrence_days.includes(day)
+                          ? form.recurrence_days.filter(d => d !== day)
+                          : [...form.recurrence_days, day];
+                        setForm({ ...form, recurrence_days: newDays });
+                      }}
+                      className={`px-3 py-2 rounded font-semibold transition ${
+                        form.recurrence_days.includes(day)
+                          ? 'bg-amber-600 text-white'
+                          : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                      }`}
+                    >
+                      {day.slice(0, 3).toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block mb-1 text-gray-200">Time Start *</label>
+                  <input
+                    type="time"
+                    value={form.recurrence_start_time}
+                    onChange={e => setForm({ ...form, recurrence_start_time: e.target.value })}
+                    className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-gray-200">Time End *</label>
+                  <input
+                    type="time"
+                    value={form.recurrence_end_time}
+                    onChange={e => setForm({ ...form, recurrence_end_time: e.target.value })}
+                    className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="bg-amber-900/30 border border-amber-700 rounded p-3 text-sm text-amber-200">
+                <strong>Preview:</strong> Class akan dibuat otomatis setiap{' '}
+                {form.recurrence_days.length > 0 ? form.recurrence_days.join(', ') : '(pilih hari)'}{' '}
+                pada jam {form.recurrence_start_time || '(pilih waktu)'} - {form.recurrence_end_time || '(pilih waktu)'}{' '}
+                dari {form.valid_from || '(tanggal mulai)'} sampai {form.valid_until || '(tanggal selesai)'}
+              </div>
+            </>
+          )}
+          
           {/* <div>
             <label className="block mb-1 text-gray-200">Total Manual Checkin</label>
             <input name="total_manual_checkin" type="number" value={form.total_manual_checkin} onChange={e => setForm({ ...form, total_manual_checkin: e.target.value })} className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200" />
