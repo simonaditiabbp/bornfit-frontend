@@ -32,7 +32,7 @@ export default function ClassSchedulePage() {
       });
       const data = await res.json();
       if (data.success) {
-        setEventPlans(data.data?.eventPlans || []);
+        setEventPlans(data.data?.plans || []);
       }
     } catch (error) {
       console.error('Error fetching event plans:', error);
@@ -72,7 +72,7 @@ export default function ClassSchedulePage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (data.success) {
+      if (data.status === 'success') {
         setClasses(data.data || []);
       }
     } catch (error) {
@@ -113,30 +113,38 @@ export default function ClassSchedulePage() {
 
   const getTimeSlots = () => {
     const slots = [];
-    for (let hour = 6; hour < 22; hour++) {
+    for (let hour = 6; hour <= 22; hour++) {
       slots.push(`${hour.toString().padStart(2, '0')}:00`);
     }
     return slots;
   };
 
   const getClassesForDayAndTime = (day, timeSlot) => {
-    const dayStr = day.toISOString().split('T')[0];
+    // Format day as YYYY-MM-DD without timezone conversion
+    const year = day.getFullYear();
+    const month = String(day.getMonth() + 1).padStart(2, '0');
+    const dayOfMonth = String(day.getDate()).padStart(2, '0');
+    const dayStr = `${year}-${month}-${dayOfMonth}`;
+    
     const [hour] = timeSlot.split(':');
     
     return classes.filter(cls => {
-      const classDate = new Date(cls.class_date).toISOString().split('T')[0];
-      const startHour = new Date(cls.start_time).getHours();
-      const endHour = new Date(cls.end_time).getHours();
-      
+      // Parse class_date without timezone conversion
+      const classDate = cls.class_date.split('T')[0];
+      // Use UTC hours to prevent timezone shift
+      const startHour = new Date(cls.start_time).getUTCHours();
+      const endHour = new Date(cls.end_time).getUTCHours();
+
       return classDate === dayStr && startHour <= parseInt(hour) && endHour > parseInt(hour);
     });
   };
 
   const formatTime = (datetime) => {
-    return new Date(datetime).toLocaleTimeString('id-ID', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
+    // Parse datetime string directly without timezone conversion
+    const date = new Date(datetime);
+    const hours = date.getUTCHours().toString().padStart(2, '0');
+    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
   };
 
   const goToPrevWeek = () => {

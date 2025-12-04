@@ -59,7 +59,7 @@ export default function MembershipPlansPage() {
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
-          <Link href="/admin/membership/plans/insert" className="flex items-center gap-2 bg-amber-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-amber-500">
+          <Link href="/admin/membership/plans/insert" className="bg-amber-400 hover:bg-amber-500 text-gray-900 px-4 py-2 rounded font-semibold flex items-center gap-2">
             <FaPlus className="inline-block" />
             Add Plan
           </Link>

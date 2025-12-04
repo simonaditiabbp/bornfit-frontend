@@ -154,7 +154,7 @@ export default function PTSessionListPage() {
             href="/admin/pt/session/insert"
             className="bg-amber-400 hover:bg-amber-500 text-gray-900 px-4 py-2 rounded font-semibold flex items-center gap-2"
           >
-            <FaPlus className="w-3 h-3" /> Tambah PT Session
+            <FaPlus className="inline-block" /> Add PT Session
           </Link>
         </div>
         <PTSessionDataTable

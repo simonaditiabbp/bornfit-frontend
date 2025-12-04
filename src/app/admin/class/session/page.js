@@ -1,7 +1,7 @@
 "use client";
 import ClassSessionDataTable from "./DataTable";
 import {QRCodeCanvas, QRCodeSVG } from 'qrcode.react';
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import BackendErrorFallback from "@/components/BackendErrorFallback";
 import Link from "next/link";
@@ -12,8 +12,10 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function ClassSessionListPage() {
   const [qrSession, setQrSession] = useState(null);
+  console.log('[ClassSession] Render Parent');
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  const [scheduleTypeFilter, setScheduleTypeFilter] = useState('all'); // 'all', 'recurring_patterns', 'instances', 'single'
   const [plans, setPlans] = useState([]);
   const [members, setMembers] = useState([]);
   const [instructors, setInstructors] = useState([]);
@@ -25,6 +27,21 @@ export default function ClassSessionListPage() {
   const [perPage, setPerPage] = useState(10);
   const router = useRouter();
 
+  const handleChangePage = (newPage) => {
+    const pageNum = typeof newPage === 'number' ? newPage : (Array.isArray(newPage) ? newPage[0] : Number(newPage));
+    if (!pageNum || pageNum === page) return;
+    console.log('[ClassSession] handleChangePage ->', pageNum);
+    setPage(pageNum);
+  };
+
+  const handleChangeRowsPerPage = (newPerPage, currentPageArg) => {
+    const perPageNum = typeof newPerPage === 'number' ? newPerPage : (Array.isArray(newPerPage) ? newPerPage[0] : Number(newPerPage));
+    if (!perPageNum || perPageNum === perPage) return;
+    console.log('[ClassSession] handleChangeRowsPerPage ->', perPageNum, 'currentPageArg=', currentPageArg);
+    setPerPage(perPageNum);
+    if (page !== 1) setPage(1);
+  };
+
   useEffect(() => {
     const fetchMeta = async () => {
       try {
@@ -32,8 +49,6 @@ export default function ClassSessionListPage() {
         const resPlans = await fetch(`${API_URL}/api/eventplans`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
         const resMembers = await fetch(`${API_URL}/api/users/?role=member`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
         const resInstructors = await fetch(`${API_URL}/api/users/?role=instructor`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        // const resMembers = await fetch(`${API_URL}/api/users/filter?role=member`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        // const resInstructors = await fetch(`${API_URL}/api/users/filter?role=instructor`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
         const plansData = await resPlans.json();
         const membersData = await resMembers.json();
         const instructorsData = await resInstructors.json();
@@ -46,77 +61,64 @@ export default function ClassSessionListPage() {
       } catch {}
     };
     fetchMeta();
+  }, []);
+
+  useEffect(() => {
     const fetchSessions = async () => {
       setLoading(true);
       setBackendError(false);
+      
       try {
         const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
+        
+        const params = new URLSearchParams({
+          page: page.toString(),
+          limit: perPage.toString(),
+          scheduleType: scheduleTypeFilter,
+        });
+        
         if (search && search.trim() !== '') {
-          let allMatches = null;
-          try {
-            const sessionsSearchRes = await fetch(`${API_URL}/api/classes?search=${encodeURIComponent(search)}`, {
-              headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-            });
-            const sessionsData = await sessionsSearchRes.json();
-            const arr = sessionsData.data?.classes || [];
-            if (Array.isArray(arr)) {
-              allMatches = arr;
-            }
-          } catch (e) {
-            // ignore and fallback
-          }
-          if (!allMatches) {
-            const allRes = await fetch(`${API_URL}/api/classes`, {
-              headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-            });
-            const allData = await allRes.json();
-            const arr = allData.data?.classes || [];
-            if (Array.isArray(arr)) {
-              allMatches = arr.filter(s =>
-                (s.user_member?.name || '').toLowerCase().includes(search.toLowerCase()) ||
-                (s.class_plan?.name || '').toLowerCase().includes(search.toLowerCase()) ||
-                (s.status || '').toLowerCase().includes(search.toLowerCase())
-              );
-            } else {
-              allMatches = [];
-            }
-          }
-          const start = (page - 1) * perPage;
-          const pageSlice = allMatches.slice(start, start + perPage);
-          setSessions(pageSlice);
-          setTotalRows(allMatches.length);
-        } else {
-          const res = await fetch(`${API_URL}/api/classes/paginated?page=${page}&limit=${perPage}`, {
-            headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-          });
-          if (!res.ok) throw new Error("Gagal fetch classes");
-          const classData = await res.json();
-          const result = classData.data || {};
-          setSessions(result.classes|| []);
-          setTotalRows(result.total || 0);
+          params.append('search', search);
         }
+        
+        console.log('[Fetch] API call:', params.toString());
+        
+        const res = await fetch(`${API_URL}/api/classes/paginated?${params.toString()}`, {
+          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        });
+        
+        if (!res.ok) throw new Error("Gagal fetch classes");
+        
+        const classData = await res.json();
+        const result = classData.data || {};
+        setSessions(result.classes || []);
+        setTotalRows(result.total || 0);
       } catch (err) {
+        console.error('[Fetch] Error:', err);
         setSessions([]);
         setBackendError(true);
       }
       setLoading(false);
     };
+    
     fetchSessions();
-  }, [page, perPage, search]);
+  }, [page, perPage, search, scheduleTypeFilter]);
 
+  // Debounce search input
   useEffect(() => {
     const handler = setTimeout(() => {
       setSearch(searchInput);
-      setPage(1);
     }, 300);
     return () => clearTimeout(handler);
   }, [searchInput]);
+  
+  // Reset to page 1 when filter changes
+  useEffect(() => {
+    setPage(1);
+  }, [scheduleTypeFilter]);
 
   if (backendError) {
     return <BackendErrorFallback onRetry={() => window.location.reload()} />;
-  }
-  if (loading) {
-    return <div className="text-amber-300 text-center font-medium mt-20">Loading...</div>;
   }
 
   return (
@@ -131,37 +133,92 @@ export default function ClassSessionListPage() {
         <span className="text-gray-200 font-medium">Class Session</span>
       </div>
 
-      <div className="flex items-center justify-between mb-6">
-        <input
-          type="text"
-          placeholder="Search member/plan/status..."
-          className="w-full max-w-md p-3 border-2 border-amber-200 rounded-lg focus:outline-none focus:border-amber-400 text-base bg-gray-700 text-gray-200 placeholder-gray-400"
-          value={searchInput}
-          onChange={e => { setSearchInput(e.target.value); }}
-        />
-        <Link
-          href="/admin/class/session/insert"
-          className="bg-amber-400 text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-amber-500 transition-colors flex items-center gap-2"
-        >
-          <FaPlus />
-          Tambah Class
-        </Link>
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex items-center justify-between">
+          {console.log('[ClassSession] Render Search Input')}
+          <input
+            type="text"
+            placeholder="Search member/plan/status..."
+            className="w-full max-w-md p-3 border-2 border-amber-200 rounded-lg focus:outline-none focus:border-amber-400 text-base bg-gray-700 text-gray-200 placeholder-gray-400"
+            value={searchInput}
+            onChange={e => { setSearchInput(e.target.value); setPage(1); }}
+          />
+          <Link
+            href="/admin/class/session/insert"
+            className="bg-amber-400 text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-amber-500 transition-colors flex items-center gap-2"
+          >
+            <FaPlus />
+            Tambah Class
+          </Link>
+        </div>
+        
+        {/* Schedule Type Filter */}
+        <div className="flex items-center gap-3">
+          <span className="text-gray-300 font-medium">Filter by Type:</span>
+          <div className="flex gap-2">
+            <button
+              onClick={() => { setScheduleTypeFilter('all'); setPage(1); }}
+              className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+                scheduleTypeFilter === 'all' 
+                  ? 'bg-amber-400 text-gray-900' 
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              All Classes
+            </button>
+            <button
+              onClick={() => { setScheduleTypeFilter('recurring_patterns'); setPage(1); }}
+              className={`px-4 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2 ${
+                scheduleTypeFilter === 'recurring_patterns' 
+                  ? 'bg-amber-600 text-white' 
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              🔁 Recurring Patterns Only
+            </button>
+            <button
+              onClick={() => { setScheduleTypeFilter('instances'); setPage(1); }}
+              className={`px-4 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2 ${
+                scheduleTypeFilter === 'instances' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              📅 Instances Only
+            </button>
+            <button
+              onClick={() => { setScheduleTypeFilter('single'); setPage(1); }}
+              className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+                scheduleTypeFilter === 'single' 
+                  ? 'bg-gray-500 text-white' 
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              Single Classes Only
+            </button>
+          </div>
+        </div>
       </div>
-      <ClassSessionDataTable
-        data={sessions}
-        plans={plans}
-        members={members}
-        instructors={instructors}
-        setQrSession={setQrSession}
-        pagination
-        paginationServer
-        paginationTotalRows={totalRows}
-        paginationPerPage={perPage}
-        currentPage={page}
-        onChangePage={setPage}
-        onChangeRowsPerPage={newLimit => { setPerPage(newLimit); setPage(1); }}
-        paginationRowsPerPageOptions={[10, 25, 50]}
-      />
+      {console.log('[ClassSession] Render DataTable')}
+      {loading ? (
+        <div className="text-amber-300 text-center font-medium mt-8">Loading data...</div>
+      ) : (
+        <ClassSessionDataTable
+          data={sessions}
+          plans={plans}
+          members={members}
+          instructors={instructors}
+          setQrSession={setQrSession}
+          pagination
+          paginationServer
+          paginationTotalRows={totalRows}
+          paginationPerPage={perPage}
+          currentPage={page}
+          onChangePage={handleChangePage}
+          onChangeRowsPerPage={handleChangeRowsPerPage}
+          paginationRowsPerPageOptions={[10, 25, 50]}
+        />
+      )}
 
       {/* Modal QR Code */}
       {qrSession && (

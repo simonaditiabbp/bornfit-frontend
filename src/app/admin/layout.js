@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { FaTachometerAlt, FaUsers, FaDumbbell, FaClipboardList, FaCalendarCheck, FaBarcode, FaCheckCircle, FaSignOutAlt, FaBars, FaAngleRight, FaAngleDoubleLeft, FaMoon, FaAngleDoubleRight, FaUps, FaAngleUp, FaAngleDown, FaCalendar, FaUserCheck, FaChalkboardTeacher, FaShoppingBag, FaExchangeAlt, FaSnowflake, FaIdCard, FaChartLine, FaFileAlt, FaCalendarAlt } from 'react-icons/fa';
+import { FaTachometerAlt, FaUsers, FaDumbbell, FaClipboardList, FaCalendarCheck, FaBarcode, FaCheckCircle, FaSignOutAlt, FaBars, FaAngleRight, FaAngleDoubleLeft, FaMoon, FaAngleDoubleRight, FaUps, FaAngleUp, FaAngleDown, FaCalendar, FaUserCheck, FaChalkboardTeacher, FaShoppingBag, FaExchangeAlt, FaSnowflake, FaIdCard, FaChartLine, FaFileAlt, FaCalendarAlt, FaCog, FaUserTie, FaUserTag } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
@@ -15,6 +15,8 @@ export default function AdminLayout({ children }) {
   const [ptDropdownOpen, setPtDropdownOpen] = useState(false);
   const [classDropdownOpen, setClassDropdownOpen] = useState(false);
   const [reportDropdownOpen, setReportDropdownOpen] = useState(false);
+  const [scheduleDropdownOpen, setScheduleDropdownOpen] = useState(false);
+  const [settingsDropdownOpen, setSettingsDropdownOpen] = useState(false);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -234,7 +236,7 @@ export default function AdminLayout({ children }) {
                       <span className={navTextClass}>Details</span>
                     </Link>
                   </li>
-                  <li>
+                  {/* <li>
                     <Link
                       href="/admin/membership/plans"
                       className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/membership/plans") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
@@ -242,8 +244,8 @@ export default function AdminLayout({ children }) {
                       <FaClipboardList className="inline-block transition duration-75 mr-2" /> 
                       <span className={navTextClass}>Plans</span>
                     </Link>
-                  </li>
-                  <li>
+                  </li> */}
+                  {/* <li>
                     <Link
                       href="/admin/membership/schedules"
                       className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/membership/schedules") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
@@ -251,7 +253,7 @@ export default function AdminLayout({ children }) {
                       <FaCalendar className="inline-block transition duration-75 mr-2" /> 
                       <span className={navTextClass}>Schedule</span>
                     </Link>
-                  </li>
+                  </li> */}
                   <li>
                     <Link
                       href="/admin/membership/transfer"
@@ -303,14 +305,14 @@ export default function AdminLayout({ children }) {
                       <span className={navTextClass}>Details</span>
                     </Link>
                   </li>
-                  <li>
+                  {/* <li>
                     <Link 
                       href="/admin/pt/plans" 
                       className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/pt/plans") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}>
                       <FaClipboardList className="inline-block transition duration-75 mr-2" />
                       <span className={navTextClass}>Plans</span>
                     </Link>
-                  </li>
+                  </li> */}
                   <li>
                     <Link 
                       href="/admin/pt/booking" 
@@ -354,7 +356,7 @@ export default function AdminLayout({ children }) {
                     <span className={navTextClass}>Details</span>
                     </Link>
                   </li>
-                  <li>
+                  {/* <li>
                     <Link
                       href="/admin/class/plans"
                       className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/class/plans") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"}`}
@@ -362,7 +364,7 @@ export default function AdminLayout({ children }) {
                       <FaClipboardList className="inline-block transition duration-75 mr-2" /> 
                       <span className={navTextClass}>Plans</span>
                     </Link>
-                  </li>
+                  </li> */}
                   <li>
                     <Link
                       href="/admin/class/attendance"
@@ -375,9 +377,10 @@ export default function AdminLayout({ children }) {
                   <li>
                     <Link
                       href="/admin/class/classpurchase"
-                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/class/purchase") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"}`}
-                    ><FaShoppingBag className="inline-block transition duration-75 mr-2" /> 
-                    <span className={navTextClass}>Class Purchase</span>
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/class/classpurchase") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"}`}
+                    >
+                      <FaShoppingBag className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Class Purchase</span>
                     </Link>
                   </li>
                 </ul>
@@ -455,6 +458,103 @@ export default function AdminLayout({ children }) {
               )}
             </li>
 
+            {/* Schedule Dropdown */}
+            <li>
+              <button
+                type="button"
+                className={`flex items-center w-full py-2 px-4 text-base transition duration-75 rounded-lg font-bold ${scheduleDropdownOpen ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"}`}
+                aria-expanded={scheduleDropdownOpen}
+                aria-controls="schedule-dropdown"
+                onClick={() => setScheduleDropdownOpen((open) => !open)}
+                data-collapse-toggle="schedule-dropdown"
+              >
+                <FaCalendarAlt className="inline-block transition duration-75" />
+                <span className={`${navTextClass} flex-1 ms-3 text-left rtl:text-right whitespace-nowrap`}>Schedule</span>
+                <span className={`${dropdownArrowClass} w-3 h-3 transition-transform duration-300`}>
+                  {scheduleDropdownOpen ? (
+                    <FaAngleUp />
+                  ) : (
+                    <FaAngleDown />
+                  )}
+                </span>
+              </button>
+              {scheduleDropdownOpen && (
+                <ul id="schedule-dropdown" className={`py-2 space-y-2 ${isCollapsed ? 'pl-0 text-center' : 'pl-6 border-l-2 border-gray-600'}`}>
+                  <li>
+                    <Link
+                      href="/admin/staff-schedule"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/staff-schedule") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaUserCheck className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Staff Schedule</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/class-schedule"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/class-schedule") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaDumbbell className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Class Schedule</span>
+                    </Link>
+                  </li>
+                </ul>
+              )}
+            </li>
+
+            {/* Settings Dropdown */}
+            <li>
+              <button
+                type="button"
+                className={`flex items-center w-full py-2 px-4 text-base transition duration-75 rounded-lg font-bold ${settingsDropdownOpen ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"}`}
+                aria-expanded={settingsDropdownOpen}
+                aria-controls="settings-dropdown"
+                onClick={() => setSettingsDropdownOpen((open) => !open)}
+                data-collapse-toggle="settings-dropdown"
+              >
+                <FaCog className="inline-block transition duration-75" />
+                <span className={`${navTextClass} flex-1 ms-3 text-left rtl:text-right whitespace-nowrap`}>Settings</span>
+                <span className={`${dropdownArrowClass} w-3 h-3 transition-transform duration-300`}>
+                  {settingsDropdownOpen ? (
+                    <FaAngleUp />
+                  ) : (
+                    <FaAngleDown />
+                  )}
+                </span>
+              </button>
+              {settingsDropdownOpen && (
+                <ul id="settings-dropdown" className={`py-2 space-y-2 ${isCollapsed ? 'pl-0 text-center' : 'pl-6 border-l-2 border-gray-600'}`}>
+                  <li>
+                    <Link
+                      href="/admin/membership/plans"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/membership/plans") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaUserCheck  className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Membership Plans</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/pt/plans"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/pt/plans") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaChalkboardTeacher className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>PT Plans</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/class/plans"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/class/plans") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaDumbbell className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Class Plans</span>
+                    </Link>
+                  </li>
+                </ul>
+              )}
+            </li>
+
             <li>
               <Link 
                 href="/barcode" 
@@ -472,26 +572,6 @@ export default function AdminLayout({ children }) {
               >
                 <FaBarcode className="inline-block transition duration-75" /> 
                 <span className={navTextClass}>Checkin</span>
-              </Link>
-            </li>
-
-            <li>
-              <Link 
-                href="/admin/staff-schedule" 
-                className={`flex items-center py-2 px-4 gap-2 rounded-lg font-semibold ${pathname.startsWith("/admin/staff-schedule") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"}`}
-              >
-                <FaCalendarAlt className="inline-block transition duration-75" /> 
-                <span className={navTextClass}>Staff Schedule</span>
-              </Link>
-            </li>
-
-            <li>
-              <Link 
-                href="/admin/class-schedule" 
-                className={`flex items-center py-2 px-4 gap-2 rounded-lg font-semibold ${pathname.startsWith("/admin/class-schedule") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"}`}
-              >
-                <FaDumbbell className="inline-block transition duration-75" /> 
-                <span className={navTextClass}>Class Schedule</span>
               </Link>
             </li>
 

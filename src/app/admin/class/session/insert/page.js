@@ -60,6 +60,30 @@ export default function ClassSessionInsertPage() {
     valid_from: "",
     valid_until: "",
   });
+
+  // Helper: Calculate end time from start time + minutes
+  const calculateEndTime = (startTime, minutes) => {
+    if (!startTime || !minutes) return '';
+    const [hours, mins] = startTime.split(':').map(Number);
+    const totalMinutes = hours * 60 + mins + minutes;
+    const endHours = Math.floor(totalMinutes / 60) % 24;
+    const endMins = totalMinutes % 60;
+    return `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
+  };
+
+  // Auto-calculate end times when event plan or start time changes
+  useEffect(() => {
+    if (form.event_plan_id) {
+      const selectedPlan = plans.find(p => p.id === Number(form.event_plan_id));
+      if (selectedPlan && selectedPlan.minutes_per_session) {
+        // Auto-calculate recurrence_end_time for recurring class
+        if (form.is_recurring && form.recurrence_start_time) {
+          const endTime = calculateEndTime(form.recurrence_start_time, selectedPlan.minutes_per_session);
+          setForm(f => ({ ...f, recurrence_end_time: endTime }));
+        }
+      }
+    }
+  }, [form.event_plan_id, form.recurrence_start_time, form.is_recurring, plans]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -259,7 +283,7 @@ export default function ClassSessionInsertPage() {
                   />
                 </div>
                 <div>
-                  <label className="block mb-1 text-gray-200">Time End *</label>
+                  <label className="block mb-1 text-gray-200">Time End * (Auto-calculated)</label>
                   <input
                     type="time"
                     value={form.recurrence_end_time}
@@ -267,6 +291,7 @@ export default function ClassSessionInsertPage() {
                     className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200"
                     required
                   />
+                  <p className="text-xs text-gray-400 mt-1">Based on Event Plan duration</p>
                 </div>
               </div>
 

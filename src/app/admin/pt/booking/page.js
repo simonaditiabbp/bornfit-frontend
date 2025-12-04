@@ -121,7 +121,7 @@ export default function PTBookingPage() {
             onChange={e => { setSearchInput(e.target.value); }}
           />
           <Link href="/admin/pt/booking/create" className="bg-amber-400 hover:bg-amber-500 text-gray-900 px-4 py-2 rounded font-semibold flex items-center gap-2">
-            <FaPlus className="w-3 h-3" /> Booking Baru
+            <FaPlus className="inline-block" /> New Booking
           </Link>
         </div>
         {loading ? (

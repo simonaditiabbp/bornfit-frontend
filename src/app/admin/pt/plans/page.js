@@ -159,7 +159,7 @@ export default function PTPlansPage() {
             onChange={e => { setSearchInput(e.target.value); }}
           />
           <Link href="/admin/pt/plans/insert" className="bg-amber-400 hover:bg-amber-500 text-gray-900 px-4 py-2 rounded font-semibold flex items-center gap-2">
-            <FaPlus className="w-3 h-3" /> Add Plan
+            <FaPlus className="inline-block" /> Add Plan
           </Link>
         </div>
         {loading ? (

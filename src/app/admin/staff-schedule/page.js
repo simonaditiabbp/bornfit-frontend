@@ -108,23 +108,31 @@ export default function StaffScheduleCalendarPage() {
   };
 
   const getSchedulesForDayAndTime = (day, timeSlot) => {
-    const dayStr = day.toISOString().split('T')[0];
+    // Format day as YYYY-MM-DD without timezone conversion
+    const year = day.getFullYear();
+    const month = String(day.getMonth() + 1).padStart(2, '0');
+    const dayOfMonth = String(day.getDate()).padStart(2, '0');
+    const dayStr = `${year}-${month}-${dayOfMonth}`;
+    
     const [hour] = timeSlot.split(':');
     
     return schedules.filter(schedule => {
-      const scheduleDate = new Date(schedule.schedule_date).toISOString().split('T')[0];
-      const startHour = new Date(schedule.start_time).getHours();
-      const endHour = new Date(schedule.end_time).getHours();
+      // Parse schedule_date without timezone conversion
+      const scheduleDate = schedule.schedule_date.split('T')[0];
+      // Use UTC hours to prevent timezone shift
+      const startHour = new Date(schedule.start_time).getUTCHours();
+      const endHour = new Date(schedule.end_time).getUTCHours();
       
       return scheduleDate === dayStr && startHour <= parseInt(hour) && endHour > parseInt(hour);
     });
   };
 
   const formatTime = (datetime) => {
-    return new Date(datetime).toLocaleTimeString('id-ID', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
+    // Parse datetime string directly without timezone conversion
+    const date = new Date(datetime);
+    const hours = date.getUTCHours().toString().padStart(2, '0');
+    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
   };
 
   const goToPrevWeek = () => {

@@ -26,7 +26,8 @@ export default function ClassDetailPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (data.success) {
+
+      if (data.status === "success") {
         setClassData(data.data);
       } else {
         alert('Class not found');
@@ -40,29 +41,39 @@ export default function ClassDetailPage() {
   };
 
   const formatTime = (datetime) => {
-    return new Date(datetime).toLocaleTimeString('id-ID', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
+    // Parse datetime string directly without timezone conversion
+    const date = new Date(datetime);
+    const hours = date.getUTCHours().toString().padStart(2, '0');
+    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
   };
 
   const formatDate = (datetime) => {
-    return new Date(datetime).toLocaleDateString('id-ID', { 
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
+    // Parse date string directly without timezone conversion
+    const date = new Date(datetime);
+    const year = date.getUTCFullYear();
+    const month = date.getUTCMonth();
+    const day = date.getUTCDate();
+    const dayOfWeek = date.getUTCDay();
+    
+    const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    
+    return `${dayNames[dayOfWeek]}, ${day} ${monthNames[month]} ${year}`;
   };
 
   const formatDateTime = (datetime) => {
     if (!datetime) return '-';
-    return new Date(datetime).toLocaleString('id-ID', { 
-      day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    // Parse datetime string directly without timezone conversion
+    const date = new Date(datetime);
+    const day = date.getUTCDate();
+    const month = date.getUTCMonth();
+    const hours = date.getUTCHours().toString().padStart(2, '0');
+    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+    
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    
+    return `${day} ${monthNames[month]}, ${hours}:${minutes}`;
   };
 
   const getStatusBadge = (status) => {
@@ -101,17 +112,29 @@ export default function ClassDetailPage() {
     <div className="min-h-screen bg-gray-900 text-gray-200">
       {/* Header */}
       <div className="bg-gray-800 border-b border-gray-600 p-5">
-        <div className="flex items-center gap-4 mb-4">
-          <Link
-            href="/admin/class-schedule"
-            className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded"
-          >
-            <FaArrowLeft />
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold">{classData.name || classData.event_plan.name}</h1>
-            <p className="text-gray-400 text-sm">Class Details & Attendance</p>
+        <div className="flex items-center justify-between gap-4 mb-4">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/admin/class-schedule"
+              className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded"
+            >
+              <FaArrowLeft />
+            </Link>
+            <div>
+              <h1 className="text-2xl font-bold">{classData.name || classData.event_plan.name}</h1>
+              <p className="text-gray-400 text-sm">Class Details & Attendance</p>
+            </div>
           </div>
+          
+          {!classData.is_full && (
+            <Link
+              href={`/admin/class/attendance/insert?class_id=${params.id}`}
+              className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2"
+            >
+              <FaUsers />
+              Quick Book
+            </Link>
+          )}
         </div>
       </div>
 
