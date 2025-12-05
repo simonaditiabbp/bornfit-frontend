@@ -4,9 +4,9 @@ import {QRCodeCanvas, QRCodeSVG } from 'qrcode.react';
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import BackendErrorFallback from "@/components/BackendErrorFallback";
-import Link from "next/link";
 import { jsPDF } from "jspdf";
-import { FaPlus, FaIdCard, FaAngleRight } from 'react-icons/fa';
+import { FaChalkboardTeacher, FaPlus } from 'react-icons/fa';
+import { PageBreadcrumb, PageContainer, PageHeader, LoadingText, StyledDataTable } from '@/components/admin';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -122,57 +122,35 @@ export default function PTSessionListPage() {
   if (backendError) {
     return <BackendErrorFallback onRetry={() => window.location.reload()} />;
   }
-  if (loading) {
-    return <div className="text-amber-300 text-center font-medium mt-20">Loading...</div>;
-  }
 
   return (
     <div>
-      <div className="bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-600">
-        <nav className="flex" aria-label="Breadcrumb">
-          <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-            <li>
-              <div className="inline-flex items-center">
-                <FaIdCard className="w-3 h-3 me-2.5 text-amber-300" /> 
-                <Link href="/admin/pt/session" className="ms-1 text-sm font-medium text-gray-400 hover:text-gray-200 md:ms-2">PT Session</Link>
-              </div>
-            </li>
-          </ol>
-        </nav>
-      </div>
-
-      <div className="p-5">
-        <div className="flex items-center justify-between mb-4">
-          <input
-            type="text"
-            placeholder="Search member/plan/status..."
-            className="w-full max-w-xs p-2 border border-amber-200 rounded focus:outline-amber-300 text-base bg-gray-800 text-gray-200"
-            value={searchInput}
-            onChange={e => { setSearchInput(e.target.value); }}
-          />
-          <Link
-            href="/admin/pt/session/insert"
-            className="bg-amber-400 hover:bg-amber-500 text-gray-900 px-4 py-2 rounded font-semibold flex items-center gap-2"
-          >
-            <FaPlus className="inline-block" /> Add PT Session
-          </Link>
-        </div>
-        <PTSessionDataTable
+      <PageBreadcrumb 
+        items={[
+          { icon: <FaChalkboardTeacher className="w-3 h-3" />, label: 'PT Session' }
+        ]}
+      />
+      
+      <PageContainer>
+        <PageHeader
+          searchPlaceholder="Search member/plan/status..."
+          searchValue={searchInput}
+          onSearchChange={(e) => setSearchInput(e.target.value)}
+          actionHref="/admin/pt/session/insert"
+          actionIcon={<FaPlus />}
+          actionText="Add PT Session"
+        />
+        {loading ? (
+          <LoadingText />
+        ) : (
+          <PTSessionDataTable
           data={sessions}
           plans={plans}
           members={members}
           trainers={trainers}
-          setQrSession={setQrSession}
-          pagination
-          paginationServer
-          paginationTotalRows={totalRows}
-          paginationPerPage={perPage}
-          currentPage={page}
-          onChangePage={setPage}
-          onChangeRowsPerPage={newLimit => { setPerPage(newLimit); setPage(1); }}
-          paginationRowsPerPageOptions={[10, 25, 50]}
         />
-      </div>
+        )}
+      </PageContainer>
       {/* Modal QR Code */}
       {qrSession && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">

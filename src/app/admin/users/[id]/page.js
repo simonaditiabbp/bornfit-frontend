@@ -208,13 +208,13 @@ export default function UserDetailPage() {
             <li>
               <div className="inline-flex items-center">
                 <FaUser className="w-3 h-3 me-2.5 text-amber-300" /> 
-                <Link href="/admin/users" className="ms-1 text-sm font-medium text-gray-400 hover:text-gray-200 md:ms-2 dark:text-gray-400">User Data</Link>
+                <Link href="/admin/users" className="ms-1 text-sm font-medium text-gray-400 hover:text-amber-300 md:ms-2 dark:text-gray-400">User Data</Link>
               </div>
             </li>
             <li aria-current="page">
               <div className="flex items-center">
-                <FaAngleRight className="w-3 h-3 text-gray-400 mx-1" />
-                <span className="ms-1 text-sm font-medium text-gray-400 md:ms-2 dark:text-gray-400">Detail</span>
+                <FaAngleRight className="w-3 h-3 text-amber-300 mx-1" />
+                <span className="ms-1 text-sm font-medium text-amber-300 md:ms-2 dark:text-amber-300">Detail / Edit</span>
               </div>
             </li>
           </ol>

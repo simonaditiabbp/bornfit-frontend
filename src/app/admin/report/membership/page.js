@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { FaChartBar, FaFileCsv, FaFileExcel, FaUsers, FaUserClock, FaUserPlus, FaFilter } from 'react-icons/fa';
+import { FaIdCard, FaFileCsv, FaFileExcel, FaUsers, FaUserClock, FaUserPlus, FaFilter } from 'react-icons/fa';
 import BackendErrorFallback from '../../../../components/BackendErrorFallback';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -138,7 +138,7 @@ export default function MembershipReportPage() {
         <nav className="flex" aria-label="Breadcrumb">
           <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
             <li className="inline-flex items-center">
-              <FaChartBar className="w-4 h-4 me-2.5 text-amber-300" /> 
+              <FaIdCard className="w-4 h-4 me-2.5 text-amber-300" /> 
               <span className="ms-1 text-sm font-medium text-gray-200">Membership Reports</span>
             </li>
           </ol>

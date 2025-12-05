@@ -532,16 +532,16 @@ export default function EditAttendancePage() {
               <option value="Cancelled">Cancelled</option>
             </select>
           </div>
-          <div className="flex gap-2 mt-4">
+          <div className="flex gap-3 mt-8 justify-start">
             {!edit ? (
               <>
-                <button type="button" className="bg-amber-400 text-gray-900 px-4 py-2 rounded font-semibold hover:bg-amber-500" onClick={handleEdit}>Edit</button>
-                <button type="button" className="bg-red-600 text-white px-4 py-2 rounded font-semibold hover:bg-red-700" onClick={handleDelete} disabled={formLoading}>Delete</button>
+                <button type="button" className="bg-amber-400 hover:bg-amber-500 text-gray-900 px-6 py-2 rounded-lg font-semibold transition" onClick={handleEdit}>Edit</button>
+                <button type="button" className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition" onClick={handleDelete} disabled={formLoading}>Delete</button>
               </>
             ) : (
               <>
-                <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded font-semibold hover:bg-green-700" onClick={handleSave} disabled={formLoading}>{formLoading ? "Saving..." : "Save"}</button>
-                <button type="button" className="bg-gray-600 text-white px-4 py-2 rounded font-semibold hover:bg-gray-500" onClick={handleCancel}>Cancel</button>
+                <button type="submit" className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition" onClick={handleSave} disabled={formLoading}>{formLoading ? "Saving..." : "Save"}</button>
+                <button type="button" className="bg-gray-600 hover:bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold transition" onClick={handleCancel}>Cancel</button>
               </>
             )}
           </div>

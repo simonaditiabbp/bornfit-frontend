@@ -1,5 +1,5 @@
 import Link from "next/link";
-import DataTable from 'react-data-table-component';
+import { StyledDataTable } from '@/components/admin';
 
 export default function FreezeDataTable({
   data,
@@ -14,16 +14,8 @@ export default function FreezeDataTable({
 }) {
   const startNo = (currentPage - 1) * paginationPerPage;
 
-  const colors = {
-    primary: '#1f2937',
-    secondary: '#374151',
-    accent: '#fbbf24',
-    text: '#e5e7eb',
-    border: '#4b5563',
-  };
-
   const columns = [
-    { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px' },
+    { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px', center: "true" },
     { 
       name: 'Member', 
       selector: row => row.membership?.user?.name || '-', 
@@ -85,9 +77,9 @@ export default function FreezeDataTable({
   ];
 
   return (
-    <DataTable
+    <StyledDataTable
       columns={columns}
-      data={data.map(item => ({ ...item }))}
+      data={data}
       pagination={pagination}
       paginationServer={paginationServer}
       paginationTotalRows={paginationTotalRows}
@@ -96,77 +88,6 @@ export default function FreezeDataTable({
       onChangePage={onChangePage}
       onChangeRowsPerPage={onChangeRowsPerPage}
       paginationRowsPerPageOptions={paginationRowsPerPageOptions}
-      highlightOnHover
-      responsive={true}
-      noHeader
-      fixedHeaderScrollHeight="300px"
-      direction="auto"
-      subHeaderWrap
-      customStyles={{
-        table: {
-          style: {
-            backgroundColor: colors.primary,
-            color: colors.text,
-          },
-        },
-        headRow: {
-          style: {
-            backgroundColor: colors.secondary,
-            borderBottomWidth: '2px',
-            borderBottomColor: colors.border,
-            borderBottomStyle: 'solid',
-          },
-        },
-        headCells: {
-          style: {
-            fontSize: '0.875rem',
-            fontWeight: '700',
-            color: colors.accent,
-            paddingLeft: '16px',
-            paddingRight: '16px',
-          },
-        },
-        rows: {
-          style: {
-            fontSize: '0.875rem',
-            color: colors.text,
-            backgroundColor: colors.primary,
-            borderBottomWidth: '1px',
-            borderBottomColor: colors.border,
-            borderBottomStyle: 'solid',
-            '&:hover': {
-              backgroundColor: colors.secondary,
-              cursor: 'pointer',
-            },
-          },
-        },
-        cells: {
-          style: {
-            paddingLeft: '16px',
-            paddingRight: '16px',
-          },
-        },
-        pagination: {
-          style: {
-            backgroundColor: colors.primary,
-            borderTopWidth: '1px',
-            borderTopColor: colors.border,
-            borderTopStyle: 'solid',
-            color: colors.text,
-          },
-          pageButtonsStyle: {
-            color: colors.accent,
-            fill: colors.accent,
-            '&:disabled': {
-              color: colors.border,
-              fill: colors.border,
-            },
-            '&:hover:not(:disabled)': {
-              backgroundColor: colors.secondary,
-            },
-          },
-        },
-      }}
     />
   );
 }

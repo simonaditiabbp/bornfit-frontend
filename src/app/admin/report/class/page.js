@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { FaCalendarAlt, FaFileCsv, FaFileExcel, FaFilter } from 'react-icons/fa';
+import { FaDumbbell, FaFileCsv, FaFileExcel, FaFilter } from 'react-icons/fa';
 import BackendErrorFallback from '../../../../components/BackendErrorFallback';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -97,7 +97,7 @@ export default function ClassReportPage() {
         <nav className="flex" aria-label="Breadcrumb">
           <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
             <li className="inline-flex items-center">
-              <FaCalendarAlt className="w-4 h-4 me-2.5 text-amber-300" /> 
+              <FaDumbbell className="w-4 h-4 me-2.5 text-amber-300" /> 
               <span className="ms-1 text-sm font-medium text-gray-200">Class Reports</span>
             </li>
           </ol>

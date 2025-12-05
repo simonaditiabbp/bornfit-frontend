@@ -3,13 +3,13 @@ import { useCallback, useEffect, useState } from "react";
 import BackendErrorFallback from "../../../../components/BackendErrorFallback";
 import PTPlansDataTable from "./DataTable";
 import Link from "next/link";
-import { FaPlus, FaFileInvoice, FaAngleRight } from 'react-icons/fa';
+import { FaCog, FaPlus } from 'react-icons/fa';
+import { PageBreadcrumb, PageContainer, PageHeader, LoadingText, StyledDataTable } from '../../../../components/admin';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function PTPlansPage() {
   const [search, setSearch] = useState('');
-  const [searchInput, setSearchInput] = useState('');
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [backendError, setBackendError] = useState(false);
@@ -79,11 +79,11 @@ export default function PTPlansPage() {
   // Debounce search input to avoid spamming the API
   useEffect(() => {
     const handler = setTimeout(() => {
-      setSearch(searchInput);
+      setSearch(search);
       setPage(1);
     }, 300); // 300ms debounce
     return () => clearTimeout(handler);
-  }, [searchInput]);
+  }, [search]);
 
   const handleChangePage = (newPage) => {
     setPage(newPage);
@@ -112,73 +112,43 @@ export default function PTPlansPage() {
     setLoading(false);
   };
 
+  console.log("Rendered with plans:", plans);
+
+  const filteredPlans = plans.filter(p =>
+    (p.name || '').toLowerCase().includes(search.toLowerCase()) ||
+    (p.description || '').toLowerCase().includes(search.toLowerCase())
+  );
+
   if (backendError) {
     return <BackendErrorFallback onRetry={() => { setBackendError(false); window.location.reload(); }} />;
   }
 
-  const startNo = (page - 1) * limit;
-  const columns = [
-    { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px', center: "true" },
-    { name: 'Name', selector: row => row.name, sortable: true, cell: row => <span className="font-semibold">{row.name}</span> },
-    { name: 'Duration', selector: row => row.duration_value, sortable: true, cell: row => `${row.duration_value} hari` },
-    { name: 'Max Session', selector: row => row.max_session, sortable: true },
-    { name: 'Price', selector: row => row.price, sortable: true, cell: row => `Rp.${row.price.toLocaleString()}` },
-    { name: 'Minutes/Session', selector: row => row.minutes_per_session, sortable: true, cell: row => `${row.minutes_per_session} menit` },
-    { name: 'Description', selector: row => row.description, sortable: false },
-    {
-      name: 'Actions',
-      cell: row => (
-         <Link href={`/admin/pt/plans/edit?id=${row.id}`} className="bg-gray-400 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">Detail</Link>
-        // ...existing code...
-      ),
-    },
-  ];
-
   return (
     <div>
-      <div className="bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-600">
-        <nav className="flex" aria-label="Breadcrumb">
-          <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-            <li>
-              <div className="inline-flex items-center">
-                <FaFileInvoice className="w-3 h-3 me-2.5 text-amber-300" /> 
-                <Link href="/admin/pt/plans" className="ms-1 text-sm font-medium text-gray-400 hover:text-gray-200 md:ms-2">PT Plans</Link>
-              </div>
-            </li>
-          </ol>
-        </nav>
-      </div>
-
-      <div className="p-5">
-        <div className="flex items-center justify-between mb-4">
-          <input
-            type="text"
-            placeholder="Search name/description..."
-            className="w-full max-w-xs p-2 border border-amber-200 rounded focus:outline-amber-300 text-base bg-gray-800 text-gray-200"
-            value={searchInput}
-            onChange={e => { setSearchInput(e.target.value); }}
-          />
-          <Link href="/admin/pt/plans/insert" className="bg-amber-400 hover:bg-amber-500 text-gray-900 px-4 py-2 rounded font-semibold flex items-center gap-2">
-            <FaPlus className="inline-block" /> Add Plan
-          </Link>
-        </div>
+      <PageBreadcrumb 
+        items={[
+          { icon: <FaCog className="w-3 h-3" />, label: 'Settings', href: '/admin/settings' },
+          { label: 'PT Plans' }
+        ]}
+      />
+      
+      <PageContainer>
+        <PageHeader
+          searchPlaceholder="Search name/description..."
+          searchValue={search}
+          onSearchChange={(e) => setSearch(e.target.value)}
+          actionHref="/admin/pt/plans/insert"
+          actionIcon={<FaPlus />}
+          actionText="Add Plan"
+        />
         {loading ? (
-          <div className="text-center text-amber-300">Loading...</div>
+          <LoadingText />
         ) : (
           <PTPlansDataTable
-            columns={columns}
-            data={plans}
-            pagination
-            paginationServer
-            paginationTotalRows={total}
-            paginationPerPage={limit}
-            currentPage={page}
-            onChangePage={handleChangePage}
-            onChangeRowsPerPage={handleChangeRowsPerPage}
-            paginationRowsPerPageOptions={[10,25,50]}
+            data={filteredPlans}
           />
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 }

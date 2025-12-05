@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FaAngleRight, FaCalendar } from 'react-icons/fa';
-import Link from 'next/link';
+import { FaCheckCircle } from 'react-icons/fa';
+import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -153,107 +153,83 @@ export default function PTBookingEditPage() {
 
   return (
     <div>
-      <div className="bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-600">
-        <nav className="flex" aria-label="Breadcrumb">
-          <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-            <li>
-              <div className="inline-flex items-center">
-                <FaCalendar className="w-3 h-3 me-2.5 text-amber-300" /> 
-                <Link href="/admin/pt/booking" className="ms-1 text-sm font-medium text-gray-400 hover:text-gray-200 md:ms-2">PT Booking</Link>
-              </div>
-            </li>
-            <li aria-current="page">
-              <div className="flex items-center">
-                <FaAngleRight className="w-3 h-3 text-gray-400 mx-1" />
-                <span className="ms-1 text-sm font-medium text-gray-400 md:ms-2">Detail</span>
-              </div>
-            </li>
-          </ol>
-        </nav>
-      </div>
+      <PageBreadcrumb items={[
+        { icon: FaCheckCircle, label: 'PT Session', href: '/admin/pt/session' },
+        { label: 'Booking', href: '/admin/pt/booking' },
+        { label: 'Detail / Edit' }
+      ]} />
 
-      <div className="p-5">
-        <div className="max-w-4xl mx-auto bg-gray-800 rounded-2xl shadow-lg p-10 border border-gray-600">
-          <h2 className="text-3xl font-bold mb-8 text-gray-200 border-b border-gray-600 pb-3">Edit Booking</h2>
-          <div className="space-y-4 mb-4">
-            <div>
-              <label className="block font-semibold mb-1 text-gray-200">Member</label>
-              <select className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 border-gray-200' : 'bg-gray-700 border-gray-600'} text-gray-200`} value={form.user_member_id} onChange={e => setForm(f => ({ ...f, user_member_id: e.target.value, personal_trainer_session_id: '' }))} required disabled={!edit}>
-                <option value="">Pilih Member</option>
-                {members.map(m => (
-                  <option key={m.id} value={m.id}>{m.name}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block font-semibold mb-1 text-gray-200">PT Session</label>
-              <select className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 border-gray-200' : 'bg-gray-700 border-gray-600'} text-gray-200`} value={form.personal_trainer_session_id} onChange={e => setForm(f => ({ ...f, personal_trainer_session_id: e.target.value }))} required disabled={!edit || !form.user_member_id || ptSessions.length === 0}>
-                <option value="">Pilih PT Session</option>
-                {ptSessions.map(s => (
-                  <option key={s.id} value={s.id}>{s.name || `Session #${s.id}`}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block font-semibold mb-1 text-gray-200">Booking Time</label>
-              <input type="datetime-local" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 border-gray-200' : 'bg-gray-700 border-gray-600'} text-gray-200`} value={form.booking_time} onChange={e => setForm(f => ({ ...f, booking_time: e.target.value }))} required disabled={!edit} />
-            </div>
-            <div>
-              <label className="block font-semibold mb-1 text-gray-200">Status</label>
-              <select className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 border-gray-200' : 'bg-gray-700 border-gray-600'} text-gray-200`} value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} disabled={!edit}>
-                <option value="booked">Booked</option>
-                <option value="cancelled">Cancelled</option>
-                <option value="completed">Completed</option>
-              </select>
-            </div>
-          </div>
-          {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
-          {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}
-          <div className="flex justify-between mt-8">
-            <div className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-semibold transition">
-              <Link href="/admin/pt/booking">Back</Link>
-            </div>
-            <div className="flex gap-3">
-              {!edit ? (
-                <>
-                  <button
-                    type="button"
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition"
-                    onClick={handleEdit}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition"
-                    onClick={handleDelete}
-                  >
-                    Delete
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition"
-                    disabled={formLoading}
-                    onClick={handleSave}
-                  >
-                    {formLoading ? "Saving..." : "Save"}
-                  </button>
-                  <button
-                    type="button"
-                    className="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold transition"
-                    onClick={handleCancel}
-                  >
-                    Cancel
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
+      <PageContainerInsert>
+        <div className="flex items-center justify-between mb-8 border-b border-gray-700 pb-4">
+          <h1 className="text-3xl font-bold text-amber-300">PT Booking Details</h1>
+          <ActionButton
+            variant="gray"
+            href="/admin/pt/booking"
+            text="Back"
+          />
         </div>
-      </div>
+        {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
+        {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}
+        <div className="space-y-4 mb-4">
+          <FormInput
+            label="Member"
+            type="select"
+            value={form.user_member_id}
+            onChange={e => setForm(f => ({ ...f, user_member_id: e.target.value, personal_trainer_session_id: '' }))}
+            options={[
+              { value: '', label: 'Pilih Member' },
+              ...members.map(m => ({ value: m.id, label: m.name }))
+            ]}
+            required
+            disabled={!edit}
+          />
+          <FormInput
+            label="PT Session"
+            type="select"
+            value={form.personal_trainer_session_id}
+            onChange={e => setForm(f => ({ ...f, personal_trainer_session_id: e.target.value }))}
+            options={[
+              { value: '', label: 'Pilih PT Session' },
+              ...ptSessions.map(s => ({ value: s.id, label: s.name || `Session #${s.id}` }))
+            ]}
+            required
+            disabled={!edit || !form.user_member_id || ptSessions.length === 0}
+          />
+          <FormInput
+            label="Booking Time"
+            type="datetime-local"
+            value={form.booking_time}
+            onChange={e => setForm(f => ({ ...f, booking_time: e.target.value }))}
+            required
+            disabled={!edit}
+          />
+          <FormInput
+            label="Status"
+            type="select"
+            value={form.status}
+            onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
+            options={[
+              { value: 'booked', label: 'Booked' },
+              { value: 'cancelled', label: 'Cancelled' },
+              { value: 'completed', label: 'Completed' }
+            ]}
+            disabled={!edit}
+          />
+        </div>
+        <div className="flex gap-3 mt-8 justify-start">
+          {!edit ? (
+            <>
+              <ActionButton onClick={handleEdit} variant="primary">Edit</ActionButton>
+              <ActionButton onClick={handleDelete} variant="danger" disabled={formLoading}>Delete</ActionButton>
+            </>
+          ) : (
+            <>
+              <button type="button" className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold bg-green-600 text-white hover:bg-green-700" onClick={handleSave} disabled={formLoading}>{formLoading ? 'Saving...' : 'Save'}</button>
+              <ActionButton onClick={handleCancel} variant="gray">Cancel</ActionButton>
+            </>
+          )}
+        </div>
+      </PageContainerInsert>
     </div>
   );
 }

@@ -7,7 +7,7 @@ import Link from 'next/link';
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function ClassPlanInsertPage() {
-  const [form, setForm] = useState({
+  const initialFormState = {
     name: "",
     access_type: "Regular",
     max_visitor: 0,
@@ -18,10 +18,17 @@ export default function ClassPlanInsertPage() {
     unlimited_daily_session: true,
     daily_limit: 0,
     is_active: true
-  });
+  };
+  
+  const [form, setForm] = useState(initialFormState);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+
+  const handleReset = () => {
+    setForm(initialFormState);
+    setError("");
+  };
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
@@ -148,18 +155,16 @@ export default function ClassPlanInsertPage() {
               <input id="is_active" name="is_active" type="checkbox" checked={form.is_active} onChange={e => setForm({ ...form, is_active: e.target.checked })} />
               <label htmlFor="is_active" className="block mb-0 text-gray-200">Active</label>
             </div>
-            <div className="flex justify-between mt-8">
-              <div className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-semibold transition">
-                <Link href="/admin/class/plans">Back</Link>
-              </div>
-              <div className="flex gap-3">
-                <button type="submit" className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition" disabled={loading}>
-                  {loading ? "Saving..." : "Create"}
-                </button>
-                <button type="button" className="bg-gray-400 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-500 transition" onClick={() => router.push('/admin/class/plans')}>
-                  Cancel
-                </button>
-              </div>
+            <div className="flex gap-3 mt-8 justify-start">
+              <button type="submit" className="bg-amber-400 text-gray-900 px-6 py-2 rounded-lg font-semibold hover:bg-amber-500 transition" disabled={loading}>
+                {loading ? "Saving..." : "Submit"}
+              </button>
+              <button type="button" className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition" onClick={handleReset}>
+                Reset
+              </button>
+              <button type="button" className="bg-gray-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-500 transition" onClick={() => router.push('/admin/class/plans')}>
+                Cancel
+              </button>
             </div>
           </form>
         </div>

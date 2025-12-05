@@ -1,108 +1,9 @@
-import Link from "next/link";
-import DataTable from 'react-data-table-component';
+import Link from 'next/link';
+import { StyledDataTable } from '@/components/admin';
 
-export default function PTSessionDataTable({
-  data,
-  plans = [],
-  members = [],
-  trainers = [],
-  setQrSession,
-  pagination = false,
-  paginationServer = false,
-  paginationTotalRows = 0,
-  paginationPerPage = 10,
-  currentPage = 1,
-  onChangePage = () => {},
-  onChangeRowsPerPage = () => {},
-  paginationRowsPerPageOptions = [10, 25, 50],
-}) {
-  const colors = {
-    bgPrimary: '#1f2937',
-    bgSecondary: '#374151',
-    textPrimary: '#f3f4f6',
-    textSecondary: '#d1d5db',
-    border: '#4b5563',
-    hover: '#4b5563'
-  };
-
-  const tailwindStyles = {
-    table: {
-      style: {
-        backgroundColor: colors.bgPrimary,
-        color: colors.textPrimary,
-      },
-    },
-    headRow: {
-      style: {
-        backgroundColor: colors.bgSecondary,
-        borderBottomWidth: '1px',
-        borderBottomColor: colors.border,
-        borderBottomStyle: 'solid',
-        minHeight: '56px',
-      },
-    },
-    headCells: {
-      style: {
-        fontSize: '0.95rem',
-        fontWeight: 'bold',
-        color: colors.textPrimary,
-        paddingLeft: '16px',
-        paddingRight: '16px',
-      },
-    },
-    rows: {
-      style: {
-        fontSize: '1rem',
-        color: colors.textSecondary,
-        backgroundColor: colors.bgPrimary,
-        minHeight: '48px',
-        '&:not(:last-of-type)': {
-          borderBottomStyle: 'solid',
-          borderBottomWidth: '1px',
-          borderBottomColor: colors.border,
-        },
-      },
-      highlightOnHoverStyle: {
-        backgroundColor: colors.hover,
-        borderBottomColor: colors.border,
-        outline: 'none',
-      },
-    },
-    pagination: {
-      style: {
-        backgroundColor: colors.bgSecondary,
-        borderTopStyle: 'solid',
-        borderTopWidth: '1px',
-        borderTopColor: colors.border,
-        color: colors.textPrimary,
-        minHeight: '56px',
-      },
-      pageButtonsStyle: {
-        borderRadius: '4px',
-        height: '32px',
-        width: '32px',
-        padding: '4px',
-        margin: '0 4px',
-        cursor: 'pointer',
-        transition: '0.2s',
-        color: colors.textPrimary,
-        fill: colors.textPrimary,
-        backgroundColor: 'transparent',
-        '&:disabled': {
-          cursor: 'unset',
-          color: colors.border,
-          fill: colors.border,
-        },
-        '&:hover:not(:disabled)': {
-          backgroundColor: colors.hover,
-        },
-      },
-    },
-  };
-
-  const startNo = (currentPage - 1) * paginationPerPage;
+export default function PTSessionDataTable({ data, plans, members, trainers }) {
   const columns = [
-  { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px',  },
+    { name: 'No', cell: (row, i) => i + 1, width: '70px', center: true },
     // { name: 'Name', selector: row => row.name, sortable: true },
     { name: 'Plan', selector: row => {
       const plan = plans.find(p => p.id === row.pt_session_plan_id);
@@ -159,13 +60,13 @@ export default function PTSessionDataTable({
       name: 'Aksi',
       cell: row => (
         <div className="flex gap-2 justify-center">
-          <button
+          {/* <button
             className="bg-blue-600 text-white px-3 py-1 rounded font-semibold hover:bg-blue-700"
             onClick={() => setQrSession && setQrSession(row)}
           >
             Generate QR
-          </button>
-          <Link href={`/admin/pt/session/edit?id=${row.id}`} className="bg-gray-400 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">Detail</Link>
+          </button> */}
+          <Link href={`/admin/pt/session/edit?id=${row.id}`} className="bg-gray-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">Detail</Link>
         </div>
       ),
       ignoreRowClick: true,
@@ -173,24 +74,11 @@ export default function PTSessionDataTable({
   ];
 
   return (
-    <DataTable
+    <StyledDataTable
       columns={columns}
-      data={data.map(item => ({ ...item }))}
-      pagination={pagination}
-      paginationServer={paginationServer}
-      paginationTotalRows={paginationTotalRows}
-      paginationPerPage={paginationPerPage}
-      paginationDefaultPage={currentPage}
-      onChangePage={onChangePage}
-      onChangeRowsPerPage={onChangeRowsPerPage}
-      paginationRowsPerPageOptions={paginationRowsPerPageOptions}
-      highlightOnHover
-      responsive={true}
-      noHeader
-      fixedHeaderScrollHeight="300px"
-      direction="auto"
-      subHeaderWrap
-      customStyles={tailwindStyles}
+      data={data}
+      pagination
     />
   );
 }
+

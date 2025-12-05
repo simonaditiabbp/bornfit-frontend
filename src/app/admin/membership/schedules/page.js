@@ -60,7 +60,7 @@ export default function MembershipSchedulesPage() {
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
-          <Link href="/admin/membership/schedules/insert" className="flex items-center gap-2 bg-amber-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-amber-500">
+          <Link href="/admin/membership/schedules/insert" className="flex items-center gap-2 bg-amber-400 text-gray-900 px-4 py-2 rounded-lg font-semibold hover:bg-amber-500">
             <FaPlus className="inline-block" />
             Add Schedule
           </Link>

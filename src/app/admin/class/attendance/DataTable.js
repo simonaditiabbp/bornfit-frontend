@@ -22,7 +22,6 @@ export default function ClassAttendanceDataTable({ columns, data, pagination, pa
       onChangePage={onChangePage}
       onChangeRowsPerPage={onChangeRowsPerPage}
       paginationRowsPerPageOptions={paginationRowsPerPageOptions}
-      highlightOnHover
       responsive={true}
       fixedHeaderScrollHeight="300px"
       direction="auto"
@@ -61,7 +60,7 @@ export default function ClassAttendanceDataTable({ columns, data, pagination, pa
             borderBottomStyle: 'solid',
             '&:hover': {
               backgroundColor: colors.secondary,
-              cursor: 'pointer',
+              // cursor: 'pointer',
             },
           },
         },

@@ -7,6 +7,26 @@ import { FaIdCard, FaAngleRight } from 'react-icons/fa';
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function ClassSessionInsertPage() {
+  const now = new Date();
+  const format = (date) => date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  const start = format(now);
+  
+  const initialFormState = {
+    event_plan_id: "",
+    instructor_id: "",
+    class_date: now.toISOString().slice(0,10),
+    start_time: start,
+    class_type: "membership_only",
+    total_manual_checkin: 0,
+    notes: "",
+    is_recurring: false,
+    recurrence_days: [],
+    recurrence_start_time: "",
+    recurrence_end_time: "",
+    valid_from: "",
+    valid_until: "",
+  };
+  
   const [plans, setPlans] = useState([]);
   const [members, setMembers] = useState([]);
   const [instructors, setInstructors] = useState([]);
@@ -17,17 +37,6 @@ export default function ClassSessionInsertPage() {
         const res = await fetch(`${API_URL}/api/eventplans?is_active=true`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
         const data = await res.json();
         if (res.ok) setPlans(data.data.plans);
-
-        const now = new Date();
-        const format = (date) => date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-        const start = format(now);
-
-        setForm(f => ({
-          ...f,
-          class_date: now.toISOString().slice(0,10),
-          start_time: start,
-        }));
-
       } catch {}
     };
     fetchPlans();
@@ -45,21 +54,7 @@ export default function ClassSessionInsertPage() {
     fetchUsers();
   }, []);
 
-  const [form, setForm] = useState({
-    event_plan_id: "",
-    instructor_id: "",
-    class_date: "",
-    start_time: "",
-    class_type: "membership_only",
-    total_manual_checkin: 0,
-    notes: "",
-    is_recurring: false,
-    recurrence_days: [],
-    recurrence_start_time: "",
-    recurrence_end_time: "",
-    valid_from: "",
-    valid_until: "",
-  });
+  const [form, setForm] = useState(initialFormState);
 
   // Helper: Calculate end time from start time + minutes
   const calculateEndTime = (startTime, minutes) => {
@@ -88,6 +83,12 @@ export default function ClassSessionInsertPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const router = useRouter();
+
+  const handleReset = () => {
+    setForm(initialFormState);
+    setSuccess("");
+    setError("");
+  };
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -312,11 +313,14 @@ export default function ClassSessionInsertPage() {
             <label className="block mb-1 text-gray-200">Notes</label>
             <textarea name="notes" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200" />
           </div>
-          <div className="flex gap-2">
-            <button type="submit" className="bg-amber-400 text-gray-900 px-4 py-2 rounded font-semibold hover:bg-amber-500" disabled={loading}>
-              {loading ? "Saving..." : "Create"}
+          <div className="flex gap-3 mt-8 justify-start">
+            <button type="submit" className="bg-amber-400 text-gray-900 px-6 py-2 rounded-lg font-semibold hover:bg-amber-500 transition" disabled={loading}>
+              {loading ? "Saving..." : "Submit"}
             </button>
-            <button type="button" className="bg-gray-600 text-white px-4 py-2 rounded font-semibold hover:bg-gray-500" onClick={() => router.push('/admin/class/session')}>
+            <button type="button" className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition" onClick={handleReset}>
+              Reset
+            </button>
+            <button type="button" className="bg-gray-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-500 transition" onClick={() => router.push('/admin/class/session')}>
               Cancel
             </button>
           </div>

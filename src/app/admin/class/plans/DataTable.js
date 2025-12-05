@@ -28,16 +28,16 @@ export default function ClassPlansDataTable({ columns, data, pagination, paginat
     },
     headCells: {
       style: {
-        fontSize: '0.95rem',
+        fontSize: '0.875rem',
         fontWeight: 'bold',
-        color: colors.textPrimary,
+        color: '#fbbf24',
         paddingLeft: '16px',
         paddingRight: '16px',
       },
     },
     rows: {
       style: {
-        fontSize: '1rem',
+        fontSize: '0.875rem',
         color: colors.textSecondary,
         backgroundColor: colors.bgPrimary,
         minHeight: '48px',
@@ -55,7 +55,7 @@ export default function ClassPlansDataTable({ columns, data, pagination, paginat
     },
     pagination: {
       style: {
-        backgroundColor: colors.bgSecondary,
+        backgroundColor: colors.primary,
         borderTopStyle: 'solid',
         borderTopWidth: '1px',
         borderTopColor: colors.border,

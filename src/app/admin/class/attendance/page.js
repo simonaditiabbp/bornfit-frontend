@@ -98,35 +98,33 @@ export default function ClassAttendancePage() {
   return (
     <div>
       {/* Breadcrumb Navigation */}
-      <div className="flex items-center gap-2 text-sm mb-6 bg-gray-800 px-4 py-3 rounded-lg">
-        <FaCalendar className="text-amber-300" />
-        <Link href="/admin/dashboard" className="text-gray-400 hover:text-amber-300 transition-colors">
-          Dashboard
-        </Link>
-        <FaAngleRight className="text-gray-500 text-xs" />
-        <span className="text-gray-200 font-medium">Class Attendance</span>
+      <div className="bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-600">
+        <FaCalendar className="text-amber-300 mr-2" />
+        <span className="text-amber-300">Class Attendance</span>
       </div>
 
-      <div className="flex items-center justify-between mb-6">
-        <input
-          type="text"
-          placeholder="Search member/class/plan/status..."
-          className="w-full max-w-md p-3 border-2 border-amber-200 rounded-lg focus:outline-none focus:border-amber-400 text-base bg-gray-700 text-gray-200 placeholder-gray-400"
-          value={searchInput}
-          onChange={e => { setSearchInput(e.target.value); }}
-        />
-        <Link
-          href="/admin/class/attendance/insert"
-          className="bg-amber-400 text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-amber-500 transition-colors flex items-center gap-2"
-        >
-          <FaPlus />
-          Add Attendance
-        </Link>
-      </div>
-      {loading ? (
-        <div className="text-center text-amber-300">Loading...</div>
-      ) : (
-        <ClassAttendanceDataTable
+      {/* Content Container */}
+      <div className="m-5 p-5 bg-gray-800 border border-gray-600 rounded-lg">
+        <div className="flex items-center justify-between mb-6">
+          <input
+            type="text"
+            placeholder="Search member/class/plan/status..."
+            className="w-full max-w-xs p-2 border text-gray-100 bg-gray-700 border-amber-200 rounded focus:outline-none text-base"
+            value={searchInput}
+            onChange={e => { setSearchInput(e.target.value); }}
+          />
+          <Link
+            href="/admin/class/attendance/insert"
+            className="flex items-center gap-2 bg-amber-400 text-gray-900 px-4 py-2 rounded-lg font-semibold hover:bg-amber-500"
+          >
+            <FaPlus />
+            Add Attendance
+          </Link>
+        </div>
+        {loading ? (
+          <div className="text-center text-amber-300">Loading...</div>
+        ) : (
+          <ClassAttendanceDataTable
           columns={columns}
           data={attendances}
           pagination
@@ -136,9 +134,10 @@ export default function ClassAttendancePage() {
           currentPage={page}
           onChangePage={setPage}
           onChangeRowsPerPage={newLimit => { setLimit(newLimit); setPage(1); }}
-          paginationRowsPerPageOptions={[10,25,50]}
+          paginationRowsPerPageOptions={[10, 25, 50]}
         />
-      )}
+        )}
+      </div>
     </div>
   );
 }

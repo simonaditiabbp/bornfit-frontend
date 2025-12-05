@@ -8,17 +8,24 @@ import Link from 'next/link';
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function InsertMembershipSchedulePage() {
-  const [form, setForm] = useState({
+  const initialFormState = {
     user_id: '',
     membership_plan_id: '',
-    schedule_date: '',
+    schedule_date: new Date().toISOString().slice(0, 10),
     status: 'pending'
-  });
+  };
+  
+  const [form, setForm] = useState(initialFormState);
   const [users, setUsers] = useState([]);
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+
+  const handleReset = () => {
+    setForm(initialFormState);
+    setError('');
+  };
 
   useEffect(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
@@ -65,28 +72,23 @@ export default function InsertMembershipSchedulePage() {
 
   return (
     <div>
-      <div className="bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-600">
-        <nav className="flex" aria-label="Breadcrumb">
-          <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-            <li>
-              <div className="inline-flex items-center">
-                <FaCalendar className="w-3 h-3 me-2.5 text-amber-300" /> 
-                <Link href="/admin/membership/schedules" className="ms-1 text-sm font-medium text-gray-400 hover:text-gray-200 md:ms-2 dark:text-gray-400">Membership Schedules</Link>
-              </div>
-            </li>
-            <li aria-current="page">
-              <div className="flex items-center">
-                <FaAngleRight className="w-3 h-3 text-gray-400 mx-1" />
-                <span className="ms-1 text-sm font-medium text-gray-400 md:ms-2 dark:text-gray-400">Create</span>
-              </div>
-            </li>
-          </ol>
-        </nav>
+      {/* Breadcrumb Navigation */}
+      <div className="flex items-center gap-2 text-sm mb-6 bg-gray-800 px-4 py-3 rounded-lg">
+        <FaCalendar className="text-amber-300" />
+        <Link href="/admin/membership/session" className="text-gray-400 hover:text-amber-300 transition-colors">
+          Membership
+        </Link>
+        <FaAngleRight className="text-gray-500 text-xs" />
+        <Link href="/admin/membership/schedules" className="text-gray-400 hover:text-amber-300 transition-colors">
+          Membership Schedules
+        </Link>
+        <FaAngleRight className="text-amber-300 text-xs" />
+        <span className="text-amber-300 font-medium">Create</span>
       </div>
 
       <div className="p-5">
-        <div className="max-w-3xl mx-auto bg-gray-800 p-10 rounded-2xl shadow-lg border border-gray-600">
-          <h2 className="text-3xl font-bold mb-8 text-gray-200 text-center border-b border-gray-600 pb-3">Tambah Membership Schedule</h2>
+        <div className="max-w-3xl mx-auto bg-gray-800 p-10 rounded-2xl shadow-lg border border-gray-700">
+          <h1 className="text-3xl font-bold mb-8 text-amber-300 text-center">Create Membership Schedule</h1>
           {error && <div className="text-red-400 mb-2">{error}</div>}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -116,9 +118,28 @@ export default function InsertMembershipSchedulePage() {
                 <option value="cancelled">Cancelled</option>
               </select>
             </div>
-            <div className="flex gap-3 mt-6">
-              <button type="submit" className="flex-1 bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700" disabled={loading}>{loading ? 'Saving...' : 'Create'}</button>
-              <button type="button" className="flex-1 bg-gray-600 text-white py-2 rounded font-bold hover:bg-gray-700" onClick={() => router.push('/admin/membership/schedules')}>Cancel</button>
+            <div className="flex gap-2 pt-4">
+              <button 
+                type="submit" 
+                className="bg-amber-400 text-gray-900 px-4 py-2 rounded font-semibold hover:bg-amber-500" 
+                disabled={loading}
+              >
+                {loading ? 'Saving...' : 'Create'}
+              </button>
+              <button 
+                type="button" 
+                className="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700" 
+                onClick={handleReset}
+              >
+                Reset
+              </button>
+              <button 
+                type="button" 
+                className="bg-gray-600 text-white px-4 py-2 rounded font-semibold hover:bg-gray-500" 
+                onClick={() => router.push('/admin/membership/schedules')}
+              >
+                Cancel
+              </button>
             </div>
           </form>
         </div>

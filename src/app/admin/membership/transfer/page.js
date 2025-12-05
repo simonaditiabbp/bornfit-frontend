@@ -1,10 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { FaPlus, FaExchangeAlt, FaAngleRight } from 'react-icons/fa';
+import { FaPlus, FaIdCard } from 'react-icons/fa';
 import TransferDataTable from "./DataTable";
 import BackendErrorFallback from "@/components/BackendErrorFallback";
+import { PageBreadcrumb, PageContainer, PageHeader, LoadingText } from '@/components/admin';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -95,50 +95,40 @@ export default function TransferMembershipPage() {
     return <BackendErrorFallback onRetry={() => window.location.reload()} />;
   }
 
-  if (loading) {
-    return <div className="text-amber-300 text-center font-medium mt-20">Loading...</div>;
-  }
-
   return (
     <div>
-      {/* Breadcrumb Navigation */}
-      <div className="flex items-center gap-2 text-sm mb-6 bg-gray-800 px-4 py-3 rounded-lg">
-        <FaExchangeAlt className="text-amber-300" />
-        <Link href="/admin/dashboard" className="text-gray-400 hover:text-amber-300 transition-colors">
-          Dashboard
-        </Link>
-        <FaAngleRight className="text-gray-500 text-xs" />
-        <span className="text-gray-200 font-medium">Transfer Membership</span>
-      </div>
-
-      <div className="flex items-center justify-between mb-6">
-        <input
-          type="text"
-          placeholder="Search from member/to member/plan..."
-          className="w-full max-w-md p-3 border-2 border-amber-200 rounded-lg focus:outline-none focus:border-amber-400 text-base bg-gray-700 text-gray-200 placeholder-gray-400"
-          value={searchInput}
-          onChange={e => { setSearchInput(e.target.value); }}
-        />
-        <Link
-          href="/admin/membership/transfer/insert"
-          className="bg-amber-400 text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-amber-500 transition-colors flex items-center gap-2"
-        >
-          <FaPlus />
-          Transfer Membership
-        </Link>
-      </div>
-
-      <TransferDataTable
-        data={transfers}
-        pagination
-        paginationServer
-        paginationTotalRows={totalRows}
-        paginationPerPage={perPage}
-        currentPage={page}
-        onChangePage={setPage}
-        onChangeRowsPerPage={newLimit => { setPerPage(newLimit); setPage(1); }}
-        paginationRowsPerPageOptions={[10, 25, 50]}
+      <PageBreadcrumb 
+        items={[
+          { icon: <FaIdCard className="w-3 h-3" />, label: 'Membership', href: '/admin/membership/session' },
+          { label: 'Transfer Membership' }
+        ]}
       />
+
+      <PageContainer>
+        <PageHeader
+          searchPlaceholder="Search from member/to member/plan..."
+          searchValue={searchInput}
+          onSearchChange={e => setSearchInput(e.target.value)}
+          actionHref="/admin/membership/transfer/insert"
+          actionIcon={<FaPlus />}
+          actionText="Transfer Membership"
+        />
+        {loading ? (
+          <LoadingText />
+        ) : (
+          <TransferDataTable
+            data={transfers}
+            pagination
+            paginationServer
+            paginationTotalRows={totalRows}
+            paginationPerPage={perPage}
+            currentPage={page}
+            onChangePage={setPage}
+            onChangeRowsPerPage={newLimit => { setPerPage(newLimit); setPage(1); }}
+            paginationRowsPerPageOptions={[10, 25, 50]}
+          />
+        )}
+      </PageContainer>            
     </div>
   );
 }

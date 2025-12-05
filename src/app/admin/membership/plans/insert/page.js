@@ -2,18 +2,23 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FaAngleRight, FaFileInvoice } from 'react-icons/fa';
-import Link from 'next/link';
+import { FaCog } from 'react-icons/fa';
+import { PageBreadcrumb, PageContainerInsert, FormActions, FormInput, FormInputGroup } from '@/components/admin';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function InsertMembershipPlanPage() {
-  const [form, setForm] = useState({
+  const getDefaultAvailableUntil = () => {
+    const date = new Date();
+    date.setDate(date.getDate() + 30);
+    return date.toISOString().slice(0, 10);
+  };
+
+  const initialFormState = {
     name: '',
     duration_value: '',
     duration_unit: 'day',
     price: '',
-    // Hide and set default values for these fields
     category: 'REGULAR',
     loyalty_point: 0,
     access_type: 'ALL',
@@ -21,15 +26,22 @@ export default function InsertMembershipPlanPage() {
     description: '',
     max_session: '',
     allow_unlimited_session: true,
-    available_from: '',
-    available_until: '',
+    available_from: new Date().toISOString().slice(0, 10),
+    available_until: getDefaultAvailableUntil(),
     quota_max_sold: '',
     always_available: true,
     level: 1
-  });
+  };
+  
+  const [form, setForm] = useState(initialFormState);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+
+  const handleReset = () => {
+    setForm(initialFormState);
+    setError('');
+  };
 
   const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
@@ -112,126 +124,151 @@ export default function InsertMembershipPlanPage() {
 
   return (
     <div>
-      <div className="bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-600">
-        <nav className="flex" aria-label="Breadcrumb">
-          <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-            <li>
-              <div className="inline-flex items-center">
-                <FaFileInvoice className="w-3 h-3 me-2.5 text-amber-300" /> 
-                <Link href="/admin/membership/plans" className="ms-1 text-sm font-medium text-gray-400 hover:text-gray-200 md:ms-2 dark:text-gray-400">Membership Plans</Link>
-              </div>
-            </li>
-            <li aria-current="page">
-              <div className="flex items-center">
-                <FaAngleRight className="w-3 h-3 text-gray-400 mx-1" />
-                <span className="ms-1 text-sm font-medium text-gray-400 md:ms-2 dark:text-gray-400">Create</span>
-              </div>
-            </li>
-          </ol>
-        </nav>
-      </div>
+      <PageBreadcrumb 
+        items={[
+          { icon: <FaCog className="w-3 h-3" />, label: 'Settings', href: '/admin/settings' },
+          { label: 'Membership Plans', href: '/admin/membership/plans' },
+          { label: 'Create' }
+        ]}
+      />
 
-      <div className="p-5">
-        <div className="max-w-3xl mx-auto bg-gray-800 p-10 rounded-2xl shadow-lg border border-gray-600">
-          <h2 className="text-3xl font-bold mb-8 text-gray-200 text-center border-b border-gray-600 pb-3">Tambah Membership Plan</h2>
-          {error && <div className="text-red-400 mb-2">{error}</div>}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block font-medium text-gray-200 mb-1">Nama Plan <span className="text-red-400">*</span></label>
-              <input type="text" name="name" value={form.name} onChange={handleChange} className="w-full bg-gray-700 text-gray-100 border border-gray-600 p-2 rounded" required />
-            </div>
-           <div className="flex gap-2 items-center">
+      <PageContainerInsert>
+        <h1 className="text-3xl font-bold mb-8 text-amber-300 text-center">Create Membership Plan</h1>
+        {error && <div className="text-red-400 mb-2">{error}</div>}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <FormInput
+            label="Nama Plan"
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            required
+          />
+
+          <FormInputGroup>
             <div className="flex-1">
-                <label className="block mb-1 text-gray-200">Duration Value</label>
-                <input
-                type="number"
+              <FormInput
+                label="Duration Value"
                 name="duration_value"
+                type="number"
                 value={form.duration_value}
                 onChange={handleChange}
-                className="w-full bg-gray-700 text-gray-100 border border-gray-600 p-2 rounded"
                 required
-                />
+              />
             </div>
             <div className="w-32">
-                <label className="block mb-1 text-gray-200">Duration Unit</label>
-                <select
+              <FormInput
+                label="Duration Unit"
                 name="duration_unit"
+                type="select"
                 value={form.duration_unit}
                 onChange={handleChange}
-                className="w-full bg-gray-700 text-gray-100 border border-gray-600 p-2 rounded"
-                >
-                <option value="day">Day</option>
-                <option value="month">Month</option>
-                </select>
+                options={[
+                  { value: 'day', label: 'Day' },
+                  { value: 'month', label: 'Month' }
+                ]}
+              />
             </div>
+          </FormInputGroup>
+
+          <FormInput
+            label="Harga"
+            name="price"
+            type="number"
+            value={form.price}
+            onChange={handleChange}
+            required
+          />
+
+          <FormInput
+            label="Keterangan"
+            name="description"
+            value={form.description}
+            onChange={handleChange}
+          />
+
+          <FormInput
+            label="Allow Unlimited Session"
+            name="allow_unlimited_session"
+            type="select"
+            value={form.allow_unlimited_session ? 'true' : 'false'}
+            onChange={handleSelectChange}
+            options={[
+              { value: 'false', label: 'Tidak' },
+              { value: 'true', label: 'Ya' }
+            ]}
+            required
+          />
+
+          {showMaxSession && (
+            <FormInput
+              label="Max Session"
+              name="max_session"
+              type="number"
+              value={form.max_session || ''}
+              onChange={handleChange}
+            />
+          )}
+
+          <FormInputGroup>
+            <div className="flex-1">
+              <FormInput
+                label="Available From"
+                name="available_from"
+                type="date"
+                value={form.available_from}
+                onChange={handleChange}
+              />
             </div>
-            <div>
-              <label className="block font-medium text-gray-200 mb-1">Harga <span className="text-red-400">*</span></label>
-              <input type="number" name="price" value={form.price} onChange={handleChange} className="w-full bg-gray-700 text-gray-100 border border-gray-600 p-2 rounded" required />
+            <div className="flex-1">
+              <FormInput
+                label="Available Until"
+                name="available_until"
+                type="date"
+                value={form.available_until}
+                onChange={handleChange}
+              />
             </div>
-            <div>
-              <label className="block font-medium text-gray-200 mb-1">Keterangan</label>
-              <input type="text" name="description" value={form.description} onChange={handleChange} className="w-full bg-gray-700 text-gray-100 border border-gray-600 p-2 rounded" />
-            </div>
-            <div>
-              <label className="block mb-1 text-gray-200">Allow Unlimited Session</label>
-              <select name="allow_unlimited_session" value={form.allow_unlimited_session ? 'true' : 'false'} onChange={handleSelectChange} className="w-full bg-gray-700 text-gray-100 border border-gray-600 p-2 rounded" required>
-                <option value="false">Tidak</option>
-                <option value="true">Ya</option>
-              </select>
-            </div>
-            {showMaxSession && (
-              <div>
-                <label className="block mb-1 text-gray-200">Max Session</label>
-                <input type="number" name="max_session" value={form.max_session || ''} onChange={handleChange} className="w-full bg-gray-700 text-gray-100 border border-gray-600 p-2 rounded" />
-              </div>
-            )}
-            <div className="flex gap-2">
-                <div className="flex-1">
-                    <label className="block mb-1 text-gray-200">Available From</label>
-                    <input
-                    type="date"
-                    name="available_from"
-                    value={form.available_from}
-                    onChange={handleChange}
-                    className="w-full bg-gray-700 text-gray-100 border border-gray-600 p-2 rounded"
-                    />
-                </div>
-                <div className="flex-1">
-                    <label className="block mb-1 text-gray-200">Available Until</label>
-                    <input
-                    type="date"
-                    name="available_until"
-                    value={form.available_until}
-                    onChange={handleChange}
-                    className="w-full bg-gray-700 text-gray-100 border border-gray-600 p-2 rounded"
-                    />
-                </div>
-            </div>
-            <div>
-              <label className="block mb-1 text-gray-200">Always Available</label>
-              <select name="always_available" value={form.always_available ? 'true' : 'false'} onChange={handleSelectChange} className="w-full bg-gray-700 text-gray-100 border border-gray-600 p-2 rounded" required>
-                <option value="false">Tidak</option>
-                <option value="true">Ya</option>
-              </select>
-            </div>
-            {showQuotaMaxSold && (
-              <div>
-                <label className="block mb-1 text-gray-200">Quota Max Sold</label>
-                <input type="number" name="quota_max_sold" value={form.quota_max_sold || ''} onChange={handleChange} className="w-full bg-gray-700 text-gray-100 border border-gray-600 p-2 rounded" />
-              </div>
-            )}
-            <div>
-              <label className="block mb-1 text-gray-200">Level</label>
-              <input type="number" name="level" value={form.level} onChange={handleChange} className="w-full bg-gray-700 text-gray-100 border border-gray-600 p-2 rounded" required />
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button type="submit" className="flex-1 bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700" disabled={loading}>{loading ? 'Saving...' : 'Create'}</button>
-              <button type="button" className="flex-1 bg-gray-600 text-white py-2 rounded font-bold hover:bg-gray-700" onClick={() => router.push('/admin/membership/plans')}>Cancel</button>
-            </div>
-          </form>
-        </div>
-      </div>
+          </FormInputGroup>
+
+          <FormInput
+            label="Always Available"
+            name="always_available"
+            type="select"
+            value={form.always_available ? 'true' : 'false'}
+            onChange={handleSelectChange}
+            options={[
+              { value: 'false', label: 'Tidak' },
+              { value: 'true', label: 'Ya' }
+            ]}
+            required
+          />
+
+          {showQuotaMaxSold && (
+            <FormInput
+              label="Quota Max Sold"
+              name="quota_max_sold"
+              type="number"
+              value={form.quota_max_sold || ''}
+              onChange={handleChange}
+            />
+          )}
+
+          <FormInput
+            label="Level"
+            name="level"
+            type="number"
+            value={form.level}
+            onChange={handleChange}
+            required
+          />
+
+          <FormActions
+            onReset={handleReset}
+            cancelHref="/admin/membership/plans"
+            isSubmitting={loading}
+          />
+        </form>
+      </PageContainerInsert>
     </div>
   );
 }

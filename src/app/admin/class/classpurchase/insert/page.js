@@ -8,6 +8,12 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function ClassPurchaseInsertPage() {
   const searchParams = useSearchParams();
+  const initialFormState = {
+    userId: '',
+    classId: '',
+    price: ''
+  };
+  
   const [userId, setUserId] = useState('');
   const [classId, setClassId] = useState('');
   const [users, setUsers] = useState([]);
@@ -18,6 +24,13 @@ export default function ClassPurchaseInsertPage() {
   const [fetchingData, setFetchingData] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+
+  const handleReset = () => {
+    setUserId('');
+    setClassId('');
+    setPrice('');
+    setError('');
+  };
 
   // Fetch all users
   const fetchUsers = async () => {
@@ -162,7 +175,17 @@ export default function ClassPurchaseInsertPage() {
             <label className="block mb-1 text-gray-200">Purchase Date <span className="text-gray-400">(optional)</span></label>
             <input type="datetime-local" className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-400" value={purchaseDate} onChange={e => setPurchaseDate(e.target.value)} />
           </div> */}
-          <button type="submit" className="w-full py-3 bg-amber-400 hover:bg-amber-500 text-gray-900 rounded-xl font-bold text-lg transition-all" disabled={loading || fetchingData}>{loading ? 'Saving...' : 'Simpan'}</button>
+          <div className="flex gap-3 mt-8 justify-start">
+            <button type="submit" className="bg-amber-400 text-gray-900 px-6 py-2 rounded-lg font-semibold hover:bg-amber-500 transition" disabled={loading || fetchingData}>
+              {loading ? 'Saving...' : 'Submit'}
+            </button>
+            <button type="button" className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition" onClick={handleReset}>
+              Reset
+            </button>
+            <button type="button" className="bg-gray-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-500 transition" onClick={() => router.push('/admin/class/classpurchase')}>
+              Cancel
+            </button>
+          </div>
         </form>
       </div>
     </div>

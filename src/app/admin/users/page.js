@@ -309,7 +309,7 @@ export default function AdminUsersPage() {
           <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
             <li className="inline-flex items-center">
               <FaUser className="w-3 h-3 me-2.5 text-amber-300" /> 
-              <span className="ms-1 text-sm font-medium text-gray-400 md:ms-2 dark:text-gray-400">User Data</span>
+              <span className="ms-1 text-sm font-medium text-amber-300 md:ms-2 dark:text-amber-300">User Data</span>
             </li>
           </ol>
         </nav>
@@ -327,7 +327,7 @@ export default function AdminUsersPage() {
 
           <button 
             onClick={() => setCreateUser(true)}
-            className="flex items-center gap-2 bg-amber-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-amber-500"
+            className="flex items-center gap-2 bg-amber-400 text-gray-900 px-4 py-2 rounded-lg font-semibold hover:bg-amber-500"
           >
             <FaPlus className="inline-block" />
             Create

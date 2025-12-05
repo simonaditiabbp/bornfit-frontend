@@ -131,7 +131,6 @@ export default function ClassSessionDataTable({
       onChangePage={onChangePage}
       onChangeRowsPerPage={onChangeRowsPerPage}
       paginationRowsPerPageOptions={paginationRowsPerPageOptions}
-      highlightOnHover
       responsive={true}
       noHeader
       fixedHeaderScrollHeight="300px"
@@ -171,7 +170,7 @@ export default function ClassSessionDataTable({
             borderBottomStyle: 'solid',
             '&:hover': {
               backgroundColor: colors.secondary,
-              cursor: 'pointer',
+              // cursor: 'pointer',
             },
           },
         },

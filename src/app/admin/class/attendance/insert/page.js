@@ -13,14 +13,16 @@ export default function InsertAttendancePage() {
   const searchParams = useSearchParams();
   const preselectedClassId = searchParams.get('class_id');
 
-  const [form, setForm] = useState({
+  const initialFormState = {
     class_id: "",
     member_id: "",
     checked_in_at: nowPlus7.toISOString().slice(0,16),
     status: "Booked",
     created_by: "",
     updated_by: ""
-  });
+  };
+
+  const [form, setForm] = useState(initialFormState);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [classes, setClasses] = useState([]);
@@ -31,6 +33,17 @@ export default function InsertAttendancePage() {
   const [showMemberDropdown, setShowMemberDropdown] = useState(false);
   const classDropdownRef = useRef(null);
   const memberDropdownRef = useRef(null);
+
+  const handleReset = () => {
+    const nowPlus7 = new Date(new Date().getTime() + 7 * 60 * 60 * 1000);
+    setForm({
+      ...initialFormState,
+      checked_in_at: nowPlus7.toISOString().slice(0,16)
+    });
+    setClassSearch("");
+    setMemberSearch("");
+    setError("");
+  };
 
   // Fetch all classes with pagination
   useEffect(() => {
@@ -486,16 +499,29 @@ export default function InsertAttendancePage() {
               <option value="Cancelled">Cancelled</option>
             </select>
           </div>
-          <button 
-            type="submit" 
-            className="bg-amber-400 text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-amber-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" 
-            disabled={loading || !form.class_id || !form.member_id}
-          >
-            {loading ? "Saving..." : "Create Attendance"}
-          </button>
-          <button type="button" className="bg-gray-600 text-white px-4 py-2 rounded font-semibold hover:bg-gray-500 ml-2" onClick={() => router.push('/admin/class/attendance')}>
-            Cancel
-          </button>
+          <div className="flex gap-3 mt-8 justify-start">
+            <button 
+              type="submit" 
+              className="bg-amber-400 text-gray-900 px-6 py-2 rounded-lg font-semibold hover:bg-amber-500 transition disabled:opacity-50 disabled:cursor-not-allowed" 
+              disabled={loading || !form.class_id || !form.member_id}
+            >
+              {loading ? "Saving..." : "Submit"}
+            </button>
+            <button 
+              type="button" 
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition" 
+              onClick={handleReset}
+            >
+              Reset
+            </button>
+            <button 
+              type="button" 
+              className="bg-gray-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-500 transition" 
+              onClick={() => router.push('/admin/class/attendance')}
+            >
+              Cancel
+            </button>
+          </div>
         </form>
       </div>
     </div>

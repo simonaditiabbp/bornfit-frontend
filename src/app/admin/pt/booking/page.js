@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import PTBookingDataTable from './DataTable';
-import { FaPlus, FaCalendar, FaAngleRight } from 'react-icons/fa';
+import { FaChalkboardTeacher, FaPlus } from 'react-icons/fa';
+import { PageBreadcrumb, PageContainer, PageHeader, LoadingText, StyledDataTable } from '@/components/admin';
 
 export default function PTBookingPage() {
   const [search, setSearch] = useState('');
@@ -98,47 +98,28 @@ export default function PTBookingPage() {
 
   return (
     <div>
-      <div className="bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-600">
-        <nav className="flex" aria-label="Breadcrumb">
-          <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-            <li>
-              <div className="inline-flex items-center">
-                <FaCalendar className="w-3 h-3 me-2.5 text-amber-300" /> 
-                <Link href="/admin/pt/booking" className="ms-1 text-sm font-medium text-gray-400 hover:text-gray-200 md:ms-2">PT Booking</Link>
-              </div>
-            </li>
-          </ol>
-        </nav>
-      </div>
-
-      <div className="p-5">
-        <div className="flex items-center justify-between mb-4">
-          <input
-            type="text"
-            placeholder="Search member/plan/status..."
-            className="w-full max-w-xs p-2 border border-amber-200 rounded focus:outline-amber-300 text-base bg-gray-800 text-gray-200"
-            value={searchInput}
-            onChange={e => { setSearchInput(e.target.value); }}
-          />
-          <Link href="/admin/pt/booking/create" className="bg-amber-400 hover:bg-amber-500 text-gray-900 px-4 py-2 rounded font-semibold flex items-center gap-2">
-            <FaPlus className="inline-block" /> New Booking
-          </Link>
-        </div>
+      <PageBreadcrumb items={[
+        { icon: FaChalkboardTeacher, label: 'PT Session', href: '/admin/pt/session' },
+        { label: 'Booking' }
+      ]} />
+      
+      <PageContainer>
+        <PageHeader
+          searchPlaceholder="Search member/plan/status..."
+          searchValue={searchInput}
+          onSearchChange={(e) => setSearchInput(e.target.value)}
+          actionHref="/admin/pt/booking/create"
+          actionIcon={FaPlus}
+          actionText="New Booking"
+        />
         {loading ? (
-          <div className="text-center text-amber-300">Loading...</div>
+          <LoadingText />
         ) : (
           <PTBookingDataTable
-            data={bookings}
-            pagination
-            paginationServer
-            paginationTotalRows={total}
-            paginationPerPage={limit}
-            currentPage={page}
-            onChangePage={setPage}
-            onChangeRowsPerPage={newLimit => { setLimit(newLimit); setPage(1); }}
+            data={bookings}            
           />
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 }

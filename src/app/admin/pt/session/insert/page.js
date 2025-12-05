@@ -1,9 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FaAngleRight, FaIdCard } from 'react-icons/fa';
-import Link from 'next/link';
-// import BackendErrorFallback from "../../../../../components/BackendErrorFallback";
+import { FaCalendarCheck } from 'react-icons/fa';
+import { PageBreadcrumb, PageContainerInsert, FormInput, FormActions } from '@/components/admin';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -43,17 +42,26 @@ export default function PTSessionInsertPage() {
     fetchUsers();
   }, []);
   const formatDateToISO = (val) => val ? (val.length === 16 ? val + ":00.000Z" : val) : "";
-  const [form, setForm] = useState({
+  
+  const initialFormState = {
     pt_session_plan_id: "",
     user_member_id: "",
     user_pt_id: "",
-    start_date: "",
+    start_date: new Date().toISOString().slice(0, 10),
     status: "active"
-  });
+  };
+  
+  const [form, setForm] = useState(initialFormState);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const router = useRouter();
+  
+  const handleReset = () => {
+    setForm(initialFormState);
+    setError('');
+    setSuccess('');
+  };
 
   const handleSave = async () => {
     setLoading(true);
@@ -86,109 +94,77 @@ export default function PTSessionInsertPage() {
 
   return (
     <div>
-      <div className="bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-600">
-        <nav className="flex" aria-label="Breadcrumb">
-          <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-            <li>
-              <div className="inline-flex items-center">
-                <FaIdCard className="w-3 h-3 me-2.5 text-amber-300" /> 
-                <Link href="/admin/pt/session" className="ms-1 text-sm font-medium text-gray-400 hover:text-gray-200 md:ms-2">PT Session</Link>
-              </div>
-            </li>
-            <li aria-current="page">
-              <div className="flex items-center">
-                <FaAngleRight className="w-3 h-3 text-gray-400 mx-1" />
-                <span className="ms-1 text-sm font-medium text-gray-400 md:ms-2">Add Session</span>
-              </div>
-            </li>
-          </ol>
-        </nav>
-      </div>
-
-      <div className="p-5">
-        <div className="max-w-3xl mx-auto bg-gray-800 p-10 rounded-2xl shadow-lg border border-gray-600">
-          <h1 className="text-3xl font-bold mb-8 text-gray-200 border-b border-gray-600 pb-3">Tambah PT Session</h1>
-          {success && <div className="text-green-400 font-semibold mb-2 text-center">{success}</div>}
-          {error && <div className="text-red-400 font-semibold mb-2 text-center">{error}</div>}
-          <div className="space-y-4">
-            <div>
-              <label className="block font-medium mb-1 text-gray-200">Plan</label>
-              <select
-                className="w-full border border-gray-600 p-3 rounded-lg bg-gray-700 text-gray-200"
-                value={form.pt_session_plan_id}
-                onChange={e => setForm(f => ({ ...f, pt_session_plan_id: e.target.value }))}
-                required
-              >
-                <option value="">Pilih Plan</option>
-                {plans.map(p => (
-                  <option key={p.id} value={p.id}>{p.name || `Plan #${p.id}`}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block font-medium mb-1 text-gray-200">Member</label>
-              <select
-                className="w-full border border-gray-600 p-3 rounded-lg bg-gray-700 text-gray-200"
-                value={form.user_member_id}
-                onChange={e => setForm(f => ({ ...f, user_member_id: e.target.value }))}
-                required
-              >
-                <option value="">Pilih Member</option>
-                {members.map(u => (
-                  <option key={u.id} value={u.id}>{u.name}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block font-medium mb-1 text-gray-200">Personal Trainer</label>
-              <select
-                className="w-full border border-gray-600 p-3 rounded-lg bg-gray-700 text-gray-200"
-                value={form.user_pt_id}
-                onChange={e => setForm(f => ({ ...f, user_pt_id: e.target.value }))}
-                required
-              >
-                <option value="">Pilih PT</option>
-                {trainers.map(u => (
-                  <option key={u.id} value={u.id}>{u.name}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block font-medium mb-1 text-gray-200">Start Date</label>
-              <input type="datetime-local" className="w-full border border-gray-600 p-3 rounded-lg bg-gray-700 text-gray-200" value={form.start_date} onChange={e => setForm(f => ({ ...f, start_date: e.target.value }))} required />
-            </div>
-            <div>
-              <label className="block font-medium mb-1 text-gray-200">Status</label>
-              <select className="w-full border border-gray-600 p-3 rounded-lg bg-gray-700 text-gray-200" value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} required>
-                <option value="active">Active</option>
-                <option value="pending">Pending</option>
-              </select>
-            </div>
-          </div>
-          <div className="flex justify-between mt-8">
-            <div className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-semibold transition">
-              <Link href="/admin/pt/session">Back</Link>
-            </div>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition"
-                disabled={loading}
-                onClick={handleSave}
-              >
-                {loading ? "Saving..." : "Save"}
-              </button>
-              <button
-                type="button"
-                className="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold transition"
-                onClick={() => router.push("/admin/pt/session")}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
+      <PageBreadcrumb items={[
+        { icon: FaCalendarCheck, label: 'PT Session', href: '/admin/pt/session' },
+        { label: 'Create' }
+      ]} />
+      <PageContainerInsert>
+        <h1 className="text-3xl font-bold mb-8 text-amber-300 text-center">Create PT Session</h1>
+        {success && <div className="text-green-400 font-semibold mb-2 text-center">{success}</div>}
+        {error && <div className="text-red-400 font-semibold mb-2 text-center">{error}</div>}
+        <div className="space-y-4">
+          <FormInput
+            label="Plan"
+            type="select"
+            value={form.pt_session_plan_id}
+            onChange={e => setForm(f => ({ ...f, pt_session_plan_id: e.target.value }))}
+            options={[
+              { value: '', label: 'Pilih Plan' },
+              ...plans.map(p => ({ value: p.id, label: p.name || `Plan #${p.id}` }))
+            ]}
+            required
+          />
+          <FormInput
+            label="Member"
+            type="select"
+            value={form.user_member_id}
+            onChange={e => setForm(f => ({ ...f, user_member_id: e.target.value }))}
+            options={[
+              { value: '', label: 'Pilih Member' },
+              ...members.map(u => ({ value: u.id, label: u.name }))
+            ]}
+            required
+          />
+          <FormInput
+            label="Personal Trainer"
+            type="select"
+            value={form.user_pt_id}
+            onChange={e => setForm(f => ({ ...f, user_pt_id: e.target.value }))}
+            options={[
+              { value: '', label: 'Pilih PT' },
+              ...trainers.map(u => ({ value: u.id, label: u.name }))
+            ]}
+            required
+          />
+          <FormInput
+            label="Start Date"
+            type="date"
+            value={form.start_date}
+            onChange={e => setForm(f => ({ ...f, start_date: e.target.value }))}
+            required
+          />
+          <FormInput
+            label="Status"
+            type="select"
+            value={form.status}
+            onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
+            options={[
+              { value: 'active', label: 'Active' },
+              { value: 'pending', label: 'Pending' }
+            ]}
+            required
+          />
         </div>
-      </div>
+        {success && <div className="text-green-400 font-semibold mb-2 text-center">{success}</div>}
+        {error && <div className="text-red-400 font-semibold mb-2 text-center">{error}</div>}
+        <FormActions
+          onSubmit={handleSave}
+          onReset={handleReset}
+          cancelHref="/admin/pt/session"
+          submitText="Create PT Session"
+          isLoading={loading}
+        />
+      </PageContainerInsert>
     </div>
   );
 }

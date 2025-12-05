@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import BackendErrorFallback from '../../../../components/BackendErrorFallback';
 import MembershipPlansDataTable from './DataTable';
-import { FaPlus, FaFileInvoice } from 'react-icons/fa';
-import Link from 'next/link';
+import { FaPlus, FaCog } from 'react-icons/fa';
+import { PageBreadcrumb, PageContainer, PageHeader, LoadingText } from '../../../../components/admin';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -39,37 +39,28 @@ export default function MembershipPlansPage() {
 
   return (
     <div>
-      <div className="bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-600">
-        <nav className="flex" aria-label="Breadcrumb">
-          <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-            <li className="inline-flex items-center">
-              <FaFileInvoice className="w-3 h-3 me-2.5 text-amber-300" /> 
-              <span className="ms-1 text-sm font-medium text-gray-400 md:ms-2 dark:text-gray-400">Membership Plans</span>
-            </li>
-          </ol>
-        </nav>
-      </div>
+      <PageBreadcrumb 
+        items={[
+          { icon: <FaCog className="w-3 h-3" />, label: 'Settings', href: '/admin/settings' },
+          { label: 'Membership Plans' }
+        ]}
+      />
       
-      <div className="m-5 p-5 bg-gray-800 border border-gray-600 rounded-lg">
-        <div className="mb-4 flex items-center justify-between">
-          <input
-            type="text"
-            placeholder="Search name/desc..."
-            className="w-full max-w-xs p-2 border text-gray-100 bg-gray-700 border-amber-200 rounded focus:outline-none text-base"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-          <Link href="/admin/membership/plans/insert" className="bg-amber-400 hover:bg-amber-500 text-gray-900 px-4 py-2 rounded font-semibold flex items-center gap-2">
-            <FaPlus className="inline-block" />
-            Add Plan
-          </Link>
-        </div>
+      <PageContainer>
+        <PageHeader
+          searchPlaceholder="Search name/desc..."
+          searchValue={search}
+          onSearchChange={e => setSearch(e.target.value)}
+          actionHref="/admin/membership/plans/insert"
+          actionIcon={<FaPlus />}
+          actionText="Add Plan"
+        />
         {loading ? (
-          <div className="text-center text-amber-300">Loading...</div>
+          <LoadingText />
         ) : (
           <MembershipPlansDataTable data={filteredPlans} />
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 }

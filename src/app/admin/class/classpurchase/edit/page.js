@@ -192,7 +192,14 @@ export default function ClassPurchaseEditPage() {
             <label className="block mb-2 font-semibold text-gray-200">Purchase Date <span className="text-gray-400">(optional)</span></label>
             <input type="datetime-local" className="w-full border border-gray-600 rounded-lg p-3 bg-gray-700 text-gray-200 focus:outline-none focus:border-amber-400" value={purchaseDate} onChange={e => setPurchaseDate(e.target.value)} />
           </div> */}
-          <button type="submit" className="w-full py-3 bg-amber-400 text-gray-900 rounded-xl font-bold text-lg hover:bg-amber-500" disabled={loading || fetchingData}>{loading ? 'Saving...' : 'Simpan'}</button>
+          <div className="flex gap-3 mt-8 justify-start">
+            <button type="submit" className="bg-amber-400 text-gray-900 px-6 py-2 rounded-lg font-semibold hover:bg-amber-500 transition" disabled={loading || fetchingData}>
+              {loading ? 'Saving...' : 'Submit'}
+            </button>
+            <button type="button" className="bg-gray-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-500 transition" onClick={() => router.push('/admin/class/classpurchase')}>
+              Cancel
+            </button>
+          </div>
         </form>
       </div>
     </div>

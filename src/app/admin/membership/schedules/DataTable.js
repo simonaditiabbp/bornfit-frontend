@@ -10,7 +10,7 @@ const colors = {
   gray600: '#4b5563',
   gray300: '#d1d5db',
   gray100: '#f3f4f6',
-  blue600: '#2563eb',
+  accent: '#fbbf24',
 };
 
 const tailwindStyles = {
@@ -38,7 +38,7 @@ const tailwindStyles = {
   },
   headCells: {
     style: {
-      color: colors.gray100,
+      color: colors.accent,
       fontWeight: '600',
       fontSize: '0.875rem',
       paddingLeft: '16px',
@@ -121,7 +121,7 @@ export default function MembershipSchedulesDataTable({ data }) {
       minWidth: '150px',
       cell: row => (
         <div className="flex gap-2 justify-center">
-          <Link href={`/admin/membership/schedules/edit?id=${row.id}`} className="bg-gray-400 text-white px-3 py-1 rounded-md font-semibold hover:bg-gray-500">
+          <Link href={`/admin/membership/schedules/edit?id=${row.id}`} className="bg-gray-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">
             Detail
           </Link>
         </div>

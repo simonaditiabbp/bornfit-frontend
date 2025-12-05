@@ -123,34 +123,33 @@ export default function ClassSessionListPage() {
 
   return (
     <div>
-      {/* Breadcrumb Navigation */}
-      <div className="flex items-center gap-2 text-sm mb-6 bg-gray-800 px-4 py-3 rounded-lg">
-        <FaIdCard className="text-amber-300" />
-        <Link href="/admin/dashboard" className="text-gray-400 hover:text-amber-300 transition-colors">
-          Dashboard
-        </Link>
-        <FaAngleRight className="text-gray-500 text-xs" />
-        <span className="text-gray-200 font-medium">Class Session</span>
+      <div className="bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-600">
+        <nav className="flex" aria-label="Breadcrumb">
+          <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+            <li className="inline-flex items-center">
+              <FaIdCard className="w-3 h-3 me-2.5 text-amber-300" /> 
+              <span className="ms-1 text-sm font-medium text-amber-300 md:ms-2 dark:text-amber-300">Class Session</span>
+            </li>
+          </ol>
+        </nav>
       </div>
-
-      <div className="flex flex-col gap-4 mb-6">
-        <div className="flex items-center justify-between">
-          {console.log('[ClassSession] Render Search Input')}
+      
+      <div className="m-5 p-5 bg-gray-800 border border-gray-600 rounded-lg">
+        <div className="mb-4 flex items-center justify-between">
           <input
             type="text"
             placeholder="Search member/plan/status..."
-            className="w-full max-w-md p-3 border-2 border-amber-200 rounded-lg focus:outline-none focus:border-amber-400 text-base bg-gray-700 text-gray-200 placeholder-gray-400"
+            className="w-full max-w-xs p-2 border text-gray-100 bg-gray-700 border-amber-200 rounded focus:outline-none text-base"
             value={searchInput}
             onChange={e => { setSearchInput(e.target.value); setPage(1); }}
           />
-          <Link
-            href="/admin/class/session/insert"
-            className="bg-amber-400 text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-amber-500 transition-colors flex items-center gap-2"
-          >
-            <FaPlus />
-            Tambah Class
+          <Link href="/admin/class/session/insert" className="flex items-center gap-2 bg-amber-400 text-gray-900 px-4 py-2 rounded-lg font-semibold hover:bg-amber-500">
+            <FaPlus className="inline-block" />
+            Add Class
           </Link>
         </div>
+        
+        <div className="flex flex-col gap-4 mb-4">
         
         {/* Schedule Type Filter */}
         <div className="flex items-center gap-3">
@@ -199,11 +198,11 @@ export default function ClassSessionListPage() {
           </div>
         </div>
       </div>
-      {console.log('[ClassSession] Render DataTable')}
-      {loading ? (
-        <div className="text-amber-300 text-center font-medium mt-8">Loading data...</div>
-      ) : (
-        <ClassSessionDataTable
+        {console.log('[ClassSession] Render DataTable')}
+        {loading ? (
+          <div className="text-center text-amber-300">Loading...</div>
+        ) : (
+          <ClassSessionDataTable
           data={sessions}
           plans={plans}
           members={members}
@@ -218,7 +217,8 @@ export default function ClassSessionListPage() {
           onChangeRowsPerPage={handleChangeRowsPerPage}
           paginationRowsPerPageOptions={[10, 25, 50]}
         />
-      )}
+        )}
+      </div>
 
       {/* Modal QR Code */}
       {qrSession && (

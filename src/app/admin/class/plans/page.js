@@ -123,7 +123,7 @@ export default function ClassPlansPage() {
     {
       name: 'Actions',
       cell: row => (
-         <Link href={`/admin/class/plans/edit?id=${row.id}`} className="bg-gray-400 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">Detail</Link>
+         <Link href={`/admin/class/plans/edit?id=${row.id}`} className="bg-gray-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">Detail</Link>
       ),
     },
   ];
@@ -133,27 +133,26 @@ export default function ClassPlansPage() {
       <div className="bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-600">
         <nav className="flex" aria-label="Breadcrumb">
           <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-            <li>
-              <div className="inline-flex items-center">
-                <FaFileInvoice className="w-3 h-3 me-2.5 text-amber-300" /> 
-                <Link href="/admin/class/plans" className="ms-1 text-sm font-medium text-gray-400 hover:text-gray-200 md:ms-2">Class Plans</Link>
-              </div>
+            <li className="inline-flex items-center">
+              <FaFileInvoice className="w-3 h-3 me-2.5 text-amber-300" /> 
+              <span className="ms-1 text-sm font-medium text-amber-300 md:ms-2 dark:text-amber-300">Class Plans</span>
             </li>
           </ol>
         </nav>
       </div>
 
-      <div className="p-5">
-        <div className="flex items-center justify-between mb-4">
+      <div className="m-5 p-5 bg-gray-800 border border-gray-600 rounded-lg">
+        <div className="mb-4 flex items-center justify-between">
           <input
             type="text"
-            placeholder="Search name/description..."
-            className="w-full max-w-xs p-2 border border-amber-200 rounded focus:outline-amber-300 text-base bg-gray-800 text-gray-200"
+            placeholder="Search plans..."
+            className="w-full max-w-xs p-2 border text-gray-100 bg-gray-700 border-amber-200 rounded focus:outline-none text-base"
             value={searchInput}
-            onChange={e => { setSearchInput(e.target.value); }}
+            onChange={e => { setSearchInput(e.target.value); setPage(1); }}
           />
-          <Link href="/admin/class/plans/insert" className="bg-amber-400 hover:bg-amber-500 text-gray-900 px-4 py-2 rounded font-semibold flex items-center gap-2">
-            <FaPlus className="inline-block" /> Add Plan
+          <Link href="/admin/class/plans/insert" className="flex items-center gap-2 bg-amber-400 text-gray-900 px-4 py-2 rounded-lg font-semibold hover:bg-amber-500">
+            <FaPlus className="inline-block" />
+            Add Plan
           </Link>
         </div>
         {loading ? (

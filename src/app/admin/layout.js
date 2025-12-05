@@ -215,7 +215,7 @@ export default function AdminLayout({ children }) {
                 onClick={() => setMembershipDropdownOpen((open) => !open)}
                 data-collapse-toggle="membership-dropdown"
               >
-                <FaUserCheck className="inline-block transition duration-75" /> 
+                <FaIdCard className="inline-block transition duration-75" /> 
                 <span className={`${navTextClass} flex-1 ms-3 text-left rtl:text-right whitespace-nowrap`}>Membership</span>
                 <span className={`${membershipDropdownOpen} w-3 h-3 transition-transform duration-300`}>
                   {membershipDropdownOpen ? (
@@ -529,7 +529,7 @@ export default function AdminLayout({ children }) {
                       href="/admin/membership/plans"
                       className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/membership/plans") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
                     >
-                      <FaUserCheck  className="inline-block transition duration-75 mr-2" /> 
+                      <FaIdCard  className="inline-block transition duration-75 mr-2" /> 
                       <span className={navTextClass}>Membership Plans</span>
                     </Link>
                   </li>
@@ -593,7 +593,7 @@ export default function AdminLayout({ children }) {
         </div>
       </aside>        
         
-      <main className={`flex-1 overflow-x-hidden bg-gray-900 min-h-[91vh] transition-all duration-300 ease-in-out ${isCollapsed ? 'sm:ml-20' : 'sm:ml-64'}`}>{children}</main>
+      <main className={`flex-1 overflow-x-hidden bg-gray-900 min-h-screen transition-all duration-300 ease-in-out ${isCollapsed ? 'sm:ml-20' : 'sm:ml-64'}`}>{children}</main>
     </div>
   </div>
   );

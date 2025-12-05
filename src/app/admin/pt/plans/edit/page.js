@@ -117,100 +117,95 @@ export default function PTPlanEditPage() {
 
   return (
     <div>
-      <div className="bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-600">
-        <nav className="flex" aria-label="Breadcrumb">
-          <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-            <li>
-              <div className="inline-flex items-center">
-                <FaFileInvoice className="w-3 h-3 me-2.5 text-amber-300" /> 
-                <Link href="/admin/pt/plans" className="ms-1 text-sm font-medium text-gray-400 hover:text-gray-200 md:ms-2">PT Plans</Link>
-              </div>
-            </li>
-            <li aria-current="page">
-              <div className="flex items-center">
-                <FaAngleRight className="w-3 h-3 text-gray-400 mx-1" />
-                <span className="ms-1 text-sm font-medium text-gray-400 md:ms-2">Detail</span>
-              </div>
-            </li>
-          </ol>
-        </nav>
+      {/* Breadcrumb Navigation */}
+      <div className="flex items-center gap-2 text-sm mb-6 bg-gray-800 px-4 py-3 rounded-lg">
+        <FaFileInvoice className="text-amber-300" />
+        <Link href="/admin/pt/plans" className="text-gray-400 hover:text-amber-300 transition-colors">
+          PT Plans
+        </Link>
+        <FaAngleRight className="text-gray-500 text-xs" />
+        <Link href="/admin/pt/plans" className="text-gray-400 hover:text-amber-300 transition-colors">
+          PT Plans List
+        </Link>
+        <FaAngleRight className="text-amber-300 text-xs" />
+        <span className="text-amber-300 font-medium">Detail / Edit</span>
       </div>
 
       <div className="p-5">
-        <div className="max-w-4xl mx-auto bg-gray-800 rounded-2xl shadow-lg p-10 border border-gray-600">
-          <h1 className="text-3xl font-bold mb-8 text-gray-200 border-b border-gray-600 pb-3">PT Session Plan Detail</h1>      
+        <div className="max-w-4xl mx-auto bg-gray-800 rounded-2xl shadow-lg p-10 border border-gray-700">
+          <div className="flex items-center justify-between mb-8 border-b border-gray-700 pb-4">
+            <h1 className="text-3xl font-bold text-amber-300">PT Session Plan Details</h1>
+            <Link href="/admin/pt/plans" className="bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-500 transition-colors">
+              Back
+            </Link>
+          </div>      
           {editForm ? (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block font-medium mb-1 text-gray-200">Name</label>
-                  <input type="text" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 border-gray-200' : 'bg-gray-700 border-gray-600'} text-gray-200`} value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} required disabled={!edit} />
+                  <input type="text" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} required disabled={!edit} />
                 </div>
                 <div>
                   <label className="block font-medium mb-1 text-gray-200">Duration (days)</label>
-                  <input type="number" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 border-gray-200' : 'bg-gray-700 border-gray-600'} text-gray-200`} value={editForm.duration_value} onChange={e => setEditForm(f => ({ ...f, duration_value: Number(e.target.value) }))} required disabled={!edit} />
+                  <input type="number" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} value={editForm.duration_value} onChange={e => setEditForm(f => ({ ...f, duration_value: Number(e.target.value) }))} required disabled={!edit} />
                 </div>
                 <div>
                   <label className="block font-medium mb-1 text-gray-200">Max Session</label>
-                  <input type="number" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 border-gray-200' : 'bg-gray-700 border-gray-600'} text-gray-200`} value={editForm.max_session} onChange={e => setEditForm(f => ({ ...f, max_session: Number(e.target.value) }))} required disabled={!edit} />
+                  <input type="number" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} value={editForm.max_session} onChange={e => setEditForm(f => ({ ...f, max_session: Number(e.target.value) }))} required disabled={!edit} />
                 </div>
                 <div>
                   <label className="block font-medium mb-1 text-gray-200">Price (Rp)</label>
-                  <input type="number" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 border-gray-200' : 'bg-gray-700 border-gray-600'} text-gray-200`} value={editForm.price} onChange={e => setEditForm(f => ({ ...f, price: Number(e.target.value) }))} required disabled={!edit} />
+                  <input type="number" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} value={editForm.price} onChange={e => setEditForm(f => ({ ...f, price: Number(e.target.value) }))} required disabled={!edit} />
                 </div>
                 <div>
                   <label className="block font-medium mb-1 text-gray-200">Minutes/Session</label>
-                  <input type="number" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 border-gray-200' : 'bg-gray-700 border-gray-600'} text-gray-200`} value={editForm.minutes_per_session} onChange={e => setEditForm(f => ({ ...f, minutes_per_session: Number(e.target.value) }))} required disabled={!edit} />
+                  <input type="number" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} value={editForm.minutes_per_session} onChange={e => setEditForm(f => ({ ...f, minutes_per_session: Number(e.target.value) }))} required disabled={!edit} />
                 </div>
                 <div className="col-span-2">
                   <label className="block font-medium mb-1 text-gray-200">Description</label>
-                  <textarea className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 border-gray-200' : 'bg-gray-700 border-gray-600'} text-gray-200`} value={editForm.description} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} required disabled={!edit} />
+                  <textarea className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} value={editForm.description} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} required disabled={!edit} />
                 </div>
               </div>
               {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
               {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}
-              <div className="flex justify-between mt-8">
-                <div className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-semibold transition">
-                  <Link href="/admin/pt/plans">Back</Link>
-                </div>
-                <div className="flex gap-3">
-                  {!edit ? (
-                    <>
-                      <button
-                        type="button"
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition"
-                        onClick={handleEdit}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition"
-                        onClick={handleDelete}
-                      >
-                        Delete
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        type="button"
-                        className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition"
-                        disabled={formLoading}
-                        onClick={() => handleSave(editForm)}
-                      >
-                        {formLoading ? "Saving..." : "Save"}
-                      </button>
-                      <button
-                        type="button"
-                        className="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold transition"
-                        onClick={handleCancel}
-                      >
-                        Cancel
-                      </button>
-                    </>
-                  )}
-                </div>
+              <div className="flex gap-3 mt-8 justify-start">
+                {!edit ? (
+                  <>
+                    <button
+                      type="button"
+                      className="bg-amber-400 hover:bg-amber-500 text-gray-900 px-6 py-2 rounded-lg font-semibold transition"
+                      onClick={handleEdit}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition"
+                      onClick={handleDelete}
+                    >
+                      Delete
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition"
+                      disabled={formLoading}
+                      onClick={() => handleSave(editForm)}
+                    >
+                      {formLoading ? "Saving..." : "Save"}
+                    </button>
+                    <button
+                      type="button"
+                      className="bg-gray-600 hover:bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold transition"
+                      onClick={handleCancel}
+                    >
+                      Cancel
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           ) : (

@@ -89,77 +89,73 @@ export default function EditMembershipSchedulePage() {
 
   return (
     <div>
-      <div className="bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-600">
-        <nav className="flex" aria-label="Breadcrumb">
-          <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-            <li>
-              <div className="inline-flex items-center">
-                <FaCalendar className="w-3 h-3 me-2.5 text-amber-300" /> 
-                <Link href="/admin/membership/schedules" className="ms-1 text-sm font-medium text-gray-400 hover:text-gray-200 md:ms-2 dark:text-gray-400">Membership Schedules</Link>
-              </div>
-            </li>
-            <li aria-current="page">
-              <div className="flex items-center">
-                <FaAngleRight className="w-3 h-3 text-gray-400 mx-1" />
-                <span className="ms-1 text-sm font-medium text-gray-400 md:ms-2 dark:text-gray-400">Detail</span>
-              </div>
-            </li>
-          </ol>
-        </nav>
-      </div>
-
       <div className="p-5">
-        <div className="max-w-4xl mx-auto bg-gray-800 rounded-2xl shadow-lg p-10 border border-gray-600">
-          <h2 className="text-3xl font-bold mb-8 text-gray-200 border-b border-gray-600 pb-3">Edit Membership Schedule</h2>
-          {success && <div className="text-green-400 mb-2">{success}</div>}
-          {error && <div className="text-red-400 mb-2">{error}</div>}
+        {/* Breadcrumb Navigation */}
+        <div className="flex items-center gap-2 text-sm mb-6 bg-gray-800 px-4 py-3 rounded-lg">
+          <FaCalendar className="text-amber-300" />
+          <Link href="/admin/membership/session" className="text-gray-400 hover:text-amber-300 transition-colors">
+            Membership
+          </Link>
+          <FaAngleRight className="text-gray-500 text-xs" />
+          <Link href="/admin/membership/schedules" className="text-gray-400 hover:text-amber-300 transition-colors">
+            Membership Schedules
+          </Link>
+          <FaAngleRight className="text-amber-300 text-xs" />
+          <span className="text-amber-300 font-medium">Detail / Edit</span>
+        </div>
+
+        <div className="max-w-4xl mx-auto bg-gray-800 rounded-2xl shadow-lg p-10 border border-gray-700">
+          <div className="flex items-center justify-between mb-8 border-b border-gray-700 pb-4">
+            <h1 className="text-3xl font-bold text-amber-300">Edit Membership Schedule</h1>
+            <Link href="/admin/membership/schedules" className="bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-500 transition-colors">
+              Back
+            </Link>
+          </div>
+          {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
+          {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}
+          
           <div className="space-y-4 mb-4">
             <div>
-              <label className="block font-medium text-gray-200 mb-1">Member</label>
-              <select name="user_id" value={form.user_id} onChange={handleChange} className={`w-full p-3 text-gray-200 border rounded-lg ${edit ? 'bg-gray-700 border-gray-200' : 'bg-gray-700 border-gray-600'}`} required disabled={!edit}>
+              <label className="block mb-1 text-gray-200">Member</label>
+              <select name="user_id" value={form.user_id} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} required disabled={!edit}>
                 <option value="">Pilih Member</option>
                 {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
               </select>
             </div>
             <div>
-              <label className="block font-medium text-gray-200 mb-1">Plan</label>
-              <select name="membership_plan_id" value={form.membership_plan_id} onChange={handleChange} className={`w-full p-3 text-gray-200 border rounded-lg ${edit ? 'bg-gray-700 border-gray-200' : 'bg-gray-700 border-gray-600'}`} required disabled={!edit}>
+              <label className="block mb-1 text-gray-200">Plan</label>
+              <select name="membership_plan_id" value={form.membership_plan_id} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} required disabled={!edit}>
                 <option value="">Pilih Plan</option>
                 {plans.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
             <div>
-              <label className="block font-medium text-gray-200 mb-1">Schedule Date</label>
-              <input type="date" name="schedule_date" value={form.schedule_date} onChange={handleChange} className={`w-full p-3 text-gray-200 border rounded-lg ${edit ? 'bg-gray-700 border-gray-200' : 'bg-gray-700 border-gray-600'}`} required disabled={!edit} />
+              <label className="block mb-1 text-gray-200">Schedule Date</label>
+              <input type="date" name="schedule_date" value={form.schedule_date} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} required disabled={!edit} />
             </div>
-            {console.log("form", form)}
             <div>
-              <label className="block font-medium text-gray-200 mb-1">Status</label>
-              <select name="status" value={form.status} onChange={handleChange} className={`w-full p-3 text-gray-200 border rounded-lg ${edit ? 'bg-gray-700 border-gray-200' : 'bg-gray-700 border-gray-600'}`} disabled={!edit}>
+              <label className="block mb-1 text-gray-200">Status</label>
+              <select name="status" value={form.status} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} disabled={!edit}>
                 <option value="pending">Pending</option>
                 <option value="active">Active</option>
                 <option value="completed">Completed</option>
                 <option value="cancelled">Cancelled</option>
               </select>
             </div>
-            <div className="flex justify-between mt-8">
-              <div className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-semibold transition">
-                <Link href="/admin/membership/schedules">Back</Link>
-              </div>
-              <div className="flex gap-3">
-                {!edit ? (
-                  <>
-                    <button type="button" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition" onClick={() => setEdit(true)}>Edit</button>
-                    <button type="button" className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition" onClick={handleDelete} disabled={formLoading}>Delete</button>
-                  </>
-                ) : (
-                  <>
-                    <button type="button" className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition" onClick={handleSave} disabled={formLoading}>{formLoading ? 'Saving...' : 'Save'}</button>
-                    <button type="button" className="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold transition" onClick={() => setEdit(false)}>Cancel</button>
-                  </>
-                )}
-              </div>
-            </div>
+          </div>
+
+          <div className="flex gap-3 mt-8 justify-start">
+            {!edit ? (
+              <>
+                <button type="button" className="bg-amber-400 hover:bg-amber-500 text-gray-900 px-6 py-2 rounded-lg font-semibold transition" onClick={() => setEdit(true)}>Edit</button>
+                <button type="button" className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition" onClick={handleDelete} disabled={formLoading}>Delete</button>
+              </>
+            ) : (
+              <>
+                <button type="button" className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition" onClick={handleSave} disabled={formLoading}>{formLoading ? 'Saving...' : 'Save'}</button>
+                <button type="button" className="bg-gray-600 hover:bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold transition" onClick={() => setEdit(false)}>Cancel</button>
+              </>
+            )}
           </div>
         </div>
       </div>
