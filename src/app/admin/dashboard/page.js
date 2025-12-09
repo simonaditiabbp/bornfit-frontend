@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import BackendErrorFallback from '../../../components/BackendErrorFallback';
+import { FaSnowflake } from 'react-icons/fa';
 
 const ApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
@@ -17,9 +18,13 @@ export default function AdminDashboardPage() {
     totalUsers: 0,
     totalMember: 0,
     activeMembership: 0,
+    freezeMembership: 0,
     inactiveMembership: 0,
     totalPTSessions: 0,
     totalClasses: 0,
+    conductPTToday: 0,
+    activePTClient: 0,
+    inactivePTClient: 0,
   });
   const [loading, setLoading] = useState(true);
   const [chartData, setChartData] = useState({
@@ -56,12 +61,13 @@ export default function AdminDashboardPage() {
           }
           return res.json();
         };
-        const [usersRes, membershipsRes, checkinsRes, ptsessionsRes, classesRes] = await Promise.all([
+        const [usersRes, membershipsRes, checkinsRes, ptsessionsRes, classesRes, ptBookingsRes] = await Promise.all([
           fetchWith401(`${API_URL}/api/users`),
           fetchWith401(`${API_URL}/api/memberships`),
           fetchWith401(`${API_URL}/api/checkins`),
-          fetchWith401(`${API_URL}/api/personaltrainersessions/paginated?page=1&limit=10`),
+          fetchWith401(`${API_URL}/api/personaltrainersessions`),
           fetchWith401(`${API_URL}/api/classes/paginated?page=1&limit=10`),
+          fetchWith401(`${API_URL}/api/ptsessionbookings`),
         ]);
         // console.log("usersRes:", usersRes);
         // const totalUsers = usersRes.length;
@@ -69,10 +75,38 @@ export default function AdminDashboardPage() {
         // Total member = user yang punya membership (user_id unik di memberships)
         const memberUserIds = new Set(membershipsRes.data.memberships.map(m => m.user_id));
         const totalMember = memberUserIds.size;
-        const activeMembership = membershipsRes.data.memberships.filter(m => m.is_active).length;
+        const activeMembership = membershipsRes.data.memberships.filter(m => m.is_active && m.status.toLowerCase() == "active").length;
+        const freezeMembership = membershipsRes.data.memberships.filter(m => m.is_active && m.status.toLowerCase() == "frozen").length;
         const inactiveMembership = membershipsRes.data.memberships.filter(m => !m.is_active).length;
-        const totalPTSessions = ptsessionsRes.data.total || 0;
+        const totalPTSessions = ptsessionsRes.data?.sessions?.length || 0;
         const totalClasses = classesRes.data.total || 0;
+        const ptBookings = ptBookingsRes.data?.bookings;
+        const ptSessions = ptsessionsRes.data?.sessions
+        
+        // PT Metrics
+        const todayStr = dayjs().tz('Asia/Jakarta').format('YYYY-MM-DD');
+        const conductPTToday = (ptBookings || []).filter(b => {
+          if (!b.booking_time || b.status === 'cancelled') return false;
+          const bookingDate = dayjs(b.booking_time).utc().format('YYYY-MM-DD');
+          // console.log("bookingDate: ", bookingDate, " | todayStr:", todayStr)
+          return bookingDate === todayStr;
+        }).length;
+
+        // Active PT Client: user_member_id unik yang punya booking status != cancelled
+        const activePTClientIds = new Set(
+          (ptSessions || [])
+            .filter(b => b.status !== 'cancelled' && b.user_member?.id)
+            .map(b => b.user_member?.id)
+        );
+        const activePTClient = activePTClientIds.size;
+
+        // Inactive PT Client: user yang punya PT session tapi tidak punya booking aktif
+        const allPTClientIds = new Set(
+          (ptSessions || [])
+            .filter(s => s.user_member_id)
+            .map(s => s.user_member_id)
+        );
+        const inactivePTClient = allPTClientIds.size - activePTClient;
 
         // Grafik checkin 7 hari terakhir (WIB)
         const today = dayjs().tz('Asia/Jakarta');
@@ -95,12 +129,13 @@ export default function AdminDashboardPage() {
           ).size;
           data.push(count);
         }
-        setStats({ totalUsers, totalMember, activeMembership, inactiveMembership, totalPTSessions, totalClasses });
+        setStats({ totalUsers, totalMember, activeMembership, freezeMembership, inactiveMembership, totalPTSessions, totalClasses, conductPTToday, activePTClient, inactivePTClient });
         setChartData({ categories, data });
       } catch (err) {
-        setStats({ totalUsers: 0, totalMember: 0, activeMembership: 0, inactiveMembership: 0, totalPTSessions: 0, totalClasses: 0 });
+        setStats({ totalUsers: 0, totalMember: 0, activeMembership: 0, freezeMembership: 0, inactiveMembership: 0, totalPTSessions: 0, totalClasses: 0, conductPTToday: 0, activePTClient: 0, inactivePTClient: 0 });
         setChartData({ categories: [], data: [] });
         setBackendError(true);
+        // console.log("error: ", err)
       }
       setLoading(false);
     };
@@ -152,11 +187,11 @@ export default function AdminDashboardPage() {
         </div>
         <div className="bg-gray-800 border border-gray-600 rounded-xl shadow p-6 flex items-center gap-4">
           <div className="flex-shrink-0 bg-gray-300 rounded-full p-3">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-gray-600"> <path strokeLinecap="round" strokeLinejoin="round" d="M12 6l2 4 4 .5-3 3 .7 4-3.7-2-3.7 2 .7-4-3-3 4-.5 2-4z" /> </svg>
+           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-yellow-600"> <path strokeLinecap="round" strokeLinejoin="round" d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" /> </svg>
           </div>
           <div>
-            <div className="text-lg font-bold text-gray-300">Total Members</div>
-            <div className="text-3xl font-extrabold text-amber-300">{loading ? '-' : stats.totalMember}</div>
+            <div className="text-lg font-bold text-gray-300">Active Memberships</div>
+            <div className="text-3xl font-extrabold text-yellow-600">{loading ? '-' : stats.activeMembership}</div>
           </div>
         </div>
       </div>
@@ -165,11 +200,11 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-5">
         <div className="bg-gray-800 border border-gray-600 rounded-xl shadow p-6 flex items-center gap-4">
           <div className="flex-shrink-0 bg-gray-300 rounded-full p-3">
-           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-yellow-600"> <path strokeLinecap="round" strokeLinejoin="round" d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" /> </svg>
+           <FaSnowflake size={40} color="#60A5FA" />
           </div>
           <div>
-            <div className="text-lg font-bold text-gray-300">Active Memberships</div>
-            <div className="text-3xl font-extrabold text-yellow-600">{loading ? '-' : stats.activeMembership}</div>
+            <div className="text-lg font-bold text-gray-300">Freeze Memberships</div>
+            <div className="text-3xl font-extrabold text-yellow-600">{loading ? '-' : stats.freezeMembership}</div>
           </div>
         </div>
         <div className="bg-gray-800 border border-gray-600 rounded-xl shadow p-6 flex items-center gap-4">
@@ -177,13 +212,51 @@ export default function AdminDashboardPage() {
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-red-600"> <path strokeLinecap="round" strokeLinejoin="round" d="M10 9v6m4-6v6M12 3a9 9 0 110 18 9 9 0 010-18z" /> </svg>
           </div>
           <div>
-            <div className="text-lg font-bold text-gray-300">Inactive Memberships</div>
+            <div className="text-lg font-bold text-gray-300">Expired / Inactive Memberships</div>
             <div className="text-3xl font-extrabold text-red-600">{loading ? '-' : stats.inactiveMembership}</div>
           </div>
         </div>
       </div>
       {/* 2 card: total PT Session & total Classes */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-5">
+        <div className="bg-gray-800 border border-gray-600 rounded-xl shadow p-6 flex items-center gap-4">
+          <div className="flex-shrink-0 bg-gray-300 rounded-full p-3">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-green-600">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <div className="text-lg font-bold text-gray-300">Conduct PT Today</div>
+            <div className="text-3xl font-extrabold text-green-500">{loading ? '-' : stats.conductPTToday}</div>
+          </div>
+        </div>
+        <div className="bg-gray-800 border border-gray-600 rounded-xl shadow p-6 flex items-center gap-4">
+          <div className="flex-shrink-0 bg-gray-300 rounded-full p-3">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-10 h-10 text-amber-600">
+              <rect x="5" y="11" width="14" height="2" rx="0.5" fill="currentColor" />
+              <circle cx="4" cy="12" r="3" />
+              <circle cx="20" cy="12" r="3" />
+            </svg>
+          </div>
+          <div>
+            <div className="text-lg font-bold text-gray-300">Active PT Client</div>
+            <div className="text-3xl font-extrabold text-amber-300">{loading ? '-' : stats.activePTClient}</div>
+          </div>
+        </div>
+        <div className="bg-gray-800 border border-gray-600 rounded-xl shadow p-6 flex items-center gap-4">
+          <div className="flex-shrink-0 bg-gray-300 rounded-full p-3">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-gray-600">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+            </svg>
+          </div>
+          <div>
+            <div className="text-lg font-bold text-gray-300">Inactive PT Client</div>
+            <div className="text-3xl font-extrabold text-gray-400">{loading ? '-' : stats.inactivePTClient}</div>
+          </div>
+        </div>
+      </div>
+      {/* Removed old card */}
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-gray-800 border border-gray-600 rounded-xl shadow p-6 flex items-center gap-4">
           <div className="flex-shrink-0 bg-gray-300 rounded-full p-3">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-10 h-10 text-gray-600">
@@ -193,11 +266,11 @@ export default function AdminDashboardPage() {
             </svg>
           </div>
           <div>
-            <div className="text-lg font-bold text-gray-300">Total PT Sessions</div>
+            <div className="text-lg font-bold text-gray-300">Active PT Client</div>
             <div className="text-3xl font-extrabold text-amber-300">{loading ? '-' : stats.totalPTSessions}</div>
           </div>
         </div>
-        <div className="bg-gray-800 border border-gray-600 rounded-xl shadow p-6 flex items-center gap-4">
+        {/* <div className="bg-gray-800 border border-gray-600 rounded-xl shadow p-6 flex items-center gap-4">
           <div className="flex-shrink-0 bg-purple-100 rounded-full p-3">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                 strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-gray-600">
@@ -209,8 +282,8 @@ export default function AdminDashboardPage() {
             <div className="text-lg font-bold text-gray-300">Total Classes</div>
             <div className="text-3xl font-extrabold text-amber-300">{loading ? '-' : stats.totalClasses}</div>
           </div>
-        </div>
-      </div>
+        </div> */}
+      {/* </div> */}
     </div>
   );
 }

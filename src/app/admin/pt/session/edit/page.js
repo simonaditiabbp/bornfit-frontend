@@ -174,8 +174,9 @@ export default function PTSessionEditPage() {
           <ActionButton
             variant="gray"
             href="/admin/pt/session"
-            text="Back"
-          />
+          >
+            Back
+          </ActionButton>
         </div>      
           <div className="space-y-4 mb-4">
           <FormInput

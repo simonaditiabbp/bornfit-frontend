@@ -165,8 +165,9 @@ export default function PTBookingEditPage() {
           <ActionButton
             variant="gray"
             href="/admin/pt/booking"
-            text="Back"
-          />
+          >
+            Back
+          </ActionButton>
         </div>
         {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
         {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}
