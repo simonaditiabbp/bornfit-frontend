@@ -555,7 +555,7 @@ export default function AdminLayout({ children }) {
               )}
             </li>
 
-            <li>
+            {/* <li>
               <Link 
                 href="/barcode" 
                 className="flex items-center py-2 px-4 gap-2 rounded-lg font-semibold hover:bg-gray-700 text-amber-300"
@@ -563,7 +563,7 @@ export default function AdminLayout({ children }) {
                 <FaBarcode className="inline-block transition duration-75" /> 
                 <span className={navTextClass}>Scan Barcode</span>
               </Link>
-            </li>
+            </li> */}
 
             <li>
               <Link 

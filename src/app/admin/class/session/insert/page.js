@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { FaIdCard, FaAngleRight } from 'react-icons/fa';
+import { FaDumbbell, FaAngleRight } from 'react-icons/fa';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -95,8 +95,6 @@ export default function ClassSessionInsertPage() {
     setLoading(true);
     setError("");
     setSuccess("");
-    console.log("form submit: ", form);
-    console.log("class_type: ", form.class_type);
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
       
@@ -117,13 +115,14 @@ export default function ClassSessionInsertPage() {
           valid_until: `${form.valid_until}T23:59:59.999Z`,
         };
       } else {
-        // Single class
-        const class_date_iso = form.class_date ? `${form.class_date}T00:00:00.000Z` : "";
-        const start_time_iso = form.class_date && form.start_time ? `${form.class_date}T${form.start_time}:00.000Z` : "";
+        // Single class - combine date and time properly
+        const start_datetime = new Date(`${form.class_date}T${form.start_time}:00`);
+        const start_time_iso = start_datetime.toISOString();
+        
         payload = {
           event_plan_id: Number(form.event_plan_id),
           instructor_id: Number(form.instructor_id),
-          class_date: class_date_iso,
+          class_date: start_time_iso, // Use start_time as class_date
           start_time: start_time_iso,
           class_type: form.class_type,
           total_manual_checkin: Number(form.total_manual_checkin),
@@ -153,11 +152,7 @@ export default function ClassSessionInsertPage() {
     <div>
       {/* Breadcrumb Navigation */}
       <div className="flex items-center gap-2 text-sm mb-6 bg-gray-800 px-4 py-3 rounded-lg">
-        <FaIdCard className="text-amber-300" />
-        <Link href="/admin/dashboard" className="text-gray-400 hover:text-amber-300 transition-colors">
-          Dashboard
-        </Link>
-        <FaAngleRight className="text-gray-500 text-xs" />
+        <FaDumbbell className="text-amber-300" />
         <Link href="/admin/class/session" className="text-gray-400 hover:text-amber-300 transition-colors">
           Class Session
         </Link>

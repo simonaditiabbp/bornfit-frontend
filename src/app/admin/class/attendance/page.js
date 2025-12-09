@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import ClassAttendanceDataTable from './DataTable';
-import { FaPlus, FaCalendar, FaAngleRight } from 'react-icons/fa';
+import { FaPlus, FaCheckCircle, FaAngleRight } from 'react-icons/fa';
+import { LoadingText, PageBreadcrumb, PageContainer, PageHeader } from '@/components/admin';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -81,63 +82,30 @@ export default function ClassAttendancePage() {
 
   if (backendError) return <div className="text-red-400">Backend error</div>;
 
-  const startNo = (page - 1) * limit;
-  const columns = [
-    { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px', center: "true" },
-    { name: 'Member', selector: row => row.member?.name || '', sortable: true },
-    { name: 'Class', selector: row => `${row.class.event_plan.name} - ${row.class.instructor.name}` || '', sortable: true },
-    { name: 'Checked-in Time', selector: row => row.checked_in_at ? new Date(new Date(row.checked_in_at).getTime() - 7 * 60 * 60 * 1000).toLocaleString('en-GB', { hour12: false }) : '', sortable: true },
-    {
-      name: 'Aksi',
-      cell: row => (
-        <Link href={`/admin/class/attendance/edit?id=${row.id}`} className="bg-gray-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">Detail</Link>
-      )
-    }
-  ];
-
   return (
     <div>
-      {/* Breadcrumb Navigation */}
-      <div className="bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-600">
-        <FaCalendar className="text-amber-300 mr-2" />
-        <span className="text-amber-300">Class Attendance</span>
-      </div>
-
-      {/* Content Container */}
-      <div className="m-5 p-5 bg-gray-800 border border-gray-600 rounded-lg">
-        <div className="flex items-center justify-between mb-6">
-          <input
-            type="text"
-            placeholder="Search member/class/plan/status..."
-            className="w-full max-w-xs p-2 border text-gray-100 bg-gray-700 border-amber-200 rounded focus:outline-none text-base"
-            value={searchInput}
-            onChange={e => { setSearchInput(e.target.value); }}
-          />
-          <Link
-            href="/admin/class/attendance/insert"
-            className="flex items-center gap-2 bg-amber-400 text-gray-900 px-4 py-2 rounded-lg font-semibold hover:bg-amber-500"
-          >
-            <FaPlus />
-            Add Attendance
-          </Link>
-        </div>
+      <PageBreadcrumb 
+        items={[
+          { icon: <FaCheckCircle className="w-3 h-3" />, label: 'Class Attendance' }
+        ]}
+      />
+      <PageContainer>
+        <PageHeader
+          searchPlaceholder="Search member/class/plan/status..."
+          searchValue={search}
+          onSearchChange={(e) => setSearch(e.target.value)}
+          actionHref="/admin/class/attendance/insert"
+          actionIcon={<FaPlus />}
+          actionText="Add Attendance"
+        />
         {loading ? (
-          <div className="text-center text-amber-300">Loading...</div>
+          <LoadingText />
         ) : (
           <ClassAttendanceDataTable
-          columns={columns}
-          data={attendances}
-          pagination
-          paginationServer
-          paginationTotalRows={total}
-          paginationPerPage={limit}
-          currentPage={page}
-          onChangePage={setPage}
-          onChangeRowsPerPage={newLimit => { setLimit(newLimit); setPage(1); }}
-          paginationRowsPerPageOptions={[10, 25, 50]}
-        />
+            data={attendances}
+          />
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 }

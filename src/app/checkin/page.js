@@ -497,9 +497,6 @@ export default function BarcodePage() {
                     setMessageType('success');
                   } else {
                     setUser(null);  
-                    console.log("DISINI GANN")                  
-                    console.log("decodedText:", decodedText)
-                    // console.log("qr_code:", decodedText)
                     if (qr_code.startsWith("member")) {
                       setMessage(result.message || 'Member not found');
                     } else if (qr_code.startsWith("pt")) {
@@ -677,9 +674,9 @@ useEffect(() => {
           const joinDate = ptsession.join_date ? format(parseISO(ptsession.join_date), "dd MMM yyyy", { locale: enUS }) : "–";
           const endDate = ptsession.join_date ? format(parseISO(ptsession.join_date), "dd MMM yyyy", { locale: enUS }) : "–";
           let endDateCalc = null;
-          if (ptsession.join_date && ptplan.duration) {
+          if (ptsession.join_date && ptplan.duration_value) {
             const joinDateObj = parseISO(ptsession.join_date);
-            endDateCalc = format(new Date(joinDateObj.getTime() + ptplan.duration * 24 * 60 * 60 * 1000), "dd MMM yyyy", { locale: enUS });
+            endDateCalc = format(new Date(joinDateObj.getTime() + ptplan.duration_value * 24 * 60 * 60 * 1000), "dd MMM yyyy", { locale: enUS });
           }
           ptPeriod = `${joinDate}${endDateCalc ? ` - ${endDateCalc}` : ""}`;
       // Hitung sisa waktu
@@ -709,7 +706,7 @@ useEffect(() => {
         <div className="mb-1 text-gray-200"><span className="font-semibold">Session Name:</span> {ptsession.name || ptplan?.name}</div>
         <div className="mb-1 text-gray-200"><span className="font-semibold">Session Period:</span> {ptPeriod}</div>
         <div className="mb-1 text-gray-200"><span className="font-semibold">Trainer:</span> {trainer?.name}</div>
-        <div className="mb-1 text-gray-200"><span className="font-semibold">Plan Duration:</span> {ptplan?.duration} days</div>
+        {/* <div className="mb-1 text-gray-200"><span className="font-semibold">Plan Duration:</span> {ptplan?.duration} days</div> */}
         <div className="mb-1 text-gray-200"><span className="font-semibold">Max Session:</span> {ptplan?.max_session}</div>
         <div className="mb-1 text-gray-200">
           <span className="font-semibold">Session Status:</span> {' '}
@@ -1044,7 +1041,10 @@ useEffect(() => {
             name: 'Aksi', 
             cell: row => {
               // Cek apakah user memiliki Gold membership (id=2)
-              const isGoldMember = user?.membership_plan?.id === 2;
+              // const isGoldMember = user?.membership_plan?.id === 2;
+              const planName = user?.membership_plan?.name?.toLowerCase();
+              const isGoldMember = planName === "gold" || planName === "platinum";
+
               
               if (isGoldMember) {
                 // Gold member: tampilkan tombol Book
@@ -1170,7 +1170,6 @@ useEffect(() => {
                 />
                 <span className="text-gray-400 text-sm">Press Enter or wait for 0.4 seconds</span>
               </div>
-              {console.log("plans: ", plans)}
               <div className="shadow-lg rounded-lg overflow-hidden border border-gray-700">
                 <BookingDataTable
                   columns={[

@@ -13,6 +13,7 @@ export default function ClassSchedulePage() {
   const [selectedEventPlan, setSelectedEventPlan] = useState('all');
   const [selectedInstructor, setSelectedInstructor] = useState('all');
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [viewMode, setViewMode] = useState('week'); // 'day', 'week', 'month'
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
@@ -22,7 +23,7 @@ export default function ClassSchedulePage() {
 
   useEffect(() => {
     fetchClasses();
-  }, [currentDate, selectedEventPlan, selectedInstructor]);
+  }, [currentDate, selectedEventPlan, selectedInstructor, viewMode]);
 
   const fetchEventPlans = async () => {
     try {
@@ -58,7 +59,7 @@ export default function ClassSchedulePage() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const { startDate, endDate } = getWeekRange();
+      const { startDate, endDate } = getDateRange();
       
       let url = `${API_URL}/api/classes/date-range?start_date=${startDate}&end_date=${endDate}`;
       if (selectedEventPlan !== 'all') {
@@ -73,12 +74,70 @@ export default function ClassSchedulePage() {
       });
       const data = await res.json();
       if (data.status === 'success') {
+        console.log('Classes received:', data.data?.length || 0);
+        if (viewMode === 'day' && data.data?.length > 0) {
+          console.log('Sample classes:', data.data.slice(0, 3).map(c => ({
+            date: c.class_date.split('T')[0],
+            start: c.start_time,
+            name: c.name
+          })));
+        }
         setClasses(data.data || []);
       }
     } catch (error) {
       console.error('Error fetching classes:', error);
     }
     setLoading(false);
+  };
+
+  const getDateRange = () => {
+    const start = new Date(currentDate);
+    let end = new Date(currentDate);
+    if (viewMode === 'day') {
+      start.setHours(0, 0, 0, 0);
+      end.setHours(23, 59, 59, 999);
+    } else if (viewMode === 'week') {
+      const day = start.getDay();
+      const diff = start.getDate() - day + (day === 0 ? -6 : 1);
+      start.setDate(diff);
+      start.setHours(0, 0, 0, 0);
+      end = new Date(start);
+      end.setDate(start.getDate() + 6);
+      end.setHours(23, 59, 59, 999);
+    } else if (viewMode === 'month') {
+      start.setDate(1);
+      start.setHours(0, 0, 0, 0);
+      end = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+      end.setHours(23, 59, 59, 999);
+    }
+    
+    // Format dates manually to avoid timezone conversion
+    const formatDate = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+    
+    return {
+      startDate: formatDate(start),
+      endDate: formatDate(end),
+      start,
+      end,
+    };
+  };
+
+  const getDisplayDays = () => {
+    const { start, end } = getDateRange();
+    const days = [];
+    const current = new Date(start);
+    
+    while (current <= end) {
+      days.push(new Date(current));
+      current.setDate(current.getDate() + 1);
+    }
+    
+    return days;
   };
 
   const getWeekRange = () => {
@@ -113,7 +172,7 @@ export default function ClassSchedulePage() {
 
   const getTimeSlots = () => {
     const slots = [];
-    for (let hour = 6; hour <= 22; hour++) {
+    for (let hour = 6; hour < 22; hour++) {
       slots.push(`${hour.toString().padStart(2, '0')}:00`);
     }
     return slots;
@@ -129,9 +188,9 @@ export default function ClassSchedulePage() {
     const [hour] = timeSlot.split(':');
     
     return classes.filter(cls => {
-      // Parse class_date without timezone conversion
-      const classDate = cls.class_date.split('T')[0];
-      // Use UTC hours to prevent timezone shift
+      // Parse start_time date without timezone conversion
+      const classDate = cls.start_time.split('T')[0];
+      // Use UTC hours since backend already adds +7 hours offset
       const startHour = new Date(cls.start_time).getUTCHours();
       const endHour = new Date(cls.end_time).getUTCHours();
 
@@ -145,6 +204,30 @@ export default function ClassSchedulePage() {
     const hours = date.getUTCHours().toString().padStart(2, '0');
     const minutes = date.getUTCMinutes().toString().padStart(2, '0');
     return `${hours}:${minutes}`;
+  };
+
+  const goToPrev = () => {
+    const newDate = new Date(currentDate);
+    if (viewMode === 'day') {
+      newDate.setDate(newDate.getDate() - 1);
+    } else if (viewMode === 'week') {
+      newDate.setDate(newDate.getDate() - 7);
+    } else if (viewMode === 'month') {
+      newDate.setMonth(newDate.getMonth() - 1);
+    }
+    setCurrentDate(newDate);
+  };
+
+  const goToNext = () => {
+    const newDate = new Date(currentDate);
+    if (viewMode === 'day') {
+      newDate.setDate(newDate.getDate() + 1);
+    } else if (viewMode === 'week') {
+      newDate.setDate(newDate.getDate() + 7);
+    } else if (viewMode === 'month') {
+      newDate.setMonth(newDate.getMonth() + 1);
+    }
+    setCurrentDate(newDate);
   };
 
   const goToPrevWeek = () => {
@@ -170,9 +253,10 @@ export default function ClassSchedulePage() {
     return '#10b981';
   };
 
+  const displayDays = getDisplayDays();
   const weekDays = getWeekDays();
   const timeSlots = getTimeSlots();
-  const { start, end } = getWeekRange();
+  const { start, end } = getDateRange();
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200">
@@ -199,15 +283,50 @@ export default function ClassSchedulePage() {
           </div>
         </div>
 
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setViewMode('day')}
+              className={`px-4 py-2 rounded font-semibold transition ${
+                viewMode === 'day'
+                  ? 'bg-amber-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              Day
+            </button>
+            <button
+              onClick={() => setViewMode('week')}
+              className={`px-4 py-2 rounded font-semibold transition ${
+                viewMode === 'week'
+                  ? 'bg-amber-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              Week
+            </button>
+            <button
+              onClick={() => setViewMode('month')}
+              className={`px-4 py-2 rounded font-semibold transition ${
+                viewMode === 'month'
+                  ? 'bg-amber-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              Month
+            </button>
+          </div>
+        </div>
+
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <button onClick={goToPrevWeek} className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded">
+            <button onClick={goToPrev} className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded">
               <FaChevronLeft />
             </button>
             <button onClick={goToToday} className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded font-semibold">
               Today
             </button>
-            <button onClick={goToNextWeek} className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded">
+            <button onClick={goToNext} className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded">
               <FaChevronRight />
             </button>
           </div>
@@ -256,55 +375,84 @@ export default function ClassSchedulePage() {
         ) : (
           <div className="min-w-[1200px]">
             {/* Day Headers */}
-            <div className="grid grid-cols-8 gap-2 mb-2">
+            <div 
+              className="gap-2 mb-2"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: `100px repeat(${displayDays.length}, ${viewMode === 'month' ? '60px' : '1fr'})`
+              }}
+            >
               <div className="bg-gray-800 p-2 rounded font-semibold text-center border border-gray-600">Time</div>
-              {weekDays.map((day, index) => (
+              {displayDays.map((day, index) => (
                 <div
                   key={index}
-                  className={`bg-gray-800 p-2 rounded font-semibold text-center border ${
+                  className={`bg-gray-800 rounded font-semibold text-center border ${
                     day.toDateString() === new Date().toDateString()
                       ? 'border-amber-500 bg-amber-900/20'
                       : 'border-gray-600'
+                  } ${
+                    viewMode === 'month' ? 'p-0.5 text-[10px]' : 'p-2'
                   }`}
                 >
-                  <div className="text-xs text-gray-400">
-                    {day.toLocaleDateString('id-ID', { weekday: 'short' })}
-                  </div>
-                  <div className="text-lg">{day.getDate()}</div>
+                  {viewMode === 'month' ? (
+                    <div className="text-xs">{day.getDate()}</div>
+                  ) : (
+                    <>
+                      <div className="text-xs text-gray-400">
+                        {day.toLocaleDateString('id-ID', { weekday: 'short' })}
+                      </div>
+                      <div className="text-lg">{day.getDate()}</div>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
 
             {/* Time Slots */}
             {timeSlots.map((timeSlot) => (
-              <div key={timeSlot} className="grid grid-cols-8 gap-2 mb-2">
+              <div 
+                key={timeSlot} 
+                className="gap-2 mb-2"
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: `100px repeat(${displayDays.length}, ${viewMode === 'month' ? '60px' : '1fr'})`
+                }}
+              >
                 <div className="bg-gray-800 p-2 rounded text-center font-semibold border border-gray-600 flex items-center justify-center">
                   {timeSlot}
                 </div>
 
-                {weekDays.map((day) => {
+                {displayDays.map((day) => {
                   const dayClasses = getClassesForDayAndTime(day, timeSlot);
                   
                   return (
                     <div
                       key={`${day}-${timeSlot}`}
-                      className="bg-gray-800 p-1 rounded border border-gray-700 min-h-[80px]"
+                      className={`bg-gray-800 rounded border border-gray-700 ${
+                        viewMode === 'month' ? 'p-0.5 min-h-[50px]' : 'p-1 min-h-[80px]'
+                      }`}
                     >
                       {dayClasses.map((cls) => (
                         <Link
                           key={cls.id}
                           href={`/admin/class-schedule/${cls.id}`}
-                          className="block mb-1 p-2 rounded text-xs cursor-pointer hover:opacity-80 transition"
+                          className={`block mb-1 rounded cursor-pointer hover:opacity-80 transition ${
+                            viewMode === 'month' ? 'p-1 text-[10px]' : 'p-2 text-xs'
+                          }`}
                           style={{ backgroundColor: getSlotBadgeColor(cls) }}
                           title={`${cls.event_plan.name}\n${cls.instructor.name}\n${formatTime(cls.start_time)} - ${formatTime(cls.end_time)}\n${cls.total_attendances}/${cls.event_plan.max_visitor} attendees`}
                         >
                           <div className="font-bold text-white truncate">{cls.event_plan.name}</div>
-                          <div className="text-white/90 text-xs truncate">{cls.instructor.name}</div>
-                          <div className="text-white/70 text-xs">{formatTime(cls.start_time)}</div>
-                          <div className="flex items-center gap-1 text-white/90 text-xs mt-1">
-                            <FaUsers className="text-xs" />
-                            <span>{cls.total_attendances}/{cls.event_plan.max_visitor}</span>
-                          </div>
+                          {viewMode !== 'month' && (
+                            <>
+                              <div className="text-white/90 text-xs truncate">{cls.instructor.name}</div>
+                              <div className="text-white/70 text-xs">{formatTime(cls.start_time)}</div>
+                              <div className="flex items-center gap-1 text-white/90 text-xs mt-1">
+                                <FaUsers className="text-xs" />
+                                <span>{cls.total_attendances}/{cls.event_plan.max_visitor}</span>
+                              </div>
+                            </>
+                          )}
                         </Link>
                       ))}
                     </div>

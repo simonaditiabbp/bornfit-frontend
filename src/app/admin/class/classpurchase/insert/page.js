@@ -131,7 +131,7 @@ export default function ClassPurchaseInsertPage() {
       </div>
 
       <div className="max-w-3xl mx-auto bg-gray-800 p-10 rounded-2xl shadow-lg border border-gray-700">
-        <h1 className="text-3xl font-bold mb-8 text-amber-300 text-center">Tambah Class Purchase</h1>
+        <h1 className="text-3xl font-bold mb-8 text-amber-300 text-center">Create Class Purchase</h1>
         {error && <div className="text-red-400 mb-2 text-center">{error}</div>}
         {fetchingData && <div className="text-amber-400 mb-4 text-center">Loading data...</div>}
         <form onSubmit={handleSubmit}>

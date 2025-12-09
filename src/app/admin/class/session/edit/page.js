@@ -45,9 +45,15 @@ export default function ClassSessionEditPage() {
           const endTime = calculateEndTime(form.recurrence_start_time, selectedPlan.minutes_per_session);
           setForm(f => ({ ...f, recurrence_end_time: endTime }));
         }
+        // Auto-calculate end_time for single class
+        if (!form.is_recurring && form.start_time) {
+          const endTime = calculateEndTime(form.start_time, selectedPlan.minutes_per_session);
+          setForm(f => ({ ...f, end_time: endTime }));
+        }
       }
     }
-  }, [form?.event_plan_id, form?.recurrence_start_time, form?.is_recurring, edit, plans]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form?.event_plan_id, form?.recurrence_start_time, form?.start_time, form?.is_recurring, edit, plans]);
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -352,8 +358,9 @@ export default function ClassSessionEditPage() {
                 <input name="start_time" type="time" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} value={form.start_time} onChange={e => setForm(f => ({ ...f, start_time: e.target.value }))} required disabled={!edit} />
               </div>
               <div>
-                <label className="block mb-1 text-gray-200">End Time</label>
+                <label className="block mb-1 text-gray-200">End Time (Auto-calculated)</label>
                 <input name="end_time" type="time" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} value={form.end_time} onChange={e => setForm(f => ({ ...f, end_time: e.target.value }))} required disabled={!edit} />
+                <p className="text-xs text-gray-400 mt-1">Based on Event Plan duration</p>
               </div>
             </>
           )}

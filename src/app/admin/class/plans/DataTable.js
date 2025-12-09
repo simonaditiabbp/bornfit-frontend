@@ -1,108 +1,29 @@
+import { StyledDataTable } from '@/components/admin';
+import Link from 'next/link';
 import DataTable from 'react-data-table-component';
 
-export default function ClassPlansDataTable({ columns, data, pagination, paginationServer, paginationTotalRows, paginationPerPage, currentPage, onChangePage, onChangeRowsPerPage, paginationRowsPerPageOptions }) {
-  const colors = {
-    bgPrimary: '#1f2937',
-    bgSecondary: '#374151',
-    textPrimary: '#f3f4f6',
-    textSecondary: '#d1d5db',
-    border: '#4b5563',
-    hover: '#4b5563'
-  };
+export default function ClassPlansDataTable({ data }) {
 
-  const tailwindStyles = {
-    table: {
-      style: {
-        backgroundColor: colors.bgPrimary,
-        color: colors.textPrimary,
-      },
+  const columns = [
+    { name: 'No', cell: (row, i) => i + 1, width: '70px', center: true },
+    { name: 'Name', selector: row => row.name, sortable: true, cell: row => <span className="font-semibold">{row.name}</span> },
+    { name: 'Max Visitors', selector: row => row.max_visitor, sortable: true, cell: row => `${row.max_visitor} people` },
+    { name: 'Minutes/Session', selector: row => row.minutes_per_session, sortable: true, cell: row => `${row.minutes_per_session} minutes` },
+    { name: 'Description', selector: row => row.description, sortable: false },
+    { name: 'Status', selector: row => row.is_active ? 'Active' : 'Inactive', sortable: false },
+    {
+      name: 'Actions',
+      cell: row => (
+         <Link href={`/admin/class/plans/edit?id=${row.id}`} className="bg-gray-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">Detail</Link>
+      ),
     },
-    headRow: {
-      style: {
-        backgroundColor: colors.bgSecondary,
-        borderBottomWidth: '1px',
-        borderBottomColor: colors.border,
-        borderBottomStyle: 'solid',
-        minHeight: '56px',
-      },
-    },
-    headCells: {
-      style: {
-        fontSize: '0.875rem',
-        fontWeight: 'bold',
-        color: '#fbbf24',
-        paddingLeft: '16px',
-        paddingRight: '16px',
-      },
-    },
-    rows: {
-      style: {
-        fontSize: '0.875rem',
-        color: colors.textSecondary,
-        backgroundColor: colors.bgPrimary,
-        minHeight: '48px',
-        '&:not(:last-of-type)': {
-          borderBottomStyle: 'solid',
-          borderBottomWidth: '1px',
-          borderBottomColor: colors.border,
-        },
-      },
-      highlightOnHoverStyle: {
-        backgroundColor: colors.hover,
-        borderBottomColor: colors.border,
-        outline: 'none',
-      },
-    },
-    pagination: {
-      style: {
-        backgroundColor: colors.primary,
-        borderTopStyle: 'solid',
-        borderTopWidth: '1px',
-        borderTopColor: colors.border,
-        color: colors.textPrimary,
-        minHeight: '56px',
-      },
-      pageButtonsStyle: {
-        borderRadius: '4px',
-        height: '32px',
-        width: '32px',
-        padding: '4px',
-        margin: '0 4px',
-        cursor: 'pointer',
-        transition: '0.2s',
-        color: colors.textPrimary,
-        fill: colors.textPrimary,
-        backgroundColor: 'transparent',
-        '&:disabled': {
-          cursor: 'unset',
-          color: colors.border,
-          fill: colors.border,
-        },
-        '&:hover:not(:disabled)': {
-          backgroundColor: colors.hover,
-        },
-      },
-    },
-  };
-
+  ];
+  
   return (
-    <DataTable
+    <StyledDataTable
       columns={columns}
       data={data}
-      pagination={pagination}
-      paginationServer={paginationServer}
-      paginationTotalRows={paginationTotalRows}
-      paginationPerPage={paginationPerPage}
-      paginationDefaultPage={currentPage}
-      onChangePage={onChangePage}
-      onChangeRowsPerPage={onChangeRowsPerPage}
-      paginationRowsPerPageOptions={paginationRowsPerPageOptions}
-      highlightOnHover
-      responsive={true}
-      fixedHeaderScrollHeight="300px"
-      direction="auto"
-      subHeaderWrap
-      customStyles={tailwindStyles}
+      pagination
     />
   );
 }

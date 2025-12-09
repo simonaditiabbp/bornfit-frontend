@@ -1,107 +1,87 @@
+import { StyledDataTable } from "@/components/admin";
 import Link from "next/link";
 import DataTable from 'react-data-table-component';
 
-export default function ClassSessionDataTable({
-  data,
-  plans = [],
-  members = [],
-  instructors = [],
-  setQrSession,
-  pagination = false,
-  paginationServer = false,
-  paginationTotalRows = 0,
-  paginationPerPage = 10,
-  currentPage,
-  paginationDefaultPage,
-  onChangePage = () => {},
-  onChangeRowsPerPage = () => {},
-  paginationRowsPerPageOptions = [10, 25, 50],
+export default function ClassSessionDataTable({ data, plans = [], members = [], instructors = [], pagination = false, paginationServer = false, paginationTotalRows = 0, paginationPerPage = 10, currentPage, paginationDefaultPage, onChangePage = () => {}, onChangeRowsPerPage = () => {}, paginationRowsPerPageOptions = [10, 25, 50]
 }) {
+
   const pageNo = paginationDefaultPage || currentPage || 1;
   const startNo = (pageNo - 1) * paginationPerPage;
 
-  const colors = {
-    primary: '#1f2937',
-    secondary: '#374151',
-    accent: '#fbbf24',
-    text: '#e5e7eb',
-    border: '#4b5563',
-  };
-
   const columns = [
-    { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px',  },
-      { name: 'Plan', selector: row => {
-        const plan = plans.find(p => p.id === row.event_plan_id);
-        return plan ? (plan.name || `Plan #${plan.id}`) : row.event_plan_id;
-      }, sortable: true },
-      { name: 'Instructor', selector: row => {
-        const ins = instructors.find(t => t.id === row.instructor_id);
-        return ins ? ins.name : row.instructor_id;
-      }, sortable: true },
-      { 
-        name: 'Schedule Type', 
-        cell: row => {
-          if (row.is_recurring) {
-            let days = [];
-            try {
-              days = row.recurrence_days ? JSON.parse(row.recurrence_days) : [];
-            } catch (e) {
-              days = [];
-            }
-            return (
-              <div className="flex flex-col gap-1">
-                <span className="bg-amber-600 text-white text-xs px-2 py-1 rounded font-semibold">
-                  🔁 RECURRING PATTERN
-                </span>
-                <span className="text-xs text-gray-400">
-                  {days.map(d => d.slice(0,3).toUpperCase()).join(', ')}
-                </span>
-                <span className="text-xs text-amber-400">
-                  (Template - Not in calendar)
-                </span>
-              </div>
-            );
+    { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px', center: "true" },
+    { name: 'Plan', selector: row => {
+      const plan = plans.find(p => p.id === row.event_plan_id);
+      return plan ? (plan.name || `Plan #${plan.id}`) : row.event_plan_id;
+    }, sortable: true },
+    { name: 'Instructor', selector: row => {
+      const ins = instructors.find(t => t.id === row.instructor_id);
+      return ins ? ins.name : row.instructor_id;
+    }, sortable: true },
+    { 
+      name: 'Schedule Type', 
+      cell: row => {
+        if (row.is_recurring) {
+          let days = [];
+          try {
+            days = row.recurrence_days ? JSON.parse(row.recurrence_days) : [];
+          } catch (e) {
+            days = [];
           }
-          
-          // Check if this is a child of recurring pattern
-          if (row.parent_class_id) {
-            return (
-              <div className="flex flex-col gap-1">
-                <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded font-semibold">
-                  📅 Instance
-                </span>
-                <span className="text-xs text-gray-400">
-                  From recurring pattern
-                </span>
-              </div>
-            );
-          }
-          
           return (
-            <span className="bg-gray-600 text-white text-xs px-2 py-1 rounded">
-              Single
-            </span>
+            <div className="flex flex-col gap-1">
+              <span className="bg-amber-600 text-white text-xs px-2 py-1 rounded font-semibold">
+                🔁 RECURRING PATTERN
+              </span>
+              <span className="text-xs text-gray-400">
+                {days.map(d => d.slice(0,3).toUpperCase()).join(', ')}
+              </span>
+              <span className="text-xs text-amber-400">
+                (Template - Not in calendar)
+              </span>
+            </div>
           );
-        },
-        sortable: false,
-        width: '150px',
+        }
+        
+        // Check if this is a child of recurring pattern
+        if (row.parent_class_id) {
+          return (
+            <div className="flex flex-col gap-1">
+              <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded font-semibold">
+                📅 Instance
+              </span>
+              <span className="text-xs text-gray-400">
+                From recurring pattern
+              </span>
+            </div>
+          );
+        }
+        
+        return (
+          <span className="bg-gray-600 text-white text-xs px-2 py-1 rounded">
+            Single
+          </span>
+        );
       },
-      { name: 'Class Date', selector: row => row.class_date ? row.class_date.slice(0,10) : '', sortable: true },
-      { name: 'Start Time', selector: row => {
-        if (row.is_recurring) {
-          return row.recurrence_start_time || '-';
-        }
-        return row.start_time ? row.start_time.slice(11,16) : '';
-      }, sortable: true },
-      { name: 'End Time', selector: row => {
-        if (row.is_recurring) {
-          return row.recurrence_end_time || '-';
-        }
-        return row.end_time ? row.end_time.slice(11,16) : '';
-      }, sortable: true },
-      { name: 'Type', selector: row => row.class_type, sortable: true },
-    //   { name: 'Manual Checkin', selector: row => row.total_manual_checkin, sortable: true },
-      { name: 'Notes', selector: row => row.notes, sortable: false },
+      sortable: false,
+      width: '150px',
+    },
+    { name: 'Class Date', selector: row => row.class_date ? row.class_date.slice(0,10) : '', sortable: true },
+    { name: 'Start Time', selector: row => {
+      if (row.is_recurring) {
+        return row.recurrence_start_time || '-';
+      }
+      return row.start_time ? row.start_time.slice(11,16) : '';
+    }, sortable: true },
+    { name: 'End Time', selector: row => {
+      if (row.is_recurring) {
+        return row.recurrence_end_time || '-';
+      }
+      return row.end_time ? row.end_time.slice(11,16) : '';
+    }, sortable: true },
+    { name: 'Type', selector: row => row.class_type, sortable: true },
+  //   { name: 'Manual Checkin', selector: row => row.total_manual_checkin, sortable: true },
+    { name: 'Notes', selector: row => row.notes, sortable: false },
     {
       name: 'Aksi',
       cell: row => (
@@ -120,7 +100,7 @@ export default function ClassSessionDataTable({
   ];
 
   return (
-    <DataTable
+    <StyledDataTable
       columns={columns}
       data={data}
       pagination={pagination}
@@ -128,79 +108,10 @@ export default function ClassSessionDataTable({
       paginationTotalRows={paginationTotalRows}
       paginationPerPage={paginationPerPage}
       paginationDefaultPage={pageNo}
+      currentPage={currentPage}
       onChangePage={onChangePage}
       onChangeRowsPerPage={onChangeRowsPerPage}
       paginationRowsPerPageOptions={paginationRowsPerPageOptions}
-      responsive={true}
-      noHeader
-      fixedHeaderScrollHeight="300px"
-      direction="auto"
-      subHeaderWrap
-      customStyles={{
-        table: {
-          style: {
-            backgroundColor: colors.primary,
-            color: colors.text,
-          },
-        },
-        headRow: {
-          style: {
-            backgroundColor: colors.secondary,
-            borderBottomWidth: '2px',
-            borderBottomColor: colors.border,
-            borderBottomStyle: 'solid',
-          },
-        },
-        headCells: {
-          style: {
-            fontSize: '0.875rem',
-            fontWeight: '700',
-            color: colors.accent,
-            paddingLeft: '16px',
-            paddingRight: '16px',
-          },
-        },
-        rows: {
-          style: {
-            fontSize: '0.875rem',
-            color: colors.text,
-            backgroundColor: colors.primary,
-            borderBottomWidth: '1px',
-            borderBottomColor: colors.border,
-            borderBottomStyle: 'solid',
-            '&:hover': {
-              backgroundColor: colors.secondary,
-              // cursor: 'pointer',
-            },
-          },
-        },
-        cells: {
-          style: {
-            paddingLeft: '16px',
-            paddingRight: '16px',
-          },
-        },
-        pagination: {
-          style: {
-            backgroundColor: colors.primary,
-            borderTopWidth: '1px',
-            borderTopColor: colors.border,
-            borderTopStyle: 'solid',
-            color: colors.text,
-          },
-          pageButtonsStyle: {
-            color: colors.accent,
-            fill: colors.accent,
-            '&:disabled': {
-              color: colors.border,
-              fill: colors.border,
-            },
-            '&:hover:not(:disabled)': {
-              backgroundColor: colors.secondary,
-            },
-          },
-        },
-      }}
     />
   );
 }
