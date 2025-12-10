@@ -259,9 +259,9 @@ export default function ClassSchedulePage() {
   const { start, end } = getDateRange();
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
       {/* Header */}
-      <div className="bg-gray-800 border-b border-gray-600 p-5 sticky top-0 z-40">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-600 p-5 sticky top-0 z-40">
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-3">
             <FaCalendar className="text-amber-400 text-2xl" />
@@ -270,13 +270,13 @@ export default function ClassSchedulePage() {
           <div className="flex gap-2">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-semibold transition"
+              className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white px-4 py-2 rounded-lg flex items-center gap-2 font-semibold transition"
             >
               <FaFilter /> Filters
             </button>
             <Link
               href="/admin/class/session/insert"
-              className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-semibold transition"
+              className="bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-semibold transition"
             >
               Create Class
             </Link>
@@ -289,8 +289,8 @@ export default function ClassSchedulePage() {
               onClick={() => setViewMode('day')}
               className={`px-4 py-2 rounded font-semibold transition ${
                 viewMode === 'day'
-                  ? 'bg-amber-600 text-white'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  ? 'bg-amber-500 dark:bg-amber-600 text-white'
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
               }`}
             >
               Day
@@ -320,29 +320,29 @@ export default function ClassSchedulePage() {
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <button onClick={goToPrev} className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded">
+            <button onClick={goToPrev} className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white p-2 rounded">
               <FaChevronLeft />
             </button>
-            <button onClick={goToToday} className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded font-semibold">
+            <button onClick={goToToday} className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white px-4 py-2 rounded font-semibold">
               Today
             </button>
-            <button onClick={goToNext} className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded">
+            <button onClick={goToNext} className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white p-2 rounded">
               <FaChevronRight />
             </button>
           </div>
-          <div className="text-gray-300 font-semibold">
+          <div className="text-gray-700 dark:text-gray-300 font-semibold">
             {start.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })} - {end.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
           </div>
         </div>
 
         {showFilters && (
-          <div className="mt-4 p-4 bg-gray-700 rounded-lg grid grid-cols-2 gap-4">
+          <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">Event Plan:</label>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Event Plan:</label>
               <select
                 value={selectedEventPlan}
                 onChange={(e) => setSelectedEventPlan(e.target.value)}
-                className="w-full bg-gray-600 border border-gray-500 text-gray-200 rounded px-3 py-2"
+                className="w-full bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 text-gray-800 dark:text-gray-200 rounded px-3 py-2"
               >
                 <option value="all">All Event Plans</option>
                 {eventPlans.map(plan => (
@@ -352,11 +352,11 @@ export default function ClassSchedulePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">Instructor:</label>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Instructor:</label>
               <select
                 value={selectedInstructor}
                 onChange={(e) => setSelectedInstructor(e.target.value)}
-                className="w-full bg-gray-600 border border-gray-500 text-gray-200 rounded px-3 py-2"
+                className="w-full bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 text-gray-800 dark:text-gray-200 rounded px-3 py-2"
               >
                 <option value="all">All Instructors</option>
                 {instructors.map(instructor => (
@@ -371,7 +371,7 @@ export default function ClassSchedulePage() {
       {/* Calendar Grid */}
       <div className="p-5 overflow-x-auto">
         {loading ? (
-          <div className="text-center text-amber-300 py-20">Loading...</div>
+          <div className="text-center text-amber-500 dark:text-amber-300 py-20">Loading...</div>
         ) : (
           <div className="min-w-[1200px]">
             {/* Day Headers */}
@@ -382,14 +382,14 @@ export default function ClassSchedulePage() {
                 gridTemplateColumns: `100px repeat(${displayDays.length}, ${viewMode === 'month' ? '60px' : '1fr'})`
               }}
             >
-              <div className="bg-gray-800 p-2 rounded font-semibold text-center border border-gray-600">Time</div>
+              <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded font-semibold text-center border border-gray-300 dark:border-gray-600">Time</div>
               {displayDays.map((day, index) => (
                 <div
                   key={index}
-                  className={`bg-gray-800 rounded font-semibold text-center border ${
+                  className={`bg-gray-100 dark:bg-gray-800 rounded font-semibold text-center border ${
                     day.toDateString() === new Date().toDateString()
-                      ? 'border-amber-500 bg-amber-900/20'
-                      : 'border-gray-600'
+                      ? 'border-amber-500 bg-amber-100 dark:bg-amber-900/20'
+                      : 'border-gray-300 dark:border-gray-600'
                   } ${
                     viewMode === 'month' ? 'p-0.5 text-[10px]' : 'p-2'
                   }`}
@@ -398,7 +398,7 @@ export default function ClassSchedulePage() {
                     <div className="text-xs">{day.getDate()}</div>
                   ) : (
                     <>
-                      <div className="text-xs text-gray-400">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
                         {day.toLocaleDateString('id-ID', { weekday: 'short' })}
                       </div>
                       <div className="text-lg">{day.getDate()}</div>
@@ -418,7 +418,7 @@ export default function ClassSchedulePage() {
                   gridTemplateColumns: `100px repeat(${displayDays.length}, ${viewMode === 'month' ? '60px' : '1fr'})`
                 }}
               >
-                <div className="bg-gray-800 p-2 rounded text-center font-semibold border border-gray-600 flex items-center justify-center">
+                <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded text-center font-semibold border border-gray-300 dark:border-gray-600 flex items-center justify-center">
                   {timeSlot}
                 </div>
 
@@ -428,7 +428,7 @@ export default function ClassSchedulePage() {
                   return (
                     <div
                       key={`${day}-${timeSlot}`}
-                      className={`bg-gray-800 rounded border border-gray-700 ${
+                      className={`bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 ${
                         viewMode === 'month' ? 'p-0.5 min-h-[50px]' : 'p-1 min-h-[80px]'
                       }`}
                     >
@@ -465,20 +465,20 @@ export default function ClassSchedulePage() {
       </div>
 
       {/* Legend */}
-      <div className="fixed bottom-5 right-5 bg-gray-800 rounded-lg p-4 border border-gray-600 shadow-lg">
-        <div className="text-sm font-semibold text-gray-300 mb-2">Slot Availability</div>
+      <div className="fixed bottom-5 right-5 bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600 shadow-lg">
+        <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Slot Availability</div>
         <div className="space-y-1 text-xs">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-green-600 rounded"></div>
-            <span className="text-gray-400">&lt; 70% filled</span>
+            <span className="text-gray-600 dark:text-gray-400">&lt; 70% filled</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-yellow-600 rounded"></div>
-            <span className="text-gray-400">70-90% filled</span>
+            <span className="text-gray-600 dark:text-gray-400">70-90% filled</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-red-600 rounded"></div>
-            <span className="text-gray-400">&gt; 90% filled</span>
+            <div className="w-4 h-4 bg-red-500 rounded"></div>
+            <span className="text-gray-600 dark:text-gray-400">&gt; 90% filled</span>
           </div>
         </div>
       </div>

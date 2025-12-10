@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import BackendErrorFallback from "../../../../../components/BackendErrorFallback";
-import Link from "next/link";
-import { FaIdCard, FaAngleRight } from 'react-icons/fa';
+import { FaDumbbell } from 'react-icons/fa';
+import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -280,35 +280,28 @@ export default function ClassSessionEditPage() {
     return <BackendErrorFallback onRetry={() => window.location.reload()} />;
   }
   if (loading || !form) {
-    return <div className="text-amber-300 text-center font-medium mt-20">Loading...</div>;
+    return <div className="text-gray-800 dark:text-amber-300 text-center font-medium mt-20">Loading...</div>;
   }
 
   return (
     <div>
-      {/* Breadcrumb Navigation */}
-      <div className="flex items-center gap-2 text-sm mb-6 bg-gray-800 px-4 py-3 rounded-lg">
-        <FaIdCard className="text-amber-300" />
-        <Link href="/admin/dashboard" className="text-gray-400 hover:text-amber-300 transition-colors">
-          Dashboard
-        </Link>
-        <FaAngleRight className="text-gray-500 text-xs" />
-        <Link href="/admin/class/session" className="text-gray-400 hover:text-amber-300 transition-colors">
-          Class Session
-        </Link>
-        <FaAngleRight className="text-gray-500 text-xs" />
-        <span className="text-gray-200 font-medium">Edit</span>
-      </div>
+      <PageBreadcrumb
+        items={[
+          { icon: <FaDumbbell className="w-3 h-3" />, label: 'Class Session', href: '/admin/class/session' },
+          { label: 'Detail / Edit' }
+        ]}
+      />
 
-      <div className="max-w-4xl mx-auto bg-gray-800 rounded-2xl shadow-lg p-10 border border-gray-700">
+      <PageContainerInsert>
         <div className="flex items-center justify-between mb-8 border-b border-gray-700 pb-4">
-          <h1 className="text-3xl font-bold text-amber-300">
-            {isRecurring ? 'Edit Recurring Class Pattern' : 'Edit Class'}
-          </h1>
-          <Link href="/admin/class/session" className="bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-500 transition-colors">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-amber-300">Class Session Details</h1>
+          <ActionButton
+            variant="gray"
+            href="/admin/class/session"
+          >
             Back
-          </Link>
-        </div>
-        
+          </ActionButton>
+        </div>     
         {/* Recurring Warning */}
         {isRecurring && (
           <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-4 mb-6">
@@ -328,38 +321,63 @@ export default function ClassSessionEditPage() {
         )}
         
         <div className="space-y-4 mb-4">
-          <div>
-            <label className="block mb-1 text-gray-200">Event Plan</label>
-            <select name="event_plan_id" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} value={form.event_plan_id} onChange={e => setForm(f => ({ ...f, event_plan_id: e.target.value }))} required disabled={!edit}>
-              <option value="">Pilih Event Plan</option>
-              {plans.map(plan => (
-                <option key={plan.id} value={plan.id}>{plan.name}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block mb-1 text-gray-200">Instructor</label>
-            <select name="instructor_id" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} value={form.instructor_id} onChange={e => setForm(f => ({ ...f, instructor_id: e.target.value }))} required disabled={!edit}>
-              <option value="">Pilih Instructor</option>
-              {instructors.map(i => (
-                <option key={i.id} value={i.id}>{i.name}</option>
-              ))}
-            </select>
-          </div>
+          <FormInput
+            label="Event Plan"
+            name="event_plan_id"
+            type="select"
+            value={form.event_plan_id}
+            onChange={e => setForm(f => ({ ...f, event_plan_id: e.target.value }))}
+            disabled={!edit}
+            required
+            options={[
+              { value: '', label: 'Pilih Event Plan' },
+              ...plans.map(plan => ({ value: plan.id, label: plan.name }))
+            ]}
+          />
+          <FormInput
+            label="Instructor"
+            name="instructor_id"
+            type="select"
+            value={form.instructor_id}
+            onChange={e => setForm(f => ({ ...f, instructor_id: e.target.value }))}
+            disabled={!edit}
+            required
+            options={[
+              { value: '', label: 'Pilih Instructor' },
+              ...instructors.map(i => ({ value: i.id, label: i.name }))
+            ]}
+          />
           {/* Single Class Fields */}
           {!isRecurring && (
             <>
+              <FormInput
+                label="Class Date"
+                name="class_date"
+                type="date"
+                value={form.class_date}
+                onChange={e => setForm(f => ({ ...f, class_date: e.target.value }))}
+                disabled={!edit}
+                required
+              />
+              <FormInput
+                label="Start Time"
+                name="start_time"
+                type="time"
+                value={form.start_time}
+                onChange={e => setForm(f => ({ ...f, start_time: e.target.value }))}
+                disabled={!edit}
+                required
+              />
               <div>
-                <label className="block mb-1 text-gray-200">Class Date</label>
-                <input name="class_date" type="date" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} value={form.class_date} onChange={e => setForm(f => ({ ...f, class_date: e.target.value }))} required disabled={!edit} />
-              </div>
-              <div>
-                <label className="block mb-1 text-gray-200">Start Time</label>
-                <input name="start_time" type="time" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} value={form.start_time} onChange={e => setForm(f => ({ ...f, start_time: e.target.value }))} required disabled={!edit} />
-              </div>
-              <div>
-                <label className="block mb-1 text-gray-200">End Time (Auto-calculated)</label>
-                <input name="end_time" type="time" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} value={form.end_time} onChange={e => setForm(f => ({ ...f, end_time: e.target.value }))} required disabled={!edit} />
+                <FormInput
+                  label="End Time (Auto-calculated)"
+                  name="end_time"
+                  type="time"
+                  value={form.end_time}
+                  onChange={e => setForm(f => ({ ...f, end_time: e.target.value }))}
+                  disabled={!edit}
+                  required
+                />
                 <p className="text-xs text-gray-400 mt-1">Based on Event Plan duration</p>
               </div>
             </>
@@ -369,28 +387,22 @@ export default function ClassSessionEditPage() {
           {isRecurring && (
             <>
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block mb-1 text-gray-200">Valid From *</label>
-                  <input
-                    type="date"
-                    value={form.valid_from}
-                    onChange={e => setForm(f => ({ ...f, valid_from: e.target.value }))}
-                    className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`}
-                    required
-                    disabled={!edit}
-                  />
-                </div>
-                <div>
-                  <label className="block mb-1 text-gray-200">Valid Until *</label>
-                  <input
-                    type="date"
-                    value={form.valid_until}
-                    onChange={e => setForm(f => ({ ...f, valid_until: e.target.value }))}
-                    className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`}
-                    required
-                    disabled={!edit}
-                  />
-                </div>
+                <FormInput
+                  label="Valid From *"
+                  type="date"
+                  value={form.valid_from}
+                  onChange={e => setForm(f => ({ ...f, valid_from: e.target.value }))}
+                  disabled={!edit}
+                  required
+                />
+                <FormInput
+                  label="Valid Until *"
+                  type="date"
+                  value={form.valid_until}
+                  onChange={e => setForm(f => ({ ...f, valid_until: e.target.value }))}
+                  disabled={!edit}
+                  required
+                />
               </div>
 
               <div>
@@ -423,26 +435,22 @@ export default function ClassSessionEditPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
+                <FormInput
+                  label="Time Start *"
+                  type="time"
+                  value={form.recurrence_start_time}
+                  onChange={e => setForm(f => ({ ...f, recurrence_start_time: e.target.value }))}
+                  disabled={!edit}
+                  required
+                />
                 <div>
-                  <label className="block mb-1 text-gray-200">Time Start *</label>
-                  <input
-                    type="time"
-                    value={form.recurrence_start_time}
-                    onChange={e => setForm(f => ({ ...f, recurrence_start_time: e.target.value }))}
-                    className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`}
-                    required
-                    disabled={!edit}
-                  />
-                </div>
-                <div>
-                  <label className="block mb-1 text-gray-200">Time End * (Auto-calculated)</label>
-                  <input
+                  <FormInput
+                    label="Time End * (Auto-calculated)"
                     type="time"
                     value={form.recurrence_end_time}
                     onChange={e => setForm(f => ({ ...f, recurrence_end_time: e.target.value }))}
-                    className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`}
-                    required
                     disabled={!edit}
+                    required
                   />
                   <p className="text-xs text-gray-400 mt-1">Based on Event Plan duration</p>
                 </div>
@@ -459,39 +467,54 @@ export default function ClassSessionEditPage() {
             </>
           )}
           
-          <div>
-            <label className="block mb-1 text-gray-200">Class Type</label>
-            <select name="class_type" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} value={form.class_type} onChange={e => setForm(f => ({ ...f, class_type: e.target.value }))} required disabled={!edit}>
-              <option value="membership_only">Membership Only</option>
-              <option value="free">Free</option>
-              <option value="both">Both</option>
-            </select>
-          </div>
-          {/* <div>
-            <label className="block mb-1 text-gray-200">Total Manual Checkin</label>
-            <input name="total_manual_checkin" type="number" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} value={form.total_manual_checkin} onChange={e => setForm(f => ({ ...f, total_manual_checkin: e.target.value }))} required disabled={!edit} />
-          </div> */}
-          <div>
-            <label className="block mb-1 text-gray-200">Notes</label>
-            <textarea name="notes" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} disabled={!edit} />
-          </div>
+          <FormInput
+            label="Class Type"
+            name="class_type"
+            type="select"
+            value={form.class_type}
+            onChange={e => setForm(f => ({ ...f, class_type: e.target.value }))}
+            disabled={!edit}
+            required
+            options={[
+              { value: 'membership_only', label: 'Membership Only' },
+              { value: 'free', label: 'Free' },
+              { value: 'both', label: 'Both' }
+            ]}
+          />
+          <FormInput
+            label="Total Manual Checkin"
+            name="total_manual_checkin"
+            type="number"
+            value={form.total_manual_checkin}
+            onChange={e => setForm(f => ({ ...f, total_manual_checkin: e.target.value }))}
+            disabled={!edit}
+            required
+          />
+          <FormInput
+            label="Notes"
+            name="notes"
+            type="textarea"
+            value={form.notes}
+            onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+            disabled={!edit}
+          />
         </div>
         {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
         {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}
         <div className="flex gap-3 mt-8 justify-start">
           {!edit ? (
             <>
-              <button type="button" className="bg-amber-400 hover:bg-amber-500 text-gray-900 px-6 py-2 rounded-lg font-semibold transition" onClick={handleEdit}>Edit</button>
-              <button type="button" className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition" onClick={handleDelete}>Delete</button>
+              <ActionButton variant="primary" onClick={handleEdit}>Edit</ActionButton>
+              <ActionButton variant="danger" onClick={handleDelete}>Delete</ActionButton>
             </>
           ) : (
             <>
-              <button type="button" className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition" disabled={formLoading} onClick={handleSave}>{formLoading ? "Saving..." : "Save"}</button>
-              <button type="button" className="bg-gray-600 hover:bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold transition" onClick={handleCancel}>Cancel</button>
+              <ActionButton variant="primary" onClick={handleSave} disabled={formLoading}>{formLoading ? "Saving..." : "Save"}</ActionButton>
+              <ActionButton variant="gray" onClick={handleCancel}>Cancel</ActionButton>
             </>
           )}
         </div>
-      </div>
+      </PageContainerInsert>
     </div>
   );
 }

@@ -107,13 +107,13 @@ export default function MembershipReportPage() {
   if (backendError) return <BackendErrorFallback onRetry={() => { setBackendError(false); window.location.reload(); }} />;
 
   const StatCard = ({ icon, title, value, color }) => (
-    <div className={`bg-gray-800 p-6 rounded-lg border border-gray-700 flex items-center gap-4 shadow-lg`}>
+    <div className={`bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center gap-4 shadow-lg`}>
       <div className={`p-3 rounded-full ${color}`}>
         {icon}
       </div>
       <div>
-        <p className="text-gray-400 text-sm font-medium">{title}</p>
-        <p className="text-2xl font-bold text-white">{loading ? '...' : value}</p>
+        <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">{title}</p>
+        <p className="text-2xl font-bold text-gray-800 dark:text-white">{loading ? '...' : value}</p>
       </div>
     </div>
   );
@@ -134,19 +134,19 @@ export default function MembershipReportPage() {
 
   return (
     <div>
-      <div className="bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-700">
+      <div className="bg-white dark:bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-200 dark:border-gray-700">
         <nav className="flex" aria-label="Breadcrumb">
           <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
             <li className="inline-flex items-center">
-              <FaIdCard className="w-4 h-4 me-2.5 text-amber-300" /> 
-              <span className="ms-1 text-sm font-medium text-gray-200">Membership Reports</span>
+              <FaIdCard className="w-4 h-4 me-2.5 text-amber-500 dark:text-amber-300" /> 
+              <span className="ms-1 text-sm font-medium text-gray-700 dark:text-gray-200">Membership Reports</span>
             </li>
           </ol>
         </nav>
       </div>
       
-      <div className="m-5 p-5 bg-gray-800 border border-gray-700 rounded-lg">
-        <h1 className="text-2xl font-bold text-amber-400 mb-6">Membership Report</h1>
+      <div className="m-5 p-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+        <h1 className="text-2xl font-bold text-amber-500 dark:text-amber-400 mb-6">Membership Report</h1>
         
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
@@ -157,18 +157,18 @@ export default function MembershipReportPage() {
         </div>
 
         {/* Filters */}
-        <div className="mb-6 p-4 bg-gray-900 rounded-lg border border-gray-700">
+        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2 mb-3">
-            <FaFilter className="text-amber-400" />
-            <h3 className="text-lg font-semibold text-gray-200">Filter Data</h3>
+            <FaFilter className="text-amber-500 dark:text-amber-400" />
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">Filter Data</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Status</label>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Status</label>
               <select
                 value={filters.status}
                 onChange={(e) => setFilters({ ...filters, status: e.target.value, page: 1 })}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white"
+                className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-gray-800 dark:text-white"
               >
                 <option value="">All Status</option>
                 <option value="active">Active</option>
@@ -177,27 +177,27 @@ export default function MembershipReportPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Start Date</label>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Start Date</label>
               <input
                 type="date"
                 value={filters.start_date}
                 onChange={(e) => setFilters({ ...filters, start_date: e.target.value, page: 1 })}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white"
+                className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-gray-800 dark:text-white"
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-400 mb-1">End Date</label>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">End Date</label>
               <input
                 type="date"
                 value={filters.end_date}
                 onChange={(e) => setFilters({ ...filters, end_date: e.target.value, page: 1 })}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white"
+                className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-gray-800 dark:text-white"
               />
             </div>
             <div className="flex items-end">
               <button
                 onClick={() => setFilters({ status: '', start_date: '', end_date: '', page: 1, limit: 50 })}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition w-full"
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded transition w-full"
               >
                 Reset Filters
               </button>
@@ -207,8 +207,8 @@ export default function MembershipReportPage() {
 
         {/* Data Table */}
         <div className="mb-6 overflow-x-auto">
-          <table className="w-full text-sm text-left text-gray-300">
-            <thead className="text-xs uppercase bg-gray-700 text-gray-300">
+          <table className="w-full text-sm text-left text-gray-700 dark:text-gray-300">
+            <thead className="text-xs uppercase bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
               <tr>
                 <th className="px-4 py-3">Member ID</th>
                 <th className="px-4 py-3">Member Name</th>
@@ -222,26 +222,26 @@ export default function MembershipReportPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan="8" className="text-center py-8 text-gray-400">Loading...</td></tr>
+                <tr><td colSpan="8" className="text-center py-8 text-gray-500 dark:text-gray-400">Loading...</td></tr>
               ) : data.length === 0 ? (
-                <tr><td colSpan="8" className="text-center py-8 text-gray-400">No data found</td></tr>
+                <tr><td colSpan="8" className="text-center py-8 text-gray-500 dark:text-gray-400">No data found</td></tr>
               ) : (
                 data.map((item) => (
-                  <tr key={item.id} className="border-b border-gray-700 hover:bg-gray-750">
+                  <tr key={item.id} className="border-b border-gray-200 dark:border-gray-700">
                     <td className="px-4 py-3 font-mono text-xs">{item.member_id}</td>
                     <td className="px-4 py-3">
                       <div className="font-semibold">{item.member_name}</div>
-                      <div className="text-xs text-gray-400">{item.email}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{item.email}</div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="font-semibold">{item.membership_plan}</div>
-                      <div className="text-xs text-gray-400">Level {item.plan_level}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Level {item.plan_level}</div>
                     </td>
                     <td className="px-4 py-3">{item.duration}</td>
                     <td className="px-4 py-3">{formatDate(item.start_date)}</td>
                     <td className="px-4 py-3">{formatDate(item.end_date)}</td>
-                    <td className="px-4 py-3 font-semibold text-green-400">{formatCurrency(item.price)}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 font-semibold text-green-600 dark:text-green-400">{formatCurrency(item.price)}</td>
+                    <td className="px-4 py-3 text-white">
                       <span className={`px-2 py-1 rounded text-xs font-semibold ${
                         item.status === 'active' ? 'bg-green-600' :
                         item.status === 'expired' ? 'bg-red-600' :
@@ -260,7 +260,7 @@ export default function MembershipReportPage() {
         <div className="space-y-8">
           {/* All Members Report */}
           <div>
-            <h2 className="text-xl font-semibold text-gray-200 mb-3">All Members Report</h2>
+            <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-3">All Members Report</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-md">
               <DownloadButton 
                 icon={<FaFileCsv />} 
@@ -281,7 +281,7 @@ export default function MembershipReportPage() {
 
           {/* Expiring Members Report */}
           <div>
-            <h2 className="text-xl font-semibold text-gray-200 mb-3">Expiring Members Report</h2>
+            <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-3">Expiring Members Report</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-md">
               <DownloadButton 
                 icon={<FaFileCsv />} 
@@ -302,7 +302,7 @@ export default function MembershipReportPage() {
 
           {/* New Members Report */}
           <div>
-            <h2 className="text-xl font-semibold text-gray-200 mb-3">New Members Report (Last 30 Days)</h2>
+            <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-3">New Members Report (Last 30 Days)</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-md">
               <DownloadButton 
                 icon={<FaFileCsv />} 

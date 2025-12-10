@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import DataTable from '../../class/plans/DataTable';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { FaPlus, FaFileInvoice, FaAngleRight } from 'react-icons/fa';
+import { FaPlus, FaDumbbell, FaAngleRight } from 'react-icons/fa';
 import { LoadingText, PageBreadcrumb, PageContainer, PageHeader } from '@/components/admin';
 import ClassPurchaseDataTable from './DataTable';
 
@@ -51,7 +51,8 @@ export default function ClassPurchaseListPage() {
     <div>
       <PageBreadcrumb 
         items={[
-          { icon: <FaFileInvoice className="w-3 h-3" />, label: 'Class Purchases' }
+          { icon: <FaDumbbell className="w-3 h-3" />, label: 'Class Session', href: '/admin/class/session' },
+          { label: 'Class Purchase'},
         ]}
       />
       <PageContainer>

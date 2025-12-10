@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { FaFileInvoice, FaAngleRight } from 'react-icons/fa';
+import { FaDumbbell } from 'react-icons/fa';
+import { PageBreadcrumb, PageContainerInsert, FormActions, FormInput, ActionButton } from '@/components/admin';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -128,80 +128,64 @@ export default function ClassPurchaseEditPage() {
 
   return (
     <div>
-      {/* Breadcrumb Navigation */}
-      <div className="flex items-center gap-2 text-sm mb-6 bg-gray-800 px-4 py-3 rounded-lg">
-        <FaFileInvoice className="text-amber-300" />
-        <Link href="/admin/dashboard" className="text-gray-400 hover:text-amber-300 transition-colors">
-          Dashboard
-        </Link>
-        <FaAngleRight className="text-gray-500 text-xs" />
-        <Link href="/admin/class/classpurchase" className="text-gray-400 hover:text-amber-300 transition-colors">
-          Class Purchases
-        </Link>
-        <FaAngleRight className="text-gray-500 text-xs" />
-        <span className="text-gray-200 font-medium">Edit</span>
-      </div>
+      <PageBreadcrumb
+        items={[
+          { icon: <FaDumbbell className="w-3 h-3" />, label: 'Class Session', href: '/admin/class/session' },
+          { label: 'Class Purchase', href: '/admin/class/classpurchase' },
+          { label: 'Detail / Edit' }
+        ]}
+      />
 
-      <div className="max-w-3xl mx-auto bg-gray-800 p-10 rounded-2xl shadow-lg border border-gray-700">
+      <PageContainerInsert>
         <div className="flex items-center justify-between mb-8 border-b border-gray-700 pb-4">
-          <h1 className="text-3xl font-bold text-amber-300">Edit Class Purchase</h1>
-          <Link href="/admin/class/classpurchase" className="bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-500 transition-colors">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-amber-300">Class Purchase Details</h1>
+          <ActionButton
+            variant="gray"
+            href="/admin/class/classpurchase"
+          >
             Back
-          </Link>
-        </div>
+          </ActionButton>
+        </div>     
         {error && <div className="text-red-400 mb-2 text-center">{error}</div>}
         {fetchingData && <div className="text-amber-400 mb-4 text-center">Loading data...</div>}
         <form onSubmit={handleSubmit}>
-          <div className="mb-6">
-            <label className="block mb-2 font-semibold text-gray-200">Member Name</label>
-            <select 
-              className="w-full border border-gray-600 rounded-lg p-3 bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-400" 
-              value={userId} 
-              onChange={e => setUserId(e.target.value)} 
-              required
-            >
-              <option value="">-- Select Member --</option>
-              {users.map(user => (
-                <option key={user.id} value={user.id}>
-                  {user.name} ({user.email})
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="mb-6">
-            <label className="block mb-2 font-semibold text-gray-200">Class Name</label>
-            <select 
-              className="w-full border border-gray-600 rounded-lg p-3 bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-400" 
-              value={classId} 
-              onChange={e => setClassId(e.target.value)} 
-              required
-            >
-              <option value="">-- Select Class --</option>
-              {classes.map(cls => (
-                <option key={cls.id} value={cls.id}>
-                  {cls.name} - {cls.class_date?.slice(0, 10)} {cls.start_time?.slice(0, 5)}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="mb-6">
-            <label className="block mb-2 font-semibold text-gray-200">Price</label>
-            <input type="number" className="w-full border border-gray-600 rounded-lg p-3 bg-gray-700 text-gray-200 focus:outline-none focus:border-amber-400" value={price} onChange={e => setPrice(e.target.value)} required />
-          </div>
-          {/* <div className="mb-8">
-            <label className="block mb-2 font-semibold text-gray-200">Purchase Date <span className="text-gray-400">(optional)</span></label>
-            <input type="datetime-local" className="w-full border border-gray-600 rounded-lg p-3 bg-gray-700 text-gray-200 focus:outline-none focus:border-amber-400" value={purchaseDate} onChange={e => setPurchaseDate(e.target.value)} />
-          </div> */}
-          <div className="flex gap-3 mt-8 justify-start">
-            <button type="submit" className="bg-amber-400 text-gray-900 px-6 py-2 rounded-lg font-semibold hover:bg-amber-500 transition" disabled={loading || fetchingData}>
-              {loading ? 'Saving...' : 'Submit'}
-            </button>
-            <button type="button" className="bg-gray-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-500 transition" onClick={() => router.push('/admin/class/classpurchase')}>
-              Cancel
-            </button>
-          </div>
+          <FormInput
+            label="Member Name"
+            type="select"
+            value={userId}
+            onChange={e => setUserId(e.target.value)}
+            required
+            options={[
+              { value: '', label: '-- Select Member --' },
+              ...users.map(user => ({ value: user.id, label: `${user.name} (${user.email})` }))
+            ]}
+          />
+          <FormInput
+            label="Class Name"
+            type="select"
+            value={classId}
+            onChange={e => setClassId(e.target.value)}
+            required
+            options={[
+              { value: '', label: '-- Select Class --' },
+              ...classes.map(cls => ({ value: cls.id, label: `${cls.name} - ${cls.class_date?.slice(0, 10)} ${cls.start_time?.slice(0, 5)}` }))
+            ]}
+          />
+          <FormInput
+            label="Price"
+            type="number"
+            value={price}
+            onChange={e => setPrice(e.target.value)}
+            required
+          />
+          <FormActions
+            onSubmit={handleSubmit}
+            onCancel={() => router.push('/admin/class/classpurchase')}
+            loading={loading || fetchingData}
+            showReset={false}
+          />
         </form>
-      </div>
+      </PageContainerInsert>
     </div>
   );
 }

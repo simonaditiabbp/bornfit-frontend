@@ -127,7 +127,7 @@ export default function PTPlansPage() {
     <div>
       <PageBreadcrumb 
         items={[
-          { icon: <FaCog className="w-3 h-3" />, label: 'Settings', href: '/admin/settings' },
+          { icon: <FaCog className="w-3 h-3" />, label: 'Settings', href: '/admin/pt/plans' },
           { label: 'PT Plans' }
         ]}
       />

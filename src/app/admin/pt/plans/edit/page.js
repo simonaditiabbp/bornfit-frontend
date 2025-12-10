@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import BackendErrorFallback from "../../../../../components/BackendErrorFallback";
-import { FaAngleRight, FaFileInvoice } from 'react-icons/fa';
-import Link from 'next/link';
+import { FaCog } from 'react-icons/fa';
+import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -109,7 +109,7 @@ export default function PTPlanEditPage() {
     return <BackendErrorFallback onRetry={() => { setBackendError(false); window.location.reload(); }} />;
   }
   if (loading) {
-    return <div className="text-amber-300 text-center font-medium mt-20">Loading...</div>;
+    return <div className="text-gray-800 dark:text-amber-300 text-center font-medium mt-20">Loading...</div>;
   }
   if (!plan) {
     return <div className="text-red-400 text-center font-medium mt-20">Plan not found</div>;
@@ -117,102 +117,111 @@ export default function PTPlanEditPage() {
 
   return (
     <div>
-      {/* Breadcrumb Navigation */}
-      <div className="flex items-center gap-2 text-sm mb-6 bg-gray-800 px-4 py-3 rounded-lg">
-        <FaFileInvoice className="text-amber-300" />
-        <Link href="/admin/pt/plans" className="text-gray-400 hover:text-amber-300 transition-colors">
-          PT Plans
-        </Link>
-        <FaAngleRight className="text-gray-500 text-xs" />
-        <Link href="/admin/pt/plans" className="text-gray-400 hover:text-amber-300 transition-colors">
-          PT Plans List
-        </Link>
-        <FaAngleRight className="text-amber-300 text-xs" />
-        <span className="text-amber-300 font-medium">Detail / Edit</span>
-      </div>
+      <PageBreadcrumb 
+        items={[
+          { icon: <FaCog className="w-3 h-3" />, label: 'Settings', href: '/admin/settings' },
+          { label: 'PT Plans', href: '/admin/pt/plans' },
+          { label: 'Detail / Edit' }
+        ]}
+      />
 
-      <div className="p-5">
-        <div className="max-w-4xl mx-auto bg-gray-800 rounded-2xl shadow-lg p-10 border border-gray-700">
-          <div className="flex items-center justify-between mb-8 border-b border-gray-700 pb-4">
-            <h1 className="text-3xl font-bold text-amber-300">PT Session Plan Details</h1>
-            <Link href="/admin/pt/plans" className="bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-500 transition-colors">
-              Back
-            </Link>
-          </div>      
-          {editForm ? (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-medium mb-1 text-gray-200">Name</label>
-                  <input type="text" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} required disabled={!edit} />
-                </div>
-                <div>
-                  <label className="block font-medium mb-1 text-gray-200">Duration (days)</label>
-                  <input type="number" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} value={editForm.duration_value} onChange={e => setEditForm(f => ({ ...f, duration_value: Number(e.target.value) }))} required disabled={!edit} />
-                </div>
-                <div>
-                  <label className="block font-medium mb-1 text-gray-200">Max Session</label>
-                  <input type="number" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} value={editForm.max_session} onChange={e => setEditForm(f => ({ ...f, max_session: Number(e.target.value) }))} required disabled={!edit} />
-                </div>
-                <div>
-                  <label className="block font-medium mb-1 text-gray-200">Price (Rp)</label>
-                  <input type="number" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} value={editForm.price} onChange={e => setEditForm(f => ({ ...f, price: Number(e.target.value) }))} required disabled={!edit} />
-                </div>
-                <div>
-                  <label className="block font-medium mb-1 text-gray-200">Minutes/Session</label>
-                  <input type="number" className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} value={editForm.minutes_per_session} onChange={e => setEditForm(f => ({ ...f, minutes_per_session: Number(e.target.value) }))} required disabled={!edit} />
-                </div>
-                <div className="col-span-2">
-                  <label className="block font-medium mb-1 text-gray-200">Description</label>
-                  <textarea className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} value={editForm.description} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} required disabled={!edit} />
-                </div>
-              </div>
-              {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
-              {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}
-              <div className="flex gap-3 mt-8 justify-start">
-                {!edit ? (
-                  <>
-                    <button
-                      type="button"
-                      className="bg-amber-400 hover:bg-amber-500 text-gray-900 px-6 py-2 rounded-lg font-semibold transition"
-                      onClick={handleEdit}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition"
-                      onClick={handleDelete}
-                    >
-                      Delete
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition"
-                      disabled={formLoading}
-                      onClick={() => handleSave(editForm)}
-                    >
-                      {formLoading ? "Saving..." : "Save"}
-                    </button>
-                    <button
-                      type="button"
-                      className="bg-gray-600 hover:bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold transition"
-                      onClick={handleCancel}
-                    >
-                      Cancel
-                    </button>
-                  </>
-                )}
+      <PageContainerInsert>
+        <div className="flex items-center justify-between mb-8 border-b border-gray-700 pb-4">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-amber-300">PT Session Plan Details</h1>
+          <ActionButton href="/admin/pt/plans" variant="gray">Back</ActionButton>
+        </div>
+        {editForm ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <FormInput
+                label="Name"
+                name="name"
+                type="text"
+                value={editForm.name}
+                onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+                disabled={!edit}
+                required
+              />
+              
+              <FormInput
+                label="Duration (days)"
+                name="duration_value"
+                type="number"
+                value={editForm.duration_value}
+                onChange={e => setEditForm(f => ({ ...f, duration_value: Number(e.target.value) }))}
+                disabled={!edit}
+                required
+              />
+              
+              <FormInput
+                label="Max Session"
+                name="max_session"
+                type="number"
+                value={editForm.max_session}
+                onChange={e => setEditForm(f => ({ ...f, max_session: Number(e.target.value) }))}
+                disabled={!edit}
+                required
+              />
+              
+              <FormInput
+                label="Price (Rp)"
+                name="price"
+                type="number"
+                value={editForm.price}
+                onChange={e => setEditForm(f => ({ ...f, price: Number(e.target.value) }))}
+                disabled={!edit}
+                required
+              />
+              
+              <FormInput
+                label="Minutes/Session"
+                name="minutes_per_session"
+                type="number"
+                value={editForm.minutes_per_session}
+                onChange={e => setEditForm(f => ({ ...f, minutes_per_session: Number(e.target.value) }))}
+                disabled={!edit}
+                required
+              />
+              
+              <div className="col-span-2">
+                <FormInput
+                  label="Description"
+                  name="description"
+                  type="textarea"
+                  value={editForm.description}
+                  onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))}
+                  disabled={!edit}
+                  required
+                />
               </div>
             </div>
-          ) : (
-            <div className="text-amber-300 text-center font-medium mt-20">Loading form...</div>
-          )}
-        </div>
-      </div>
+            {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
+            {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}
+            <div className="flex gap-3 mt-8 justify-start">
+              {!edit ? (
+                <>
+                  <ActionButton onClick={handleEdit} variant="primary">Edit</ActionButton>
+                  <ActionButton onClick={handleDelete} variant="danger">Delete</ActionButton>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition"
+                    disabled={formLoading}
+                    onClick={() => handleSave(editForm)}
+                  >
+                    {formLoading ? "Saving..." : "Save"}
+                  </button>
+                  <ActionButton onClick={handleCancel} variant="gray">Cancel</ActionButton>
+                </>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="text-gray-800 dark:text-amber-300 text-center font-medium mt-20">Loading form...</div>
+        )}
+      </PageContainerInsert>
     </div>
   );
 }

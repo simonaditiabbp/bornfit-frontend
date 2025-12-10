@@ -219,7 +219,7 @@ export default function TransferMembershipEditPage() {
   }
   
   if (loading || !form) {
-    return <div className="text-amber-300 text-center font-medium mt-20">Loading...</div>;
+    return <div className="text-gray-800 dark:text-amber-300 text-center font-medium mt-20">Loading...</div>;
   }
 
   return (
@@ -234,7 +234,7 @@ export default function TransferMembershipEditPage() {
 
       <PageContainerInsert>
         <div className="flex items-center justify-between mb-8 border-b border-gray-700 pb-4">
-          <h1 className="text-3xl font-bold text-amber-300">Edit Transfer Membership</h1>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-amber-300">Transfer Membership Details</h1>
           <ActionButton href="/admin/membership/transfer" variant="gray">Back</ActionButton>
         </div>
 

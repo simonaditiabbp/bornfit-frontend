@@ -2,8 +2,10 @@
 'use client';
 import Link from "next/link";
 import { StyledDataTable } from '@/components/admin';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function MembershipSessionDataTable({ data }) {
+  const { theme } = useTheme();
   const columns = [
     { name: 'No', cell: (row, i) => i + 1, width: '70px', center: "true" },
     { 
@@ -45,11 +47,10 @@ export default function MembershipSessionDataTable({ data }) {
     },
     {
       name: 'Actions',
-      minWidth: '150px',
       cell: row => (
         <div className="flex gap-2 justify-center">
           <Link href={`/admin/membership/session/edit?id=${row.id}`} 
-          className="bg-gray-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">
+          className="bg-gray-600 dark:bg-blue-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-700 dark:hover:bg-blue-700">
             Detail
           </Link>
         </div>

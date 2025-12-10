@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { FaCalendar, FaAngleRight, FaSearch, FaTimes } from 'react-icons/fa';
+import { FaDumbbell, FaSearch, FaTimes } from 'react-icons/fa';
+import { PageBreadcrumb, PageContainerInsert, FormActions, FormInput } from '@/components/admin';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -33,6 +33,7 @@ export default function InsertAttendancePage() {
   const [showMemberDropdown, setShowMemberDropdown] = useState(false);
   const classDropdownRef = useRef(null);
   const memberDropdownRef = useRef(null);
+  const theme = localStorage.getItem('theme') ? localStorage.getItem('theme') : 'light';
 
   const handleReset = () => {
     const nowPlus7 = new Date(new Date().getTime() + 7 * 60 * 60 * 1000);
@@ -334,32 +335,26 @@ export default function InsertAttendancePage() {
 
   return (
     <div>
-      {/* Breadcrumb Navigation */}
-      <div className="flex items-center gap-2 text-sm mb-6 bg-gray-800 px-4 py-3 rounded-lg">
-        <FaCalendar className="text-amber-300" />
-        <Link href="/admin/dashboard" className="text-gray-400 hover:text-amber-300 transition-colors">
-          Dashboard
-        </Link>
-        <FaAngleRight className="text-gray-500 text-xs" />
-        <Link href="/admin/class/attendance" className="text-gray-400 hover:text-amber-300 transition-colors">
-          Class Attendance
-        </Link>
-        <FaAngleRight className="text-gray-500 text-xs" />
-        <span className="text-gray-200 font-medium">Create</span>
-      </div>
+      <PageBreadcrumb
+        items={[
+          { icon: <FaDumbbell className="w-3 h-3" />, label: 'Class Session', href: '/admin/class/session' },
+          { label: 'Class Attendance', href: '/admin/class/attendance' },
+          { label: 'Create' }
+        ]}
+      />
 
-      <div className="max-w-3xl mx-auto bg-gray-800 p-10 rounded-2xl shadow-lg border border-gray-700">
-        <h2 className="text-3xl font-bold mb-8 text-amber-300 text-center">Add Attendance</h2>
+      <PageContainerInsert>
+        <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-amber-300 text-center">Create Class Attendance</h1>
         {error && <div className="text-red-400 mb-2">{error}</div>}
         <form onSubmit={handleSubmit}>
           {/* Searchable Class Dropdown */}
           <div className="mb-4 relative" ref={classDropdownRef}>
-            <label className="block mb-2 text-gray-200 font-semibold">Class *</label>
+            <label className="block mb-2 text-gray-800 dark:text-gray-200 font-semibold">Class *</label>
             <div className="relative">
               <input
                 type="text"
                 placeholder="Search class..."
-                className="w-full border border-gray-600 p-3 pr-10 rounded-lg bg-gray-700 text-gray-200 focus:outline-none focus:border-amber-400"
+                className="w-full border border-gray-300 dark:border-gray-600 p-3 pr-10 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:border-amber-400"
                 value={classSearch}
                 onChange={(e) => setClassSearch(e.target.value)}
                 onFocus={() => setShowClassDropdown(true)}
@@ -378,7 +373,7 @@ export default function InsertAttendancePage() {
               )}
             </div>
             {showClassDropdown && (
-              <div className="absolute z-50 w-full mt-1 bg-gray-700 border border-gray-600 rounded-lg shadow-xl max-h-64 overflow-y-auto">
+              <div className="absolute z-50 w-full mt-1 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-xl max-h-64 overflow-y-auto">
                 {filteredClasses.length > 0 ? (
                   filteredClasses.map(cls => (
                     <div
@@ -388,13 +383,13 @@ export default function InsertAttendancePage() {
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1">
-                          <div className="text-gray-200 font-medium">{cls.name || `Class #${cls.id}`}</div>
-                          <div className="text-sm text-gray-400 mt-1">
+                          <div className={`${theme === 'light' ? 'text-gray-800' : 'text-gray-200'} font-medium`}>{cls.name || `Class #${cls.id}`}</div>
+                          <div className={`${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} text-sm mt-1`}>
                             {cls.instructor?.name && (
-                              <span className="text-amber-400">👤 {cls.instructor.name}</span>
+                              <span>👤 {cls.instructor.name}</span>
                             )}
                           </div>
-                          <div className="text-sm text-gray-400 mt-1">
+                          <div className={`${theme === 'light' ? 'text-gray-800' : 'text-gray-400'} text-sm mt-1`}>
                             {cls.class_date && (() => {
                               const dateStr = cls.class_date.split('T')[0];
                               const [year, month, day] = dateStr.split('-');
@@ -418,7 +413,7 @@ export default function InsertAttendancePage() {
                           </div>
                         </div>
                         {cls.class_type && (
-                          <div className="text-xs text-gray-500 bg-gray-700 px-2 py-1 rounded">
+                          <div className={`${theme === 'light' ? 'text-gray-500 bg-gray-200' : 'text-gray-400 bg-gray-700'} text-xs px-2 py-1 rounded`}>
                             {cls.class_type}
                           </div>
                         )}
@@ -426,7 +421,7 @@ export default function InsertAttendancePage() {
                     </div>
                   ))
                 ) : (
-                  <div className="p-3 text-gray-400 text-center">No classes found</div>
+                  <div className={`${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} p-3 text-center`}>No classes found</div>
                 )}
               </div>
             )}
@@ -434,12 +429,12 @@ export default function InsertAttendancePage() {
 
           {/* Searchable Member Dropdown */}
           <div className="mb-4 relative" ref={memberDropdownRef}>
-            <label className="block mb-2 text-gray-200 font-semibold">Member *</label>
+            <label className="block mb-2 text-gray-800 dark:text-gray-200 font-semibold">Member *</label>
             <div className="relative">
               <input
                 type="text"
                 placeholder="Search member..."
-                className="w-full border border-gray-600 p-3 pr-10 rounded-lg bg-gray-700 text-gray-200 focus:outline-none focus:border-amber-400"
+                className="w-full border border-gray-300 dark:border-gray-600 p-3 pr-10 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:border-amber-400"
                 value={memberSearch}
                 onChange={(e) => setMemberSearch(e.target.value)}
                 onFocus={() => setShowMemberDropdown(true)}
@@ -458,7 +453,7 @@ export default function InsertAttendancePage() {
               )}
             </div>
             {showMemberDropdown && (
-              <div className="absolute z-50 w-full mt-1 bg-gray-700 border border-gray-600 rounded-lg shadow-xl max-h-64 overflow-y-auto">
+              <div className="absolute z-50 w-full mt-1 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-xl max-h-64 overflow-y-auto">
                 {filteredMembers.length > 0 ? (
                   filteredMembers.map(m => (
                     <div
@@ -471,59 +466,39 @@ export default function InsertAttendancePage() {
                     </div>
                   ))
                 ) : (
-                  <div className="p-3 text-gray-400 text-center">No members found</div>
+                  <div className={`${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} p-3 text-center`}>No members found</div>
                 )}
               </div>
             )}
           </div>
-          <div className="mb-4">
-            <label className="block mb-2 text-gray-200 font-semibold">Checked In At</label>
-            <input 
-              name="checked_in_at" 
-              type="datetime-local" 
-              value={form.checked_in_at} 
-              onChange={handleChange} 
-              className="w-full border border-gray-600 p-3 rounded-lg bg-gray-700 text-gray-200 focus:outline-none focus:border-amber-400" 
-            />
-          </div>
-          <div className="mb-6">
-            <label className="block mb-2 text-gray-200 font-semibold">Status</label>
-            <select 
-              name="status" 
-              value={form.status} 
-              onChange={handleChange} 
-              className="w-full border border-gray-600 p-3 rounded-lg bg-gray-700 text-gray-200 focus:outline-none focus:border-amber-400"
-            >
-              <option value="Booked">Booked</option>
-              <option value="Checked-in">Checked-in</option>
-              <option value="Cancelled">Cancelled</option>
-            </select>
-          </div>
-          <div className="flex gap-3 mt-8 justify-start">
-            <button 
-              type="submit" 
-              className="bg-amber-400 text-gray-900 px-6 py-2 rounded-lg font-semibold hover:bg-amber-500 transition disabled:opacity-50 disabled:cursor-not-allowed" 
-              disabled={loading || !form.class_id || !form.member_id}
-            >
-              {loading ? "Saving..." : "Submit"}
-            </button>
-            <button 
-              type="button" 
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition" 
-              onClick={handleReset}
-            >
-              Reset
-            </button>
-            <button 
-              type="button" 
-              className="bg-gray-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-500 transition" 
-              onClick={() => router.push('/admin/class/attendance')}
-            >
-              Cancel
-            </button>
-          </div>
+          <FormInput
+            label="Checked In At"
+            name="checked_in_at"
+            type="datetime-local"
+            value={form.checked_in_at}
+            onChange={handleChange}
+          />
+          <FormInput
+            label="Status"
+            name="status"
+            type="select"
+            value={form.status}
+            onChange={handleChange}
+            options={[
+              { value: 'Booked', label: 'Booked' },
+              { value: 'Checked-in', label: 'Checked-in' },
+              { value: 'Cancelled', label: 'Cancelled' }
+            ]}
+          />
+          <FormActions
+            onSubmit={handleSubmit}
+            onReset={handleReset}
+            cancelHref="/admin/class/attendance"
+            loading={loading}
+            disabled={!form.class_id || !form.member_id}
+          />
         </form>
-      </div>
+      </PageContainerInsert>
     </div>
   );
 }

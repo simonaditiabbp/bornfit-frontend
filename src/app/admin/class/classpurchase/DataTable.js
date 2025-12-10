@@ -9,7 +9,7 @@ export default function ClassPurchaseDataTable({ data }) {
     { name: 'Price', selector: row => row.price, sortable: true },
     { name: 'Purchase Date', selector: row => row.purchase_date?.slice(0, 16).replace('T', ' ') || '-', sortable: true },
     { name: 'Actions', cell: row => (
-      <Link href={`/admin/class/classpurchase/edit?id=${row.id}`} className="bg-gray-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">Detail</Link>
+      <Link href={`/admin/class/classpurchase/edit?id=${row.id}`} className="bg-gray-600 dark:bg-blue-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-700 dark:hover:bg-blue-700">Detail</Link>
     ), ignoreRowClick: true }
   ];
 

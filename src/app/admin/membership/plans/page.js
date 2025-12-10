@@ -41,7 +41,7 @@ export default function MembershipPlansPage() {
     <div>
       <PageBreadcrumb 
         items={[
-          { icon: <FaCog className="w-3 h-3" />, label: 'Settings', href: '/admin/settings' },
+          { icon: <FaCog className="w-3 h-3" />, label: 'Settings', href: '/admin/membership/plans' },
           { label: 'Membership Plans' }
         ]}
       />

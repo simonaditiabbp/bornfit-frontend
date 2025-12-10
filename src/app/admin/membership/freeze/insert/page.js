@@ -144,7 +144,7 @@ export default function FreezeMembershipInsertPage() {
       />
 
       <PageContainerInsert>
-        <h1 className="text-3xl font-bold mb-8 text-amber-300 text-center">Freeze Membership</h1>
+        <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-amber-300 text-center">Create Freeze Membership</h1>
         
         {success && <div className="text-green-400 font-semibold mb-2 text-center">{success}</div>}
         {error && <div className="text-red-400 font-semibold mb-2 text-center">{error}</div>}

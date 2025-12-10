@@ -6,7 +6,7 @@ import React from 'react';
  */
 export default function PageContainer({ children }) {
   return (
-    <div className="m-5 p-5 bg-gray-800 border border-gray-600 rounded-lg">
+    <div className="m-5 p-5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg">
       {children}
     </div>
   );

@@ -217,25 +217,25 @@ export default function CreateUserPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto bg-white p-10 rounded-2xl shadow-lg mt-12 border border-gray-100">
-      <h1 className="text-3xl font-bold mb-8 text-blue-700 text-center">Create New User</h1>
+    <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 p-10 rounded-2xl shadow-lg mt-12 border border-gray-200 dark:border-gray-600">
+      <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-blue-400 text-center">Create New User</h1>
       <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
         {/* USER FIELDS */}
         <div>
-          <label className="block font-medium text-gray-900 dark:text-white mb-1">Name <span className="text-red-600">*</span></label>
-          <input type="text" name="name" value={form.name} onChange={handleChange} required className="w-full border border-gray-300 p-2 rounded" />
+          <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">Name <span className="text-red-600">*</span></label>
+          <input type="text" name="name" value={form.name} onChange={handleChange} required className="w-full border border-gray-300 dark:border-gray-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 p-2 rounded focus:ring-0 outline-none" />
         </div>
         <div>
-          <label className="block font-medium text-gray-900 dark:text-white mb-1">Email</label>
-          <input type="email" name="email" value={form.email} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" />
+          <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">Email</label>
+          <input type="email" name="email" value={form.email} onChange={handleChange} className="w-full border border-gray-300 dark:border-gray-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 p-2 rounded focus:ring-0 outline-none" />
         </div>
         <div>
-          <label className="block font-medium text-gray-900 dark:text-white mb-1">Phone <span className="text-red-600">*</span></label>
-          <input type="text" name="phone" value={form.phone ?? ''} onChange={handleChange} required className="w-full border border-gray-300 p-2 rounded" />
+          <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">Phone <span className="text-red-600">*</span></label>
+          <input type="text" name="phone" value={form.phone ?? ''} onChange={handleChange} required className="w-full border border-gray-300 dark:border-gray-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 p-2 rounded focus:ring-0 outline-none" />
         </div>
         <div className="flex gap-2">
           <div className="flex-1">
-            <label className="block font-medium text-gray-900 dark:text-white mb-1">
+            <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">
               NIK/Passport
             </label>
             <input
@@ -243,11 +243,11 @@ export default function CreateUserPage() {
               name="nik_passport"
               value={form.nik_passport ?? ''}
               onChange={handleChange}
-              className="w-full border border-gray-300 p-2 rounded"
+              className="w-full border border-gray-300 dark:border-gray-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 p-2 rounded focus:ring-0 outline-none"
             />
           </div>
           <div className="flex-1">
-            <label className="block font-medium text-gray-900 dark:text-white mb-1">
+            <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">
               Date of Birth
             </label>
             <input
@@ -255,13 +255,13 @@ export default function CreateUserPage() {
               name="date_of_birth"
               value={form.date_of_birth ?? ''}
               onChange={handleChange}
-              className="w-full border border-gray-300 p-2 rounded"
+              className="w-full border border-gray-300 dark:border-gray-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 p-2 rounded focus:ring-0 outline-none"
             />
           </div>          
         </div>
         <div className="flex gap-2">
           <div className="flex-1">
-            <label className="block font-medium text-gray-900 dark:text-white mb-1">
+            <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">
               Emergency Contact Name <span className="text-red-600">*</span>
             </label>
             <input
@@ -270,11 +270,11 @@ export default function CreateUserPage() {
               value={form.emergency_contact_name ?? ''}
               onChange={handleChange}
               required
-              className="w-full border border-gray-300 p-2 rounded"
+              className="w-full border border-gray-300 dark:border-gray-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 p-2 rounded focus:ring-0 outline-none"
             />
           </div>
           <div className="flex-1">
-            <label className="block font-medium text-gray-900 dark:text-white mb-1">
+            <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">
               Emergency Contact Phone <span className="text-red-600">*</span>
             </label>
             <input
@@ -283,7 +283,7 @@ export default function CreateUserPage() {
               value={form.emergency_contact_phone ?? ''}
               onChange={handleChange}
               required
-              className="w-full border border-gray-300 p-2 rounded"
+              className="w-full border border-gray-300 dark:border-gray-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 p-2 rounded focus:ring-0 outline-none"
             />
           </div>
         </div>
@@ -301,8 +301,8 @@ export default function CreateUserPage() {
           <input type="text" name="qr_code" value={qrInput} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded" required={form.role === "member"} />
         </div> */}
         <div>
-          <label className="block font-medium text-gray-900 dark:text-white mb-1">Role <span className="text-red-600">*</span></label>
-          <select name="role" value={form.role} onChange={handleRoleChange} className="w-full border border-gray-300 p-2 rounded" required>
+          <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">Role <span className="text-red-600">*</span></label>
+          <select name="role" value={form.role} onChange={handleRoleChange} className="w-full border border-gray-300 dark:border-gray-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 p-2 rounded focus:ring-0 outline-none" required>
             <option value="member">Member</option>
             <option value="opscan">Opscan</option>
             <option value="admin">Admin</option>
@@ -312,26 +312,26 @@ export default function CreateUserPage() {
         </div>
         {(form.role === "admin" || form.role === "opscan") && (
           <div>
-            <label className="block font-medium text-gray-900 dark:text-white mb-1">Password <span className="text-red-600">*</span></label>
-            <input type="password" name="password" value={form.password} onChange={handleChange} required className="w-full border border-gray-300 p-2 rounded" />
+            <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">Password <span className="text-red-600">*</span></label>
+            <input type="password" name="password" value={form.password} onChange={handleChange} required className="w-full border border-gray-300 dark:border-gray-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 p-2 rounded focus:ring-0 outline-none" />
           </div>
         )}
         <div>
-          <label className="block font-medium text-gray-900 dark:text-white mb-1">Photo</label>
+          <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">Photo</label>
           
           {/* Input File */}
           <input
             type="file"
             accept="image/*"
             onChange={handlePhotoChange}
-            className="w-full border border-gray-300 p-2 rounded"
+            className="w-full border border-gray-300 dark:border-gray-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 p-2 rounded"
           />
 
           {/* Button buka kamera */}
           <button
             type="button"
             onClick={() => setIsCameraOpen(true)}
-            className="mt-2 px-3 py-2 bg-blue-600 text-white rounded"
+            className="mt-2 px-3 py-2 bg-gray-600 dark:bg-blue-600 text-white rounded hover:bg-gray-700 dark:hover:bg-blue-700 transition-colors"
           >
             Open Camera
           </button>
@@ -393,12 +393,12 @@ export default function CreateUserPage() {
         {error && <div className="text-red-600 font-semibold">{error}</div>}
         {success && <div className="text-green-600 font-semibold">{success}</div>}
         <div className="flex gap-3 mt-6">
-          <button type="submit" className="flex-1 bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700" disabled={loading}>
+          <button type="submit" className="flex-1 bg-gray-600 dark:bg-blue-600 text-white py-2 rounded font-bold hover:bg-gray-700 dark:hover:bg-blue-700 transition-colors" disabled={loading}>
             {loading ? "Saving..." : "Create User"}
           </button>
           <button
             type="button"
-            className="flex-1 bg-green-600 text-white py-2 rounded font-bold hover:bg-green-700"
+            className="flex-1 bg-green-600 text-white py-2 rounded font-bold hover:bg-green-700 transition-colors"
             disabled={loading}
             onClick={(e) => handleSubmit(e, true)}
           >

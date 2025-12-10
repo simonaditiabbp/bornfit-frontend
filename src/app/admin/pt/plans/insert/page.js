@@ -65,7 +65,7 @@ export default function PTPlanInsertPage() {
       />
 
       <PageContainerInsert>
-        <h1 className="text-3xl font-bold mb-8 text-amber-300 text-center">Create PT Session Plan</h1>
+        <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-amber-300 text-center">Create PT Session Plan</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <FormInput
             label="Name"

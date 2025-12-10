@@ -7,7 +7,7 @@ import React from 'react';
  */
 export default function LoadingText({ text = "Loading..." }) {
   return (
-    <div className="text-center text-amber-300">
+    <div className="text-center text-gray-800 dark:text-amber-300">
       {text}
     </div>
   );

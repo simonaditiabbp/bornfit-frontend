@@ -111,7 +111,7 @@ export default function InsertMembershipSessionPage() {
 
       <PageContainerInsert>
         {/* <div className="max-w-3xl mx-auto bg-gray-800 p-10 rounded-2xl shadow-lg border border-gray-700"> */}
-          <h1 className="text-3xl font-bold mb-8 text-amber-300 text-center">Create Membership Session</h1>
+          <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-amber-300 text-center">Create Membership Session</h1>
           {error && <div className="text-red-400 mb-2">{error}</div>}
           <form onSubmit={handleSubmit} className="space-y-4">
             <FormInput
@@ -161,14 +161,14 @@ export default function InsertMembershipSessionPage() {
               required
             />
             <div>
-              <label className="block font-medium text-gray-200 mb-1">Final Price <span className="text-red-400">*</span></label>
+              <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">Final Price <span className="text-red-400">*</span></label>
               <div className="flex gap-2">
                 <input 
                   type="number" 
                   name="final_price" 
                   value={form.final_price || 0} 
                   onChange={handleChange} 
-                  className="flex-1 bg-gray-700 text-gray-100 border border-gray-600 p-2 rounded" 
+                  className="flex-1 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 border border-gray-300 dark:border-gray-600 p-2 rounded" 
                   required 
                 />
                 <button
@@ -180,7 +180,7 @@ export default function InsertMembershipSessionPage() {
                       setForm(f => ({ ...f, final_price: selectedPlan.price ? selectedPlan.price : 0 }));
                     }
                   }}
-                  className="bg-amber-600 text-white px-4 py-2 rounded font-medium hover:bg-amber-700 whitespace-nowrap"
+                  className="bg-gray-600 dark:bg-amber-600 text-white px-4 py-2 rounded font-medium hover:bg-gray-700 dark:hover:bg-amber-700 whitespace-nowrap"
                   disabled={!form.membership_plan_id}
                 >
                   Plan Price
@@ -201,7 +201,7 @@ export default function InsertMembershipSessionPage() {
             <div className="mb-2">
               <label className="inline-flex items-center">
                 <input type="checkbox" checked={showAdditional} onChange={e => setShowAdditional(e.target.checked)} className="mr-2" />
-                <span className="font-medium text-gray-200">Show Additional Settings</span>
+                <span className="font-medium text-gray-800 dark:text-gray-200">Show Additional Settings</span>
               </label>
             </div>
             {showAdditional && (

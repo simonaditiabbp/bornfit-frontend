@@ -133,7 +133,7 @@ export default function InsertMembershipPlanPage() {
       />
 
       <PageContainerInsert>
-        <h1 className="text-3xl font-bold mb-8 text-amber-300 text-center">Create Membership Plan</h1>
+        <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-amber-300 text-center">Create Membership Plan</h1>
         {error && <div className="text-red-400 mb-2">{error}</div>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <FormInput

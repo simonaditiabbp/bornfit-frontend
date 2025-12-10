@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaCog } from 'react-icons/fa';
-import { PageBreadcrumb, PageContainerInsert, ActionButton } from '@/components/admin';
+import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -150,7 +150,7 @@ export default function EditMembershipPlanPage() {
     setFormLoading(false);
   };
 
-  if (loading || !form) return <div className="text-amber-300 text-center font-medium mt-20">Loading...</div>;
+  if (loading || !form) return <div className="text-gray-800 dark:text-amber-300 text-center font-medium mt-20">Loading...</div>;
 
   return (
     <div>        
@@ -164,111 +164,156 @@ export default function EditMembershipPlanPage() {
 
       <PageContainerInsert>
         <div className="flex items-center justify-between mb-8 border-b border-gray-700 pb-4">
-          <h1 className="text-3xl font-bold text-amber-300">Edit Membership Plan</h1>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-amber-300">Edit Membership Plan</h1>
           <ActionButton href="/admin/membership/plans" variant="gray">Back</ActionButton>
         </div>
         {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
         {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}
           
           <div className="space-y-4 mb-4">
-            <div>
-              <label className="block mb-1 text-gray-200">Nama Plan <span className="text-red-400">*</span></label>
-              <input type="text" name="name" value={form.name} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} required disabled={!edit} />
-            </div>
+            <FormInput
+              label="Nama Plan"
+              name="name"
+              type="text"
+              value={form.name}
+              onChange={handleChange}
+              disabled={!edit}
+              required
+            />
+           
            <div className="flex gap-2 items-center">
                 <div className="flex-1">
-                    <label className="block mb-1 text-gray-200">Duration Value</label>
-                    <input
-                    type="number"
-                    name="duration_value"
-                    value={form.duration_value}
-                    onChange={handleChange}
-                    className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`}
-                    required
-                    disabled={!edit}
+                    <FormInput
+                      label="Duration Value"
+                      name="duration_value"
+                      type="number"
+                      value={form.duration_value}
+                      onChange={handleChange}
+                      disabled={!edit}
+                      required
                     />
                 </div>
                 <div className="w-32">
-                    <label className="block mb-1 text-gray-200">Duration Unit</label>
-                    <select
-                    name="duration_unit"
-                    value={form.duration_unit}
-                    onChange={handleChange}
-                    className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`}
-                    disabled={!edit}
-                    >
-                    <option value="day">Day</option>
-                    <option value="month">Month</option>
-                    </select>
+                    <FormInput
+                      label="Duration Unit"
+                      name="duration_unit"
+                      type="select"
+                      value={form.duration_unit}
+                      onChange={handleChange}
+                      disabled={!edit}
+                      options={[
+                        { value: 'day', label: 'Day' },
+                        { value: 'month', label: 'Month' }
+                      ]}
+                    />
                 </div>
             </div>
-            <div>
-              <label className="block mb-1 text-gray-200">Harga <span className="text-red-400">*</span></label>
-              <input type="number" name="price" value={form.price} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} required disabled={!edit} />
-            </div>
+            
+            <FormInput
+              label="Harga"
+              name="price"
+              type="number"
+              value={form.price}
+              onChange={handleChange}
+              disabled={!edit}
+              required
+            />
+            
             {/* Hidden fields with default values */}
             <input type="hidden" name="category" value={form.category} onChange={handleChange} />
             <input type="hidden" name="loyalty_point" value={form.loyalty_point} onChange={handleChange} />
             <input type="hidden" name="access_type" value={form.access_type} onChange={handleChange} />
             <input type="hidden" name="class_access_type" value={form.class_access_type} onChange={handleChange} />
-            <div>
-              <label className="block mb-1 text-gray-200">Keterangan</label>
-              <input type="text" name="description" value={form.description} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} disabled={!edit} />
-            </div>
-            <div>
-              <label className="block mb-1 text-gray-200">Allow Unlimited Session</label>
-              <select name="allow_unlimited_session" value={form.allow_unlimited_session ? 'true' : 'false'} onChange={handleSelectChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} disabled={!edit}>
-                <option value="false">Tidak</option>
-                <option value="true">Ya</option>
-              </select>
-            </div>
+            
+            <FormInput
+              label="Keterangan"
+              name="description"
+              type="text"
+              value={form.description}
+              onChange={handleChange}
+              disabled={!edit}
+            />
+            
+            <FormInput
+              label="Allow Unlimited Session"
+              name="allow_unlimited_session"
+              type="select"
+              value={form.allow_unlimited_session ? 'true' : 'false'}
+              onChange={handleSelectChange}
+              disabled={!edit}
+              options={[
+                { value: 'false', label: 'Tidak' },
+                { value: 'true', label: 'Ya' }
+              ]}
+            />
+            
             {showMaxSession && (
-              <div>
-                <label className="block mb-1 text-gray-200">Max Session</label>
-                <input type="number" name="max_session" value={form.max_session || ''} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} disabled={!edit} />
-              </div>
+              <FormInput
+                label="Max Session"
+                name="max_session"
+                type="number"
+                value={form.max_session || ''}
+                onChange={handleChange}
+                disabled={!edit}
+              />
             )}
+           {console.log('Rendering available_from:', form.available_from)}
            <div className="flex gap-2">
               <div className="flex-1">
-                  <label className="block mb-1 text-gray-200">Available From</label>
-                  <input
-                  type="date"
-                  name="available_from"
-                  value={formatDateOnlyForInput(form.available_from) || ''}
-                  onChange={handleChange}
-                  className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`}
-                  disabled={!edit}
+                  <FormInput
+                    label="Available From"
+                    name="available_from"
+                    type="date"
+                    value={formatDateOnlyForInput(form.available_from) || ''}
+                    onChange={handleChange}
+                    disabled={!edit}
                   />
               </div>
               <div className="flex-1">
-                  <label className="block mb-1 text-gray-200">Available Until</label>
-                  <input
-                  type="date"
-                  name="available_until"
-                  value={formatDateOnlyForInput(form.available_until) || ''}
-                  onChange={handleChange}
-                  className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`}
-                  disabled={!edit}
+                  <FormInput
+                    label="Available Until"
+                    name="available_until"
+                    type="date"
+                    value={formatDateOnlyForInput(form.available_until) || ''}
+                    onChange={handleChange}
+                    disabled={!edit}
                   />
               </div>
             </div>
-            <div>
-              <label className="block mb-1 text-gray-200">Always Available</label>
-              <select name="always_available" value={form.always_available ? 'true' : 'false'} onChange={handleSelectChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} disabled={!edit}>
-                <option value="false">Tidak</option>
-                <option value="true">Ya</option>
-              </select>
-            </div>
+            
+            <FormInput
+              label="Always Available"
+              name="always_available"
+              type="select"
+              value={form.always_available ? 'true' : 'false'}
+              onChange={handleSelectChange}
+              disabled={!edit}
+              options={[
+                { value: 'false', label: 'Tidak' },
+                { value: 'true', label: 'Ya' }
+              ]}
+            />
+            
             {showQuotaMaxSold && (
-              <div>
-                <label className="block mb-1 text-gray-200">Quota Max Sold</label>
-                <input type="number" name="quota_max_sold" value={form.quota_max_sold || ''} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} disabled={!edit} />
-              </div>
+              <FormInput
+                label="Quota Max Sold"
+                name="quota_max_sold"
+                type="number"
+                value={form.quota_max_sold || ''}
+                onChange={handleChange}
+                disabled={!edit}
+              />
             )}
-            <div>
-              <label className="block mb-1 text-gray-200">Level</label>
-              <input type="number" name="level" value={form.level || ''} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} required disabled={!edit} />
-            </div>
+            
+            <FormInput
+              label="Level"
+              name="level"
+              type="number"
+              value={form.level || ''}
+              onChange={handleChange}
+              disabled={!edit}
+              required
+            />
           </div>
 
           <div className="flex gap-3 mt-8 justify-start">

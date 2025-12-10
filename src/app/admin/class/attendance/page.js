@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import ClassAttendanceDataTable from './DataTable';
-import { FaPlus, FaCheckCircle, FaAngleRight } from 'react-icons/fa';
+import { FaPlus, FaDumbbell, FaAngleRight } from 'react-icons/fa';
 import { LoadingText, PageBreadcrumb, PageContainer, PageHeader } from '@/components/admin';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -86,7 +86,8 @@ export default function ClassAttendancePage() {
     <div>
       <PageBreadcrumb 
         items={[
-          { icon: <FaCheckCircle className="w-3 h-3" />, label: 'Class Attendance' }
+          { icon: <FaDumbbell className="w-3 h-3" />, label: 'Class Session', href: '/admin/class/session' },
+          { label: 'Class Attendance' },
         ]}
       />
       <PageContainer>

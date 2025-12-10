@@ -67,9 +67,9 @@ export default function LoginPage() {
   }
 
   return (
-  <div className="bg-gray-900 relative items-center justify-center min-h-screen w-full overflow-hidden">
+  <div className="bg-gray-50 dark:bg-gray-900 relative items-center justify-center min-h-screen w-full overflow-hidden">
     
-    <div className="absolute inset-0 z-0 pointer-events-none">
+    <div className="absolute inset-0 z-0 pointer-events-none opacity-30 dark:opacity-100">
       <Image
           src={"./oooscillate.svg"}
           alt="Graphic"
@@ -90,20 +90,20 @@ export default function LoginPage() {
         />
       </div>
 
-      <div className="bg-white/15 backdrop-blur-lg border border-white/30 p-8 rounded-xl shadow-md w-full max-w-sm">
-        <h1 className="text-center text-2xl font-bold text-amber-300 mb-6">
+      <div className="bg-white/30 dark:bg-white/15 backdrop-blur-lg border border-gray-200 dark:border-white/30 p-8 rounded-xl shadow-lg w-full max-w-sm">
+        <h1 className="text-center text-2xl font-bold text-amber-600 dark:text-amber-300 mb-6">
           Sign in
         </h1>
 
         {error && (
-          <div className="bg-red-100 text-red-700 p-2 mb-4 rounded text-center">
+          <div className="bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 p-2 mb-4 rounded text-center border border-red-200 dark:border-red-700">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-amber-300 font-medium mb-1">Email</label>
+            <label className="block text-gray-800 dark:text-amber-300 font-medium mb-1">Email</label>
             <input
               type="email"
               placeholder="Enter your email"
@@ -111,26 +111,26 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoFocus
-              className="w-full border border-amber-100 text-amber-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-0 focus:border-amber-300"
+              className="w-full border border-gray-300 dark:border-amber-100 bg-white dark:bg-transparent text-gray-800 dark:text-amber-300 placeholder:text-gray-400 dark:placeholder:text-amber-300/50 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-amber-300 focus:border-transparent"
             />
           </div>
 
           <div>
-            <label className="block text-amber-300 font-medium mb-1">Password</label>
+            <label className="block text-gray-800 dark:text-amber-300 font-medium mb-1">Password</label>
             <input
               type="password"
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full border border-amber-100 text-amber-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-0 focus:border-amber-300"
+              className="w-full border border-gray-300 dark:border-amber-100 bg-white dark:bg-transparent text-gray-800 dark:text-amber-300 placeholder:text-gray-400 dark:placeholder:text-amber-300/50 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-amber-300 focus:border-transparent"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-linear-to-r from-yellow-300 to-amber-100 border border-transparent hover:border-amber-500 text-gray-800 font-semibold py-2 rounded-lg"
+            className="w-full bg-gradient-to-r from-amber-400 to-amber-500 dark:from-yellow-300 dark:to-amber-100 border border-transparent hover:border-amber-600 dark:hover:border-amber-500 text-white dark:text-gray-800 font-semibold py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Loading...' : 'Login'}
           </button>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaIdCard } from 'react-icons/fa';
-import { PageBreadcrumb, PageContainerInsert, ActionButton } from '@/components/admin';
+import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -108,7 +108,7 @@ export default function EditMembershipSessionPage() {
     setFormLoading(false);
   };
 
-  if (loading || !form) return <div className="text-amber-300 text-center font-medium mt-20">Loading...</div>;
+  if (loading || !form) return <div className="text-gray-800 dark:text-amber-300 text-center font-medium mt-20">Loading...</div>;
 
   return (
     <div>      
@@ -121,7 +121,7 @@ export default function EditMembershipSessionPage() {
 
       <PageContainerInsert>
           <div className="flex items-center justify-between mb-8 border-b border-gray-700 pb-4">
-            <h1 className="text-3xl font-bold text-amber-300">Membership Session Details</h1>
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-amber-300">Membership Session Details</h1>
             <ActionButton
               href="/admin/membership/session"
               variant="gray"
@@ -132,52 +132,93 @@ export default function EditMembershipSessionPage() {
           {success && <div className="text-green-400 mb-2">{success}</div>}
           {error && <div className="text-red-400 mb-2">{error}</div>}
           <div className="space-y-4 mb-4">
+            <FormInput
+              label="Member"
+              name="user_id"
+              type="select"
+              value={form.user_id}
+              onChange={handleChange}
+              disabled={!edit}
+              required
+              options={[
+                { value: '', label: 'Pilih Member' },
+                ...users.map(u => ({ value: u.id, label: u.name }))
+              ]}
+            />
+            
+            <FormInput
+              label="Plan"
+              name="membership_plan_id"
+              type="select"
+              value={form.membership_plan_id}
+              onChange={handleChange}
+              disabled={!edit}
+              required
+              options={[
+                { value: '', label: 'Pilih Plan' },
+                ...plans.map(p => ({ value: p.id, label: p.name }))
+              ]}
+            />
+            
+            <FormInput
+              label="Start Date"
+              name="start_date"
+              type="date"
+              value={formatDateForInput(form.start_date)}
+              onChange={handleChange}
+              disabled={!edit}
+              required
+            />
+            
+            <FormInput
+              label="Sales Type"
+              name="sales_type"
+              type="select"
+              value={form.sales_type}
+              onChange={handleChange}
+              disabled={!edit}
+              required
+              options={[
+                { value: 'new', label: 'New' },
+                { value: 'renewal', label: 'Renewal' },
+                { value: 'upgrade', label: 'Upgrade' },
+                { value: 'downgrade', label: 'Downgrade' }
+              ]}
+            />
+            
+            <FormInput
+              label="Status"
+              name="status"
+              type="select"
+              value={form.status}
+              onChange={handleChange}
+              disabled={!edit}
+              required
+              options={[
+                { value: 'pending', label: 'Pending' },
+                { value: 'active', label: 'Active' },
+                { value: 'expired', label: 'Expired' }
+              ]}
+            />
+            
+            <FormInput
+              label="Is Active"
+              name="is_active"
+              type="select"
+              value={form.is_active ? 'true' : 'false'}
+              onChange={e => setForm(f => ({ ...f, is_active: e.target.value === 'true' }))}
+              disabled={!edit}
+              required
+              options={[
+                { value: 'true', label: 'Ya' },
+                { value: 'false', label: 'Tidak' }
+              ]}
+            />
+            
             <div>
-              <label className={`block font-medium text-gray-200 mb-1`}>Member <span className="text-red-400">*</span></label>
-              <select name="user_id" value={form.user_id} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} required disabled={!edit}>
-                <option value="">Pilih Member</option>
-                {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className={`block font-medium text-gray-200 mb-1`}>Plan <span className="text-red-400">*</span></label>
-              <select name="membership_plan_id" value={form.membership_plan_id} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} required disabled={!edit}>
-                <option value="">Pilih Plan</option>
-                {plans.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className={`block font-medium text-gray-200 mb-1`}>Start Date <span className="text-red-400">*</span></label>
-              <input type="date" name="start_date" value={formatDateForInput(form.start_date)} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} required disabled={!edit} />
-            </div>
-            <div>
-              <label className={`block font-medium text-gray-200 mb-1`}>Sales Type <span className="text-red-400">*</span></label>
-              <select name="sales_type" value={form.sales_type} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} required disabled={!edit}>
-                <option value="new">New</option>
-                <option value="renewal">Renewal</option>
-                <option value="upgrade">Upgrade</option>
-                <option value="downgrade">Downgrade</option>
-              </select>
-            </div>
-            <div>
-              <label className={`block font-medium text-gray-200 mb-1`}>Status <span className="text-red-400">*</span></label>
-              <select name="status" value={form.status} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} required disabled={!edit}>
-                <option value="pending">Pending</option>
-                <option value="active">Active</option>
-                <option value="expired">Expired</option>
-              </select>
-            </div>
-            <div>
-              <label className={`block font-medium text-gray-200 mb-1`}>Is Active <span className="text-red-400">*</span></label>
-              <select name="is_active" value={form.is_active ? 'true' : 'false'} onChange={e => setForm(f => ({ ...f, is_active: e.target.value === 'true' }))} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} required disabled={!edit}>
-                <option value="true">Ya</option>
-                <option value="false">Tidak</option>
-              </select>
-            </div>
-            <div>
-              <label className={`block font-medium text-gray-200 mb-1`}>Final Price <span className="text-red-400">*</span></label>
+              <label className={`block font-medium text-gray-800 dark:text-gray-200 mb-1`}>Final Price <span className="text-red-400">*</span></label>
               <div className="flex gap-2">
-                <input type="number" name="final_price" value={form.final_price || ''} onChange={handleChange} className={`flex-1 p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} required disabled={!edit} />
+                <input type="number" name="final_price" value={form.final_price || ''} onChange={handleChange} className={`flex-1 p-3 border rounded-lg ${edit ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600' : 'bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-700'}`} required disabled={!edit} />
                 <button
                   type="button"
                   onClick={() => {
@@ -193,59 +234,100 @@ export default function EditMembershipSessionPage() {
                 </button>
               </div>
             </div>
-            <div>
-                  <label className={`block font-medium text-gray-200 mb-1`}>Referral Staff/Sales</label>
-                  <select name="referral_user_staff_id" value={form.referral_user_staff_id || ''} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} disabled={!edit}>
-                    <option value="">Pilih Referral Staff/Sales</option>
-                    {staff.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-                  </select>
-                </div>
+            
+            <FormInput
+              label="Referral Staff/Sales"
+              name="referral_user_staff_id"
+              type="select"
+              value={form.referral_user_staff_id || ''}
+              onChange={handleChange}
+              disabled={!edit}
+              options={[
+                { value: '', label: 'Pilih Referral Staff/Sales' },
+                ...staff.map(u => ({ value: u.id, label: u.name }))
+              ]}
+            />
+            
             <div className="mb-2">
               <label className="inline-flex items-center">
                 <input type="checkbox" checked={showAdditional} onChange={e => setShowAdditional(e.target.checked)} className="mr-2" />
-                <span className="font-medium text-gray-200">View Additional Settings</span>
+                <span className="font-medium text-gray-800 dark:text-gray-200">View Additional Settings</span>
               </label>
             </div>
             {showAdditional && (
               <>
-                <div>
-                  <label className={`block font-medium text-gray-200 mb-1`}>Additional Fee</label>
-                  <input type="number" name="additional_fee" value={form.additional_fee || ''} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} disabled={!edit} />
-                </div>
-                <div>
-                  <label className="block font-medium text-gray-200 mb-1">Discount Type</label>
-                  <select name="discount_type" value={form.discount_type} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} disabled={!edit}>
-                    <option value="amount">Amount</option>
-                    <option value="percent">Percent</option>
-                  </select>
-                </div>
+                <FormInput
+                  label="Additional Fee"
+                  name="additional_fee"
+                  type="number"
+                  value={form.additional_fee || ''}
+                  onChange={handleChange}
+                  disabled={!edit}
+                />
+                
+                <FormInput
+                  label="Discount Type"
+                  name="discount_type"
+                  type="select"
+                  value={form.discount_type}
+                  onChange={handleChange}
+                  disabled={!edit}
+                  options={[
+                    { value: 'amount', label: 'Amount' },
+                    { value: 'percent', label: 'Percent' }
+                  ]}
+                />
                 {form.discount_type === 'amount' && (
-                  <div>
-                    <label className="block font-medium text-gray-200 mb-1">Value Amount</label>
-                    <input type="number" name="discount_amount" value={form.discount_amount ?? ''} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} disabled={!edit} />
-                  </div>
+                  <FormInput
+                    label="Value Amount"
+                    name="discount_amount"
+                    type="number"
+                    value={form.discount_amount ?? ''}
+                    onChange={handleChange}
+                    disabled={!edit}
+                  />
                 )}
                 {form.discount_type === 'percent' && (
-                  <div>
-                    <label className="block font-medium text-gray-200 mb-1">Value Percent</label>
-                    <input type="number" name="discount_percent" value={form.discount_percent ?? ''} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} disabled={!edit} />
-                  </div>
+                  <FormInput
+                    label="Value Percent"
+                    name="discount_percent"
+                    type="number"
+                    value={form.discount_percent ?? ''}
+                    onChange={handleChange}
+                    disabled={!edit}
+                  />
                 )}
-                <div>
-                  <label className={`block font-medium text-gray-200 mb-1`}>Extra Duration Days</label>
-                  <input type="number" name="extra_duration_days" value={form.extra_duration_days || ''} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} disabled={!edit} />
-                </div>
-                <div>
-                  <label className={`block font-medium text-gray-200 mb-1`}>Referral Member</label>
-                  <select name="referral_user_member_id" value={form.referral_user_member_id || ''} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} disabled={!edit}>
-                    <option value="">Pilih Referral Member</option>
-                    {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className={`block font-medium text-gray-200 mb-1`}>Note</label>
-                  <input type="text" name="note" value={form.note} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} disabled={!edit} />
-                </div>
+                
+                <FormInput
+                  label="Extra Duration Days"
+                  name="extra_duration_days"
+                  type="number"
+                  value={form.extra_duration_days || ''}
+                  onChange={handleChange}
+                  disabled={!edit}
+                />
+                
+                <FormInput
+                  label="Referral Member"
+                  name="referral_user_member_id"
+                  type="select"
+                  value={form.referral_user_member_id || ''}
+                  onChange={handleChange}
+                  disabled={!edit}
+                  options={[
+                    { value: '', label: 'Pilih Referral Member' },
+                    ...users.map(u => ({ value: u.id, label: u.name }))
+                  ]}
+                />
+                
+                <FormInput
+                  label="Note"
+                  name="note"
+                  type="text"
+                  value={form.note}
+                  onChange={handleChange}
+                  disabled={!edit}
+                />
               </>
             )}
 

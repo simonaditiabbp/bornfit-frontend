@@ -306,9 +306,9 @@ export default function StaffScheduleCalendarPage() {
   const { start, end } = getDateRange();
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
       {/* Header */}
-      <div className="bg-gray-800 border-b border-gray-600 p-5 sticky top-0 z-40">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-600 p-5 sticky top-0 z-40">
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-3">
             <FaCalendar className="text-amber-400 text-2xl" />
@@ -317,13 +317,13 @@ export default function StaffScheduleCalendarPage() {
           <div className="flex gap-2">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-semibold transition"
+              className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white px-4 py-2 rounded-lg flex items-center gap-2 font-semibold transition"
             >
               <FaFilter /> Filters
             </button>
             <button
               onClick={() => { setShowForm(true); resetForm(); }}
-              className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-semibold transition"
+              className="bg-gray-500 hover:bg-amber-600 dark:bg-gray-500 dark:hover:bg-amber-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-semibold transition"
             >
               <FaPlus /> Add Manual
             </button>
@@ -336,8 +336,8 @@ export default function StaffScheduleCalendarPage() {
               onClick={() => setViewMode('day')}
               className={`px-4 py-2 rounded font-semibold transition ${
                 viewMode === 'day'
-                  ? 'bg-amber-600 text-white'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  ? 'bg-gray-500 dark:bg-gray-500 text-white'
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
               }`}
             >
               Day
@@ -346,8 +346,8 @@ export default function StaffScheduleCalendarPage() {
               onClick={() => setViewMode('week')}
               className={`px-4 py-2 rounded font-semibold transition ${
                 viewMode === 'week'
-                  ? 'bg-amber-600 text-white'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  ? 'bg-gray-500 dark:bg-gray-500 text-white'
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
               }`}
             >
               Week
@@ -356,8 +356,8 @@ export default function StaffScheduleCalendarPage() {
               onClick={() => setViewMode('month')}
               className={`px-4 py-2 rounded font-semibold transition ${
                 viewMode === 'month'
-                  ? 'bg-amber-600 text-white'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  ? 'bg-gray-500 dark:bg-gray-500 text-white'
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
               }`}
             >
               Month
@@ -367,24 +367,24 @@ export default function StaffScheduleCalendarPage() {
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <button onClick={goToPrev} className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded">
+            <button onClick={goToPrev} className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white p-2 rounded">
               <FaChevronLeft />
             </button>
-            <button onClick={goToToday} className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded font-semibold">
+            <button onClick={goToToday} className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white px-4 py-2 rounded font-semibold">
               Today
             </button>
-            <button onClick={goToNext} className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded">
+            <button onClick={goToNext} className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white p-2 rounded">
               <FaChevronRight />
             </button>
           </div>
-          <div className="text-gray-300 font-semibold">
+          <div className="text-gray-700 dark:text-gray-300 font-semibold">
             {start.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })} - {end.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
           </div>
         </div>
 
         {showFilters && (
-          <div className="mt-4 p-4 bg-gray-700 rounded-lg">
-            <div className="text-sm font-semibold text-gray-300 mb-2">Filter by Staff:</div>
+          <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
+            <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Filter by Staff:</div>
             <div className="flex flex-wrap gap-2">
               {staffMembers.map(staff => (
                 <button
@@ -392,8 +392,8 @@ export default function StaffScheduleCalendarPage() {
                   onClick={() => toggleStaffFilter(staff.id)}
                   className={`px-3 py-1 rounded text-sm font-semibold transition ${
                     selectedStaff.includes(staff.id)
-                      ? 'bg-amber-600 text-white'
-                      : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                      ? 'bg-amber-500 dark:bg-amber-600 text-white'
+                      : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500'
                   }`}
                 >
                   {staff.name}
@@ -415,7 +415,7 @@ export default function StaffScheduleCalendarPage() {
       {/* Calendar Grid */}
       <div className="p-5 overflow-x-auto">
         {loading ? (
-          <div className="text-center text-amber-300 py-20">Loading...</div>
+          <div className="text-center text-amber-500 dark:text-amber-300 py-20">Loading...</div>
         ) : (
           <div className="min-w-[1200px]">
             {/* Day Headers */}
@@ -426,14 +426,14 @@ export default function StaffScheduleCalendarPage() {
                 gridTemplateColumns: `100px repeat(${displayDays.length}, ${viewMode === 'month' ? '60px' : '1fr'})`
               }}
             >
-              <div className="bg-gray-800 p-2 rounded font-semibold text-center border border-gray-600">Time</div>
+              <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded font-semibold text-center border border-gray-300 dark:border-gray-600">Time</div>
               {displayDays.map((day, index) => (
                 <div
                   key={index}
-                  className={`bg-gray-800 rounded font-semibold text-center border ${
+                  className={`bg-gray-100 dark:bg-gray-800 rounded font-semibold text-center border ${
                     day.toDateString() === new Date().toDateString()
-                      ? 'border-amber-500 bg-amber-900/20'
-                      : 'border-gray-600'
+                      ? 'border-amber-500 bg-amber-100 dark:bg-amber-900/20'
+                      : 'border-gray-300 dark:border-gray-600'
                   } ${
                     viewMode === 'month' ? 'p-0.5 text-[10px]' : 'p-2'
                   }`}
@@ -442,7 +442,7 @@ export default function StaffScheduleCalendarPage() {
                     <div className="text-xs">{day.getDate()}</div>
                   ) : (
                     <>
-                      <div className="text-xs text-gray-400">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
                         {day.toLocaleDateString('id-ID', { weekday: 'short' })}
                       </div>
                       <div className="text-lg">{day.getDate()}</div>
@@ -462,7 +462,7 @@ export default function StaffScheduleCalendarPage() {
                   gridTemplateColumns: `100px repeat(${displayDays.length}, ${viewMode === 'month' ? '60px' : '1fr'})`
                 }}
               >
-                <div className="bg-gray-800 p-2 rounded text-center font-semibold border border-gray-600 flex items-center justify-center">
+                <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded text-center font-semibold border border-gray-300 dark:border-gray-600 flex items-center justify-center">
                   {timeSlot}
                 </div>
 
@@ -472,7 +472,7 @@ export default function StaffScheduleCalendarPage() {
                   return (
                     <div
                       key={`${day}-${timeSlot}`}
-                      className={`bg-gray-800 rounded border border-gray-700 ${
+                      className={`bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 ${
                         viewMode === 'month' ? 'p-0.5 min-h-[50px]' : 'p-1 min-h-[80px]'
                       }`}
                     >
@@ -518,12 +518,12 @@ export default function StaffScheduleCalendarPage() {
       </div>
 
       {/* Legend */}
-      <div className="fixed bottom-5 right-5 bg-gray-800 rounded-lg p-4 border border-gray-600 shadow-lg">
-        <div className="text-sm font-semibold text-gray-300 mb-2">Schedule Types</div>
+      <div className="fixed bottom-5 right-5 bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600 shadow-lg">
+        <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Schedule Types</div>
         <div className="space-y-1 text-xs">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded" style={{ backgroundColor: '#3b82f6' }}></div>
-            <span className="text-gray-400">Class</span>
+            <span className="text-gray-600 dark:text-gray-400">Class</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded" style={{ backgroundColor: '#10b981' }}></div>
@@ -547,15 +547,15 @@ export default function StaffScheduleCalendarPage() {
       {/* Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold mb-4 text-amber-400">Add Manual Schedule</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <h2 className="text-2xl font-bold mb-4 text-amber-600 dark:text-amber-400">Add Manual Schedule</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-gray-200 mb-2 font-semibold">Staff *</label>
+                <label className="block text-gray-700 dark:text-gray-200 mb-2 font-semibold">Staff *</label>
                 <select
                   value={formData.staff_id}
                   onChange={(e) => setFormData({ ...formData, staff_id: e.target.value })}
-                  className="w-full bg-gray-700 border border-gray-600 text-gray-200 rounded-lg px-3 py-2"
+                  className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2"
                   required
                 >
                   <option value="">Select Staff</option>
@@ -567,21 +567,21 @@ export default function StaffScheduleCalendarPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-gray-200 mb-2 font-semibold">Date *</label>
+                  <label className="block text-gray-700 dark:text-gray-200 mb-2 font-semibold">Date *</label>
                   <input
                     type="date"
                     value={formData.schedule_date}
                     onChange={(e) => setFormData({ ...formData, schedule_date: e.target.value })}
-                    className="w-full bg-gray-700 border border-gray-600 text-gray-200 rounded-lg px-3 py-2"
+                    className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-200 mb-2 font-semibold">Type *</label>
+                  <label className="block text-gray-700 dark:text-gray-200 mb-2 font-semibold">Type *</label>
                   <select
                     value={formData.schedule_type}
                     onChange={(e) => setFormData({ ...formData, schedule_type: e.target.value })}
-                    className="w-full bg-gray-700 border border-gray-600 text-gray-200 rounded-lg px-3 py-2"
+                    className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2"
                     required
                   >
                     <option value="available">Available</option>
@@ -593,44 +593,44 @@ export default function StaffScheduleCalendarPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-gray-200 mb-2 font-semibold">Start *</label>
+                  <label className="block text-gray-700 dark:text-gray-200 mb-2 font-semibold">Start *</label>
                   <input
                     type="datetime-local"
                     value={formData.start_time}
                     onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
-                    className="w-full bg-gray-700 border border-gray-600 text-gray-200 rounded-lg px-3 py-2"
+                    className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-200 mb-2 font-semibold">End *</label>
+                  <label className="block text-gray-700 dark:text-gray-200 mb-2 font-semibold">End *</label>
                   <input
                     type="datetime-local"
                     value={formData.end_time}
                     onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
-                    className="w-full bg-gray-700 border border-gray-600 text-gray-200 rounded-lg px-3 py-2"
+                    className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-gray-200 mb-2 font-semibold">Title</label>
+                <label className="block text-gray-700 dark:text-gray-200 mb-2 font-semibold">Title</label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full bg-gray-700 border border-gray-600 text-gray-200 rounded-lg px-3 py-2"
+                  className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2"
                   placeholder="e.g., Lunch Break, Day Off"
                 />
               </div>
 
               <div>
-                <label className="block text-gray-200 mb-2 font-semibold">Notes</label>
+                <label className="block text-gray-700 dark:text-gray-200 mb-2 font-semibold">Notes</label>
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full bg-gray-700 border border-gray-600 text-gray-200 rounded-lg px-3 py-2"
+                  className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2"
                   rows={3}
                 />
               </div>
@@ -639,13 +639,13 @@ export default function StaffScheduleCalendarPage() {
                 <button
                   type="button"
                   onClick={() => { setShowForm(false); resetForm(); }}
-                  className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-semibold"
+                  className="bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-700 text-gray-800 dark:text-white px-6 py-2 rounded-lg font-semibold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded-lg font-semibold"
+                  className="bg-amber-500 dark:bg-amber-600 hover:bg-amber-600 dark:hover:bg-amber-700 text-white px-6 py-2 rounded-lg font-semibold"
                 >
                   Create
                 </button>

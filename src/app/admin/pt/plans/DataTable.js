@@ -3,7 +3,7 @@ import { StyledDataTable } from '@/components/admin';
 
 export default function PTPlansDataTable({ data }) {
   const columns = [
-    { name: 'No', cell: (row, i) => i + 1, width: '70px', center: true },
+    { name: 'No', cell: (row, i) => i + 1, width: '70px', center: "true" },
     { name: 'Name', selector: row => row.name, sortable: true, cell: row => <span className="font-semibold">{row.name}</span> },
     { name: 'Duration', selector: row => row.duration_value, sortable: true, cell: row => `${row.duration_value} hari` },
     { name: 'Max Session', selector: row => row.max_session, sortable: true },
@@ -13,7 +13,7 @@ export default function PTPlansDataTable({ data }) {
     {
       name: 'Actions',
       cell: row => (
-          <Link href={`/admin/pt/plans/edit?id=${row.id}`} className="bg-gray-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">Detail</Link>
+          <Link href={`/admin/pt/plans/edit?id=${row.id}`} className="bg-gray-600 dark:bg-blue-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-700 dark:hover:bg-blue-700">Detail</Link>
         // ...existing code...
       ),
     },

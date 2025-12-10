@@ -218,13 +218,13 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-60 backdrop-blur-sm p-4 overflow-hidden">
-      <div className="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto relative flex flex-col">
-        <div className="flex justify-between items-center p-6 border-b border-gray-600 sticky top-0 bg-gray-800 z-10">
-            <h1 className="text-2xl font-bold text-gray-200">Create New User</h1>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto relative flex flex-col">
+        <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-600 sticky top-0 bg-white dark:bg-gray-800 z-10">
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Create New User</h1>
             <button 
                 onClick={handleCloseInternal}
-                className="text-gray-400 hover:text-gray-200 transition-colors"
-            >
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
         </div>
@@ -233,24 +233,24 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
           <form onSubmit={handleSubmit} className="space-y-6">
 
             <div>
-              <label className="block font-medium text-gray-200 mb-1">Name <span className="text-red-600">*</span></label>
-              <input type="text" name="name" value={form.name} onChange={handleChange} required className="w-full text-gray-200 bg-gray-700 focus:bg-gray-600 border border-gray-400 p-2 rounded focus:ring-0 outline-none" autoFocus />
+              <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">Name <span className="text-red-600">*</span></label>
+              <input type="text" name="name" value={form.name} onChange={handleChange} required className="w-full text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-600 border border-gray-300 dark:border-gray-400 p-2 rounded focus:ring-0 outline-none" autoFocus />
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label className="block font-medium text-gray-200 mb-1">Email</label>
-                    <input type="email" name="email" value={form.email} onChange={handleChange} className="w-full text-gray-200 bg-gray-700 focus:bg-gray-600 border border-gray-400 p-2 rounded focus:ring-0 outline-none" />
+                    <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">Email</label>
+                    <input type="email" name="email" value={form.email} onChange={handleChange} className="w-full text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-600 border border-gray-300 dark:border-gray-400 p-2 rounded focus:ring-0 outline-none" />
                 </div>
                 <div>
-                    <label className="block font-medium text-gray-200 mb-1">Phone <span className="text-red-600">*</span></label>
-                    <input type="text" name="phone" value={form.phone} onChange={handleChange} required className="w-full text-gray-200 bg-gray-700 focus:bg-gray-600 border border-gray-400 p-2 rounded focus:ring-0 outline-none" />
+                    <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">Phone <span className="text-red-600">*</span></label>
+                    <input type="text" name="phone" value={form.phone} onChange={handleChange} required className="w-full text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-600 border border-gray-300 dark:border-gray-400 p-2 rounded focus:ring-0 outline-none" />
                 </div>
             </div>
 
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
-                <label className="block font-medium text-gray-200 mb-1">
+                <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">
                   NIK/Passport
                 </label>
                 <input
@@ -258,11 +258,11 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
                   name="nik_passport"
                   value={form.nik_passport}
                   onChange={handleChange}
-                  className="w-full text-gray-200 bg-gray-700 focus:bg-gray-600 border border-gray-400 p-2 rounded focus:ring-0 outline-none"
+                  className="w-full text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-600 border border-gray-300 dark:border-gray-400 p-2 rounded focus:ring-0 outline-none"
                 />
               </div>
               <div className="flex-1">
-                <label className="block font-medium text-gray-200 mb-1">
+                <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">
                   Date of Birth
                 </label>
                 <input
@@ -270,14 +270,14 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
                   name="date_of_birth"
                   value={form.date_of_birth}
                   onChange={handleChange}
-                  className="w-full text-gray-200 bg-gray-700 focus:bg-gray-600 border border-gray-400 p-2 rounded focus:ring-0 outline-none"
+                  className="w-full text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-600 border border-gray-300 dark:border-gray-400 p-2 rounded focus:ring-0 outline-none"
                 />
               </div>          
             </div>
 
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
-                <label className="block font-medium text-gray-200 mb-1">
+                <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">
                   Emergency Contact Name <span className="text-red-600">*</span>
                 </label>
                 <input
@@ -286,11 +286,11 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
                   value={form.emergency_contact_name}
                   onChange={handleChange}
                   required
-                  className="w-full text-gray-200 bg-gray-700 focus:bg-gray-600 border border-gray-400 p-2 rounded focus:ring-0 outline-none"
+                  className="w-full text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-600 border border-gray-300 dark:border-gray-400 p-2 rounded focus:ring-0 outline-none"
                 />
               </div>
               <div className="flex-1">
-                <label className="block font-medium text-gray-200 mb-1">
+                <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">
                   Emergency Contact Phone <span className="text-red-600">*</span>
                 </label>
                 <input
@@ -299,14 +299,14 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
                   value={form.emergency_contact_phone}
                   onChange={handleChange}
                   required
-                  className="w-full text-gray-200 bg-gray-700 focus:bg-gray-600 border border-gray-400 p-2 rounded focus:ring-0 outline-none"
+                  className="w-full text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-600 border border-gray-300 dark:border-gray-400 p-2 rounded focus:ring-0 outline-none"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block font-medium text-gray-200 mb-1">Role <span className="text-red-600">*</span></label>
-              <select name="role" value={form.role} onChange={handleRoleChange} className="w-full text-gray-200 bg-gray-700 focus:bg-gray-600 border border-gray-400 p-2 rounded focus:ring-0 outline-none" required>
+              <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">Role <span className="text-red-600">*</span></label>
+              <select name="role" value={form.role} onChange={handleRoleChange} className="w-full text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-600 border border-gray-300 dark:border-gray-400 p-2 rounded focus:ring-0 outline-none" required>
                 <option value="member">Member</option>
                 <option value="opscan">Opscan</option>
                 <option value="admin">Admin</option>
@@ -317,27 +317,27 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
 
             {(form.role === "admin" || form.role === "opscan") && (
               <div>
-                <label className="block font-medium text-gray-200 mb-1">Password <span className="text-red-600">*</span></label>
-                <input type="password" name="password" value={form.password} onChange={handleChange} required className="w-full text-gray-200 bg-gray-700 focus:bg-gray-600 border border-gray-400 p-2 rounded focus:ring-0 outline-none" />
+                <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">Password <span className="text-red-600">*</span></label>
+                <input type="password" name="password" value={form.password} onChange={handleChange} required className="w-full text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-600 border border-gray-300 dark:border-gray-400 p-2 rounded focus:ring-0 outline-none" />
               </div>
             )}
 
             <div>
-              <label className="block font-medium text-gray-200 mb-1">Photo</label>
+              <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">Photo</label>
               
               {/* Input File */}
               <input
                 type="file"
                 accept="image/*"
                 onChange={handlePhotoChange}
-                className="w-full text-gray-200 bg-gray-700 border border-gray-400 p-2 rounded"
+                className="w-full text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-400 p-2 rounded"
               />
 
               {/* Button buka kamera */}
               <button
                 type="button"
                 onClick={() => setIsCameraOpen(!isCameraOpen)}
-                className="mt-2 px-4 py-2 bg-gray-600 border border-gray-500 text-gray-300 rounded hover:bg-gray-500 transition-colors"
+                className="mt-2 px-4 py-2 bg-gray-600 dark:bg-gray-600 border border-gray-400 dark:border-gray-500 text-white dark:text-gray-300 rounded hover:bg-gray-700 dark:hover:bg-gray-500 transition-colors"
               >
                 {isCameraOpen ? "Close Camera" : "Open Camera"}
               </button>
@@ -363,15 +363,15 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
 
               {/* Preview */}
               {photo && (
-                <div className="mt-4 flex flex-col items-center p-4 border border-dashed border-gray-400 rounded-lg">
+                <div className="mt-4 flex flex-col items-center p-4 border border-dashed border-gray-300 dark:border-gray-400 rounded-lg">
                   <Image
                     src={URL.createObjectURL(photo)}
                     alt="Preview Photo"
                     width={180}
                     height={180}
-                    className="w-40 h-40 object-cover rounded-lg border border-gray-400 shadow-sm"
+                    className="w-40 h-40 object-cover rounded-lg border border-gray-300 dark:border-gray-400 shadow-sm"
                   />
-                  <span className="text-xs text-gray-300 mt-2">New Photo Selected</span>
+                  <span className="text-xs text-gray-700 dark:text-gray-300 mt-2">New Photo Selected</span>
                   <button type="button" onClick={() => setPhoto(null)} className="text-xs text-red-500 mt-1 hover:underline">Remove</button>
                 </div>
               )}
@@ -380,17 +380,17 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
             {error && <div className="bg-red-50 text-red-600 p-3 rounded border border-red-200 text-sm font-semibold">{error}</div>}
             {success && <div className="bg-green-50 text-green-600 p-3 rounded border border-green-200 text-sm font-semibold">{success}</div>}
             
-            <div className="flex gap-3 pt-4 border-t border-gray-600 mt-4">
+            <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-600 mt-4">
                 <button 
                     type="button" 
                     onClick={handleCloseInternal}
-                    className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-200 transition-colors"
+                    className="flex-1 bg-gray-200 dark:bg-gray-100 text-gray-800 dark:text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-300 dark:hover:bg-gray-200 transition-colors"
                 >
                     Cancel
                 </button>
                 <button 
                     type="submit" 
-                    className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" 
+                    className="flex-1 bg-gray-600 dark:bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-gray-700 dark:hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" 
                     disabled={loading}
                 >
                     {loading ? (

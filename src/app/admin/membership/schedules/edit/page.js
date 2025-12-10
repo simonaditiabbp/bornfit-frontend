@@ -2,8 +2,8 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FaAngleRight, FaCalendar } from 'react-icons/fa';
-import Link from 'next/link';
+import { FaCalendar } from 'react-icons/fa';
+import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -85,80 +85,95 @@ export default function EditMembershipSchedulePage() {
     setFormLoading(false);
   };
 
-  if (loading || !form) return <div className="text-amber-300 text-center font-medium mt-20">Loading...</div>;
+  if (loading || !form) return <div className="text-gray-800 dark:text-amber-300 text-center font-medium mt-20">Loading...</div>;
 
   return (
     <div>
-      <div className="p-5">
-        {/* Breadcrumb Navigation */}
-        <div className="flex items-center gap-2 text-sm mb-6 bg-gray-800 px-4 py-3 rounded-lg">
-          <FaCalendar className="text-amber-300" />
-          <Link href="/admin/membership/session" className="text-gray-400 hover:text-amber-300 transition-colors">
-            Membership
-          </Link>
-          <FaAngleRight className="text-gray-500 text-xs" />
-          <Link href="/admin/membership/schedules" className="text-gray-400 hover:text-amber-300 transition-colors">
-            Membership Schedules
-          </Link>
-          <FaAngleRight className="text-amber-300 text-xs" />
-          <span className="text-amber-300 font-medium">Detail / Edit</span>
-        </div>
+      <PageBreadcrumb 
+        items={[
+          { icon: <FaCalendar className="w-3 h-3" />, label: 'Membership', href: '/admin/membership/session' },
+          { label: 'Schedules', href: '/admin/membership/schedules' },
+          { label: 'Detail / Edit' }
+        ]}
+      />
 
-        <div className="max-w-4xl mx-auto bg-gray-800 rounded-2xl shadow-lg p-10 border border-gray-700">
-          <div className="flex items-center justify-between mb-8 border-b border-gray-700 pb-4">
-            <h1 className="text-3xl font-bold text-amber-300">Edit Membership Schedule</h1>
-            <Link href="/admin/membership/schedules" className="bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-500 transition-colors">
-              Back
-            </Link>
-          </div>
-          {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
-          {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}
+      <PageContainerInsert>
+        <div className="flex items-center justify-between mb-8 border-b border-gray-700 pb-4">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-amber-300">Edit Schedule</h1>
+          <ActionButton href="/admin/membership/schedules" variant="gray">Back</ActionButton>
+        </div>
+        {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
+        {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}
+        
+        <div className="space-y-4 mb-4">
+          <FormInput
+            label="Member"
+            name="user_id"
+            type="select"
+            value={form.user_id}
+            onChange={handleChange}
+            disabled={!edit}
+            required
+            options={[
+              { value: '', label: 'Pilih Member' },
+              ...users.map(u => ({ value: u.id, label: u.name }))
+            ]}
+          />
           
-          <div className="space-y-4 mb-4">
-            <div>
-              <label className="block mb-1 text-gray-200">Member</label>
-              <select name="user_id" value={form.user_id} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} required disabled={!edit}>
-                <option value="">Pilih Member</option>
-                {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block mb-1 text-gray-200">Plan</label>
-              <select name="membership_plan_id" value={form.membership_plan_id} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} required disabled={!edit}>
-                <option value="">Pilih Plan</option>
-                {plans.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block mb-1 text-gray-200">Schedule Date</label>
-              <input type="date" name="schedule_date" value={form.schedule_date} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} required disabled={!edit} />
-            </div>
-            <div>
-              <label className="block mb-1 text-gray-200">Status</label>
-              <select name="status" value={form.status} onChange={handleChange} className={`w-full p-3 border rounded-lg ${edit ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-gray-900 text-gray-400 border-gray-700'}`} disabled={!edit}>
-                <option value="pending">Pending</option>
-                <option value="active">Active</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="flex gap-3 mt-8 justify-start">
-            {!edit ? (
-              <>
-                <button type="button" className="bg-amber-400 hover:bg-amber-500 text-gray-900 px-6 py-2 rounded-lg font-semibold transition" onClick={() => setEdit(true)}>Edit</button>
-                <button type="button" className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition" onClick={handleDelete} disabled={formLoading}>Delete</button>
-              </>
-            ) : (
-              <>
-                <button type="button" className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition" onClick={handleSave} disabled={formLoading}>{formLoading ? 'Saving...' : 'Save'}</button>
-                <button type="button" className="bg-gray-600 hover:bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold transition" onClick={() => setEdit(false)}>Cancel</button>
-              </>
-            )}
-          </div>
+          <FormInput
+            label="Plan"
+            name="membership_plan_id"
+            type="select"
+            value={form.membership_plan_id}
+            onChange={handleChange}
+            disabled={!edit}
+            required
+            options={[
+              { value: '', label: 'Pilih Plan' },
+              ...plans.map(p => ({ value: p.id, label: p.name }))
+            ]}
+          />
+          
+          <FormInput
+            label="Schedule Date"
+            name="schedule_date"
+            type="date"
+            value={form.schedule_date}
+            onChange={handleChange}
+            disabled={!edit}
+            required
+          />
+          
+          <FormInput
+            label="Status"
+            name="status"
+            type="select"
+            value={form.status}
+            onChange={handleChange}
+            disabled={!edit}
+            options={[
+              { value: 'pending', label: 'Pending' },
+              { value: 'active', label: 'Active' },
+              { value: 'completed', label: 'Completed' },
+              { value: 'cancelled', label: 'Cancelled' }
+            ]}
+          />
         </div>
-      </div>
+
+        <div className="flex gap-3 mt-8 justify-start">
+          {!edit ? (
+            <>
+              <ActionButton onClick={() => setEdit(true)} variant="primary">Edit</ActionButton>
+              <ActionButton onClick={handleDelete} variant="danger" disabled={formLoading}>Delete</ActionButton>
+            </>
+          ) : (
+            <>
+              <button type="button" className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition" onClick={handleSave} disabled={formLoading}>{formLoading ? 'Saving...' : 'Save'}</button>
+              <ActionButton onClick={() => setEdit(false)} variant="gray">Cancel</ActionButton>
+            </>
+          )}
+        </div>
+      </PageContainerInsert>
     </div>
   );
 }

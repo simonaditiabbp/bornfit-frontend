@@ -202,19 +202,19 @@ export default function UserDetailPage() {
 
   return (
     <div>
-      <div className="bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-600">
+      <div className="bg-white dark:bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-200 dark:border-gray-600">
         <nav className="flex" aria-label="Breadcrumb">
           <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
             <li>
               <div className="inline-flex items-center">
-                <FaUser className="w-3 h-3 me-2.5 text-amber-300" /> 
-                <Link href="/admin/users" className="ms-1 text-sm font-medium text-gray-400 hover:text-amber-300 md:ms-2 dark:text-gray-400">User Data</Link>
+                <FaUser className="w-3 h-3 me-2.5 text-gray-700 dark:text-amber-300" /> 
+                <Link href="/admin/users" className="ms-1 text-sm font-medium text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-amber-300 md:ms-2">User Data</Link>
               </div>
             </li>
             <li aria-current="page">
               <div className="flex items-center">
-                <FaAngleRight className="w-3 h-3 text-amber-300 mx-1" />
-                <span className="ms-1 text-sm font-medium text-amber-300 md:ms-2 dark:text-amber-300">Detail / Edit</span>
+                <FaAngleRight className="w-3 h-3 text-gray-700 dark:text-amber-300 mx-1" />
+                <span className="ms-1 text-sm font-medium text-gray-800 dark:text-amber-300 md:ms-2">Detail / Edit</span>
               </div>
             </li>
           </ol>
@@ -222,19 +222,19 @@ export default function UserDetailPage() {
       </div>
 
       <div className="p-5">
-        <div className="max-w-4xl mx-auto bg-gray-800 rounded-2xl shadow-lg p-10 border border-gray-600">
+        <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-10 border border-gray-200 dark:border-gray-600">
           {loading ? (
             <div className="text-blue-600 text-center font-medium">Loading...</div>
           ) : (
           <>            
             <div className="flex justify-between items-center mb-8 border-b pb-3">
-              <h2 className="text-3xl font-bold text-gray-200">
+              <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200">
                 User Details
               </h2>
               {!edit && user?.qr_code && (
                 <button
                   onClick={() => setShowQRModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-600 dark:bg-blue-600 hover:bg-gray-700 dark:hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
                 >
                   <FaEnvelope className="w-4 h-4" />
                   Send QR Code
@@ -259,18 +259,18 @@ export default function UserDetailPage() {
                     className="w-32 h-32 object-cover rounded-full border border-gray-300 shadow mb-3"
                   />
                 ) : (
-                  <div className="w-32 h-32 grid place-items-center bg-gray-200 rounded-full text-gray-400 mb-3 text-center">
+                  <div className="w-32 h-32 grid place-items-center bg-gray-200 dark:bg-gray-700 rounded-full text-gray-600 dark:text-gray-400 mb-3 text-center">
                     No photo available
                   </div>
                 )}
 
-              <span className="text-sm text-gray-200 font-medium">Photo</span>
+              <span className="text-sm text-gray-800 dark:text-gray-200 font-medium">Photo</span>
 
                 {edit && (
                   <div className="flex gap-3 mt-3">
 
                     {/* Upload File */}
-                    <label className="px-4 py-2 bg-blue-500 text-white rounded-lg cursor-pointer hover:bg-blue-600 transition">
+                    <label className="px-4 py-2 bg-gray-600 dark:bg-blue-500 text-white rounded-lg cursor-pointer hover:bg-gray-700 dark:hover:bg-blue-600 transition">
                       Choose Photo
                       <input
                         type="file"
@@ -351,28 +351,28 @@ export default function UserDetailPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* USER FIELDS */}
               <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-200">Name</label>
-                <input type="text" className={`w-full p-3 text-gray-200 bg-gray-700 border rounded-lg ${edit ? 'border-gray-200' : 'border-gray-600'}`} value={form.name} disabled={!edit} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+                <label className="block text-sm font-semibold mb-1 text-gray-800 dark:text-gray-200">Name</label>
+                <input type="text" className={`w-full p-3 text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 border rounded-lg ${edit ? 'border-gray-300 dark:border-gray-200' : 'border-gray-200 dark:border-gray-600'}`} value={form.name} disabled={!edit} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-200">Email</label>
-                <input type="email" className={`w-full p-3 text-gray-200 bg-gray-700 border rounded-lg ${edit ? 'border-gray-200' : 'border-gray-600'}`} value={form.email} disabled={!edit} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+                <label className="block text-sm font-semibold mb-1 text-gray-800 dark:text-gray-200">Email</label>
+                <input type="email" className={`w-full p-3 text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 border rounded-lg ${edit ? 'border-gray-300 dark:border-gray-200' : 'border-gray-200 dark:border-gray-600'}`} value={form.email} disabled={!edit} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-200">Phone</label>
-                <input type="text" className={`w-full p-3 text-gray-200 bg-gray-700 border rounded-lg ${edit ? 'border-gray-200' : 'border-gray-600'}`} value={form.phone} disabled={!edit} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
+                <label className="block text-sm font-semibold mb-1 text-gray-800 dark:text-gray-200">Phone</label>
+                <input type="text" className={`w-full p-3 text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 border rounded-lg ${edit ? 'border-gray-300 dark:border-gray-200' : 'border-gray-200 dark:border-gray-600'}`} value={form.phone} disabled={!edit} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-200">Date of Birth</label>
-                <input type="date" className={`w-full p-3 text-gray-200 bg-gray-700 border rounded-lg ${edit ? 'border-gray-200' : 'border-gray-600'}`} value={form.date_of_birth} disabled={!edit} onChange={e => setForm(f => ({ ...f, date_of_birth: e.target.value }))} />
+                <label className="block text-sm font-semibold mb-1 text-gray-800 dark:text-gray-200">Date of Birth</label>
+                <input type="date" className={`w-full p-3 text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 border rounded-lg ${edit ? 'border-gray-300 dark:border-gray-200' : 'border-gray-200 dark:border-gray-600'}`} value={form.date_of_birth} disabled={!edit} onChange={e => setForm(f => ({ ...f, date_of_birth: e.target.value }))} />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-200">NIK/Passport</label>
-                <input type="text" className={`w-full p-3 text-gray-200 bg-gray-700 border rounded-lg ${edit ? 'border-gray-200' : 'border-gray-600'}`} value={form.nik_passport} disabled={!edit} onChange={e => setForm(f => ({ ...f, nik_passport: e.target.value }))} />
+                <label className="block text-sm font-semibold mb-1 text-gray-800 dark:text-gray-200">NIK/Passport</label>
+                <input type="text" className={`w-full p-3 text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 border rounded-lg ${edit ? 'border-gray-300 dark:border-gray-200' : 'border-gray-200 dark:border-gray-600'}`} value={form.nik_passport} disabled={!edit} onChange={e => setForm(f => ({ ...f, nik_passport: e.target.value }))} />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-200">Role</label>
-                <select className={`w-full p-3 text-gray-200 bg-gray-700 border rounded-lg ${edit ? 'border-gray-200' : 'border-gray-600'}`} value={form.role} disabled={!edit} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}>
+                <label className="block text-sm font-semibold mb-1 text-gray-800 dark:text-gray-200">Role</label>
+                <select className={`w-full p-3 text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 border rounded-lg ${edit ? 'border-gray-300 dark:border-gray-200' : 'border-gray-200 dark:border-gray-600'}`} value={form.role} disabled={!edit} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}>
                   <option value="member">Member</option>
                   <option value="admin">Admin</option>
                   <option value="opscan">Opscan</option>
@@ -381,23 +381,23 @@ export default function UserDetailPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-200">Emergency Contact Name</label>
-                <input type="text" className={`w-full p-3 text-gray-200 bg-gray-700 border rounded-lg ${edit ? 'border-gray-200' : 'border-gray-600'}`} value={form.emergency_contact_name} disabled={!edit} onChange={e => setForm(f => ({ ...f, emergency_contact_name: e.target.value }))} />
+                <label className="block text-sm font-semibold mb-1 text-gray-800 dark:text-gray-200">Emergency Contact Name</label>
+                <input type="text" className={`w-full p-3 text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 border rounded-lg ${edit ? 'border-gray-300 dark:border-gray-200' : 'border-gray-200 dark:border-gray-600'}`} value={form.emergency_contact_name} disabled={!edit} onChange={e => setForm(f => ({ ...f, emergency_contact_name: e.target.value }))} />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-200">Emergency Contact Phone</label>
-                <input type="text" className={`w-full p-3 text-gray-200 bg-gray-700 border rounded-lg ${edit ? 'border-gray-200' : 'border-gray-600'}`} value={form.emergency_contact_phone} disabled={!edit} onChange={e => setForm(f => ({ ...f, emergency_contact_phone: e.target.value }))} />
+                <label className="block text-sm font-semibold mb-1 text-gray-800 dark:text-gray-200">Emergency Contact Phone</label>
+                <input type="text" className={`w-full p-3 text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 border rounded-lg ${edit ? 'border-gray-300 dark:border-gray-200' : 'border-gray-200 dark:border-gray-600'}`} value={form.emergency_contact_phone} disabled={!edit} onChange={e => setForm(f => ({ ...f, emergency_contact_phone: e.target.value }))} />
               </div>
             </div>
 
             {/* CHECKIN HISTORY */}
             <div className="mt-8">
-              <label className="block text-sm font-semibold mb-2 text-gray-200">
+              <label className="block text-sm font-semibold mb-2 text-gray-800 dark:text-gray-200">
                 Check-in History
               </label>
-              <div className="max-h-56 overflow-y-auto border rounded-lg bg-gray-700 border-gray-600 p-4">
+              <div className="max-h-56 overflow-y-auto border rounded-lg bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 p-4">
                 {checkins.length === 0 ? (
-                  <p className="text-gray-200 text-sm italic">No check-in data yet.</p>
+                  <p className="text-gray-700 dark:text-gray-200 text-sm italic">No check-in data yet.</p>
                 ) : (
                   <ul className="list-disc ml-5 text-sm space-y-1">
                     {checkins.map((c) => (
@@ -425,14 +425,14 @@ export default function UserDetailPage() {
             {success && <div className="text-green-600 font-semibold mt-2">{success}</div>}
             {/* ACTION BUTTONS */}
             <div className="flex justify-between mt-8 ">
-              <div className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-semibold transition">
+              <div className="bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-800 dark:text-white px-6 py-2 rounded-lg font-semibold transition">
                 <Link href="/admin/users">Back</Link>
               </div>
               <div className="flex gap-3">
                 {!edit ? (
                   <>
                     <button
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition"
+                      className="bg-gray-600 dark:bg-blue-600 hover:bg-gray-700 dark:hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition"
                       onClick={handleEdit}
                     >
                       Edit

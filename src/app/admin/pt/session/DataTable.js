@@ -3,7 +3,7 @@ import { StyledDataTable } from '@/components/admin';
 
 export default function PTSessionDataTable({ data, plans, members, trainers }) {
   const columns = [
-    { name: 'No', cell: (row, i) => i + 1, width: '70px', center: true },
+    { name: 'No', cell: (row, i) => i + 1, width: '70px', center: "true" },
     // { name: 'Name', selector: row => row.name, sortable: true },
     { name: 'Plan', selector: row => {
       const plan = plans.find(p => p.id === row.pt_session_plan_id);
@@ -66,7 +66,7 @@ export default function PTSessionDataTable({ data, plans, members, trainers }) {
           >
             Generate QR
           </button> */}
-          <Link href={`/admin/pt/session/edit?id=${row.id}`} className="bg-gray-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">Detail</Link>
+          <Link href={`/admin/pt/session/edit?id=${row.id}`} className="bg-gray-600 dark:bg-blue-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-700 dark:hover:bg-blue-700">Detail</Link>
         </div>
       ),
       ignoreRowClick: true,

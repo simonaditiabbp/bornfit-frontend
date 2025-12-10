@@ -1,3 +1,4 @@
+import { StyledDataTable } from '@/components/admin';
 import DataTable from 'react-data-table-component';
 
 export default function BookingDataTable({ columns, data, pagination, paginationServer, paginationTotalRows, paginationPerPage, currentPage, onChangePage, onChangeRowsPerPage, paginationRowsPerPageOptions }) {
@@ -86,7 +87,7 @@ export default function BookingDataTable({ columns, data, pagination, pagination
   };
   
   return (
-    <DataTable
+    <StyledDataTable
       columns={columns}
       data={data}
       pagination={pagination}

@@ -113,6 +113,7 @@ export default function AdminUsersPage() {
   const [total, setTotal] = useState(0);
   const [hasNext, setHasNext] = useState(false);
   const [hasPrev, setHasPrev] = useState(false);
+  const [copied, setCopied] = useState(false);
   const router = useRouter();
 
   const handleChangePage = (newPage) => {
@@ -268,7 +269,6 @@ export default function AdminUsersPage() {
     },
     {
       name: 'Actions',
-      minWidth: '250px',
       cell: row => (
         <div className="flex gap-2 justify-center">
           <button
@@ -304,37 +304,37 @@ export default function AdminUsersPage() {
 
   return (
     <div>
-      <div className="bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-600">
+      <div className="bg-white dark:bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-200 dark:border-gray-600">
         <nav className="flex" aria-label="Breadcrumb">
           <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
             <li className="inline-flex items-center">
-              <FaUser className="w-3 h-3 me-2.5 text-amber-300" /> 
-              <span className="ms-1 text-sm font-medium text-amber-300 md:ms-2 dark:text-amber-300">User Data</span>
+              <FaUser className="w-3 h-3 me-2.5 text-gray-700 dark:text-amber-300" /> 
+              <span className="ms-1 text-sm font-medium text-gray-800 dark:text-amber-300 md:ms-2">User Data</span>
             </li>
           </ol>
         </nav>
       </div>
       
-      <div className="m-5 p-5 bg-gray-800 border border-gray-600 rounded-lg">
+      <div className="m-5 p-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg">
         <div className="mb-4 flex items-center justify-between">
           <input
             type="text"
             placeholder="Search name/email..."
-            className="w-full max-w-xs p-2 border text-gray-100 border-amber-200 rounded focus:outline-none text-base"
+            className="w-full max-w-xs p-2 border text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 border-gray-300 dark:border-amber-200 rounded focus:outline-none text-base"
             value={searchInput}
             onChange={e => { setSearchInput(e.target.value); setPage(1); }}
           />
 
           <button 
             onClick={() => setCreateUser(true)}
-            className="flex items-center gap-2 bg-amber-400 text-gray-900 px-4 py-2 rounded-lg font-semibold hover:bg-amber-500"
+            className="flex items-center gap-2 bg-gray-600 dark:bg-amber-400 text-white dark:text-gray-900 px-4 py-2 rounded-lg font-semibold hover:bg-gray-700 dark:hover:bg-amber-500"
           >
             <FaPlus className="inline-block" />
             Create
           </button>
         </div>
         {loading ? (
-          <div className="text-center text-amber-300">Loading...</div>
+          <div className="text-center text-gray-800 dark:text-amber-300">Loading...</div>
         ) : (
           <>
             <UsersDataTable
@@ -354,10 +354,26 @@ export default function AdminUsersPage() {
         )}
         {/* Modal QR Code */}
         {qrUser && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-3xl shadow-2xl text-center relative max-w-lg w-full overflow-hidden">
+          <div 
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setQrUser(null)}
+          >
+            <div 
+              className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl text-center relative max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close button di pojok kanan atas */}
+              <button
+                onClick={() => setQrUser(null)}
+                className="absolute top-4 right-4 z-10 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-full p-2 transition-all"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
               {/* Header with Branding */}
-              <div className="bg-gradient-to-r from-amber-400 to-amber-500 py-6 px-8">
+              <div className="bg-gradient-to-r from-gray-900 to-amber-500 py-6 px-8">
                 <div className="flex items-center justify-center gap-3 mb-2">
                   <Image src="/logo.svg" alt="BornFit Logo" width={48} height={48} />
                   <h1 className="text-3xl font-black text-white tracking-tight">BORNFIT GYM</h1>
@@ -365,27 +381,25 @@ export default function AdminUsersPage() {
                 <p className="text-white/90 font-medium">Member Access QR Code</p>
               </div>
 
-              {/* Body */}
-              <div className="p-8">
-                <h2 className="text-2xl font-bold mb-1 text-gray-800">{qrUser.name}</h2>
-                <p className="text-sm text-gray-500 mb-6">Scan to check in at the gym</p>
+              {/* Body - Scrollable */}
+              <div className="p-6 md:p-8">
+                <h2 className="text-2xl font-bold mb-1 text-gray-800 dark:text-white">{qrUser.name}</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Scan to check in at the gym</p>
                 
-                {/* QR Code Container with Logo Overlay */}
+                {/* QR Code Container - Ukuran lebih kecil */}
                 <div className="flex flex-col items-center justify-center mb-6">
-                  <div id="qr-download-area" className="relative bg-white p-6 rounded-2xl border-4 border-amber-400 shadow-lg">
-                    {/* QR Code Canvas */}
+                  <div id="qr-download-area" className="relative bg-white p-4 rounded-2xl border-4 border-amber-400 shadow-lg">
                     <QRCodeCanvas 
                       id="qr-canvas" 
                       value={qrUser.qr_code || ''} 
-                      size={300} 
+                      size={220}
                       level="H" 
                       includeMargin={true}
                       style={{ background: 'transparent' }}
                       imageSettings={{
                         src: '/logo.svg',
-                        height: 60,
-                        width: 60,
-                        // excavate: true,
+                        height: 45,
+                        width: 45,
                       }}
                     />
                     {/* Hidden SVG for download */}
@@ -401,33 +415,58 @@ export default function AdminUsersPage() {
                           src: '/logo.svg',
                           height: 60,
                           width: 60,
-                          // excavate: true,
                         }}
                       />
                     </div>
                   </div>
                   
                   {/* Member ID */}
-                  <div className="mt-4 px-4 py-2 bg-gray-100 rounded-lg">
-                    <p className="text-xs text-gray-500 font-medium">Member ID</p>
-                    <p className="text-sm text-gray-700 font-mono font-semibold">{qrUser.qr_code}</p>
+                  <div className="mt-4 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Member ID</p>
+                    <div className="flex items-center justify-between gap-2 mt-1">
+                      <p className="text-sm text-gray-700 dark:text-gray-200 font-mono font-semibold">{qrUser.qr_code}</p>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(qrUser.qr_code);
+                          setCopied(true);
+                          setTimeout(() => setCopied(false), 2000);
+                        }}
+                        className="bg-gray-700 hover:bg-gray-600 dark:bg-amber-400 dark:hover:bg-amber-500 text-white dark:text-gray-900 px-3 py-1 rounded-md text-xs font-semibold transition-all flex items-center gap-1"
+                      >
+                        {copied ? (
+                          <>
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                            Copy
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
 
-                {/* Instructions */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                  <p className="text-sm text-blue-800 font-medium mb-2">📱 How to use:</p>
-                  <ul className="text-xs text-blue-700 text-left space-y-1">
+                {/* Instructions - Compact */}
+                <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg p-3 mb-4">
+                  <p className="text-xs text-blue-800 dark:text-blue-300 font-medium mb-1">📱 How to use:</p>
+                  <ul className="text-xs text-blue-700 dark:text-blue-400 text-left space-y-0.5">
                     <li>• Show this QR code at gym entrance</li>
                     <li>• Keep your QR code secure</li>
                     <li>• Do not share with others</li>
                   </ul>
                 </div>
 
-                {/* Download Buttons */}
-                <div className="grid grid-cols-3 gap-3 mb-4">
+                {/* Download Buttons - Compact */}
+                <div className="grid grid-cols-3 gap-2 mb-3">
                   <button
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 shadow-md"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-semibold transition-all text-sm"
                     onClick={() => {
                       const canvas = document.getElementById('qr-canvas');
                       const url = canvas.toDataURL('image/png');
@@ -437,14 +476,14 @@ export default function AdminUsersPage() {
                       a.click();
                     }}
                   >
-                    <svg className="w-5 h-5 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     PNG
                   </button>
                   
                   <button
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 shadow-md"
+                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-semibold transition-all text-sm"
                     onClick={() => {
                       const svgElem = document.getElementById("qr-canvas-svg");
                       if (!svgElem) {
@@ -472,14 +511,14 @@ export default function AdminUsersPage() {
                       setTimeout(() => URL.revokeObjectURL(url), 1000);
                     }}
                   >
-                    <svg className="w-5 h-5 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
                     </svg>
                     SVG
                   </button>
                   
                   <button
-                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 shadow-md"
+                    className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg font-semibold transition-all text-sm"
                     onClick={async () => {
                       const canvas = document.getElementById("qr-canvas");
                       if (!canvas) {
@@ -551,7 +590,7 @@ export default function AdminUsersPage() {
                       pdf.save(`BornFit_QR_${qrUser.name.replace(/\s/g, '_')}.pdf`);
                     }}
                   >
-                    <svg className="w-5 h-5 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                     </svg>
                     PDF
@@ -560,7 +599,7 @@ export default function AdminUsersPage() {
 
                 {/* Close Button */}
                 <button
-                  className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-xl font-semibold transition-all"
+                  className="w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-6 py-2.5 rounded-lg font-semibold transition-all"
                   onClick={() => setQrUser(null)}
                 >
                   Close

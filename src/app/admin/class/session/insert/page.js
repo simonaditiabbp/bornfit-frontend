@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { FaDumbbell, FaAngleRight } from 'react-icons/fa';
+import { FaDumbbell } from 'react-icons/fa';
+import { PageBreadcrumb, PageContainerInsert, FormActions, FormInput } from '@/components/admin';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -150,46 +150,57 @@ export default function ClassSessionInsertPage() {
 
   return (
     <div>
-      {/* Breadcrumb Navigation */}
-      <div className="flex items-center gap-2 text-sm mb-6 bg-gray-800 px-4 py-3 rounded-lg">
-        <FaDumbbell className="text-amber-300" />
-        <Link href="/admin/class/session" className="text-gray-400 hover:text-amber-300 transition-colors">
-          Class Session
-        </Link>
-        <FaAngleRight className="text-gray-500 text-xs" />
-        <span className="text-gray-200 font-medium">Create</span>
-      </div>
+      <PageBreadcrumb 
+        items={[
+          { icon: <FaDumbbell className="w-3 h-3" />, label: 'Class Session', href: '/admin/class/session' },
+          { label: 'Create' }
+        ]}
+      />
 
-      <div className="max-w-3xl mx-auto bg-gray-800 p-10 rounded-2xl shadow-lg border border-gray-700">
-        <h1 className="text-3xl font-bold mb-8 text-amber-300 text-center">Create Detail Class</h1>
+      <PageContainerInsert>
+        <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-amber-300 text-center">Create Detail Class</h1>
         {success && <div className="text-green-400 font-semibold mb-2 text-center">{success}</div>}
         {error && <div className="text-red-400 font-semibold mb-2 text-center">{error}</div>}
         <form className="space-y-4" onSubmit={handleSave}>
-          <div>
-            <label className="block mb-1 text-gray-200">Event Plan</label>
-            <select name="event_plan_id" value={form.event_plan_id} onChange={e => setForm({ ...form, event_plan_id: e.target.value })} className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200">
-              <option value="">Pilih Event Plan</option>
-              {plans.map(plan => <option key={plan.id} value={plan.id}>{plan.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block mb-1 text-gray-200">Instructor</label>
-            <select name="instructor_id" value={form.instructor_id} onChange={e => setForm({ ...form, instructor_id: e.target.value })} className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200">
-              <option value="">Pilih Instructor</option>
-              {instructors.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block mb-1 text-gray-200">Class Type</label>
-            <select name="class_type" value={form.class_type} onChange={e => setForm({ ...form, class_type: e.target.value })} className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200">
-              <option value="membership_only">Membership Only</option>
-              <option value="free">Free</option>
-              <option value="both">Both</option>
-            </select>
-          </div>
+          <FormInput
+            label="Event Plan"
+            name="event_plan_id"
+            type="select"
+            value={form.event_plan_id}
+            onChange={e => setForm({ ...form, event_plan_id: e.target.value })}
+            options={[
+              { value: '', label: 'Pilih Event Plan' },
+              ...plans.map(plan => ({ value: plan.id, label: plan.name }))
+            ]}
+          />
+          
+          <FormInput
+            label="Instructor"
+            name="instructor_id"
+            type="select"
+            value={form.instructor_id}
+            onChange={e => setForm({ ...form, instructor_id: e.target.value })}
+            options={[
+              { value: '', label: 'Pilih Instructor' },
+              ...instructors.map(i => ({ value: i.id, label: i.name }))
+            ]}
+          />
+          
+          <FormInput
+            label="Class Type"
+            name="class_type"
+            type="select"
+            value={form.class_type}
+            onChange={e => setForm({ ...form, class_type: e.target.value })}
+            options={[
+              { value: 'membership_only', label: 'Membership Only' },
+              { value: 'free', label: 'Free' },
+              { value: 'both', label: 'Both' }
+            ]}
+          />
           
           {/* Recurring Checkbox */}
-          <div className="flex items-center gap-3 p-4 bg-gray-700 rounded-lg border border-gray-600">
+          <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600">
             <input
               type="checkbox"
               id="is_recurring"
@@ -205,14 +216,22 @@ export default function ClassSessionInsertPage() {
           {/* Single Class Fields */}
           {!form.is_recurring && (
             <>
-              <div>
-                <label className="block mb-1 text-gray-200">Class Date</label>
-                <input name="class_date" type="date" value={form.class_date} onChange={e => setForm({ ...form, class_date: e.target.value })} className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200" required />
-              </div>
-              <div>
-                <label className="block mb-1 text-gray-200">Start Time</label>
-                <input name="start_time" type="time" value={form.start_time} onChange={e => setForm({ ...form, start_time: e.target.value })} className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200" required />
-              </div>
+              <FormInput
+                label="Class Date"
+                name="class_date"
+                type="date"
+                value={form.class_date}
+                onChange={e => setForm({ ...form, class_date: e.target.value })}
+                required
+              />
+              <FormInput
+                label="Start Time"
+                name="start_time"
+                type="time"
+                value={form.start_time}
+                onChange={e => setForm({ ...form, start_time: e.target.value })}
+                required
+              />
             </>
           )}
 
@@ -220,26 +239,20 @@ export default function ClassSessionInsertPage() {
           {form.is_recurring && (
             <>
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block mb-1 text-gray-200">Valid From *</label>
-                  <input
-                    type="date"
-                    value={form.valid_from}
-                    onChange={e => setForm({ ...form, valid_from: e.target.value })}
-                    className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block mb-1 text-gray-200">Valid Until *</label>
-                  <input
-                    type="date"
-                    value={form.valid_until}
-                    onChange={e => setForm({ ...form, valid_until: e.target.value })}
-                    className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200"
-                    required
-                  />
-                </div>
+                <FormInput
+                  label="Valid From *"
+                  type="date"
+                  value={form.valid_from}
+                  onChange={e => setForm({ ...form, valid_from: e.target.value })}
+                  required
+                />
+                <FormInput
+                  label="Valid Until *"
+                  type="date"
+                  value={form.valid_until}
+                  onChange={e => setForm({ ...form, valid_until: e.target.value })}
+                  required
+                />
               </div>
 
               <div>
@@ -268,23 +281,19 @@ export default function ClassSessionInsertPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
+                <FormInput
+                  label="Time Start *"
+                  type="time"
+                  value={form.recurrence_start_time}
+                  onChange={e => setForm({ ...form, recurrence_start_time: e.target.value })}
+                  required
+                />
                 <div>
-                  <label className="block mb-1 text-gray-200">Time Start *</label>
-                  <input
-                    type="time"
-                    value={form.recurrence_start_time}
-                    onChange={e => setForm({ ...form, recurrence_start_time: e.target.value })}
-                    className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block mb-1 text-gray-200">Time End * (Auto-calculated)</label>
-                  <input
+                  <FormInput
+                    label="Time End * (Auto-calculated)"
                     type="time"
                     value={form.recurrence_end_time}
                     onChange={e => setForm({ ...form, recurrence_end_time: e.target.value })}
-                    className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200"
                     required
                   />
                   <p className="text-xs text-gray-400 mt-1">Based on Event Plan duration</p>
@@ -300,27 +309,22 @@ export default function ClassSessionInsertPage() {
             </>
           )}
           
-          {/* <div>
-            <label className="block mb-1 text-gray-200">Total Manual Checkin</label>
-            <input name="total_manual_checkin" type="number" value={form.total_manual_checkin} onChange={e => setForm({ ...form, total_manual_checkin: e.target.value })} className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200" />
-          </div> */}
           <div>
-            <label className="block mb-1 text-gray-200">Notes</label>
-            <textarea name="notes" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className="w-full border border-gray-600 p-2 rounded bg-gray-700 text-gray-200" />
+            <label className="block mb-1 text-gray-800 dark:text-gray-200">Total Manual Checkin</label>
+            <input name="total_manual_checkin" type="number" value={form.total_manual_checkin} onChange={e => setForm({ ...form, total_manual_checkin: e.target.value })} className="w-full border border-gray-300 dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200" />
           </div>
-          <div className="flex gap-3 mt-8 justify-start">
-            <button type="submit" className="bg-amber-400 text-gray-900 px-6 py-2 rounded-lg font-semibold hover:bg-amber-500 transition" disabled={loading}>
-              {loading ? "Saving..." : "Submit"}
-            </button>
-            <button type="button" className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition" onClick={handleReset}>
-              Reset
-            </button>
-            <button type="button" className="bg-gray-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-500 transition" onClick={() => router.push('/admin/class/session')}>
-              Cancel
-            </button>
+          <div>
+            <label className="block mb-1 text-gray-800 dark:text-gray-200">Notes</label>
+            <textarea name="notes" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className="w-full border border-gray-300 dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200" />
           </div>
+          <FormActions
+            onSubmit={handleSave}
+            onReset={handleReset}
+            cancelHref="/admin/class/session"
+            loading={loading}
+          />
         </form>
-      </div>
+      </PageContainerInsert>
     </div>
   );
 }

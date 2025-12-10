@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { FaCheckCircle } from 'react-icons/fa';
+import { FaChalkboardTeacher } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainerInsert, FormInput, FormActions } from '@/components/admin';
 
 export default function PTBookingCreatePage() {
@@ -96,12 +96,12 @@ export default function PTBookingCreatePage() {
   return (
     <div>
       <PageBreadcrumb items={[
-        { icon: FaCheckCircle, label: 'PT Session', href: '/admin/pt/session' },
+        { icon: <FaChalkboardTeacher className="w-3 h-3" />, label: 'PT Session', href: '/admin/pt/session' },
         { label: 'Booking', href: '/admin/pt/booking' },
         { label: 'Create' }
       ]} />
       <PageContainerInsert>
-        <h1 className="text-3xl font-bold mb-8 text-amber-300 text-center">Create PT Booking</h1>
+        <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-amber-300 text-center">Create PT Booking</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <FormInput
             label="Member"

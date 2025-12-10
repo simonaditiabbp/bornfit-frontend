@@ -1,47 +1,41 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import DataTable from 'react-data-table-component';
+import { useTheme } from '@/contexts/ThemeContext';
 
 /**
  * Reusable DataTable Component with consistent styling
  * @param {Object} props - All react-data-table-component props
  */
 export default function StyledDataTable(props) {
-  const colors = {
-    gray900: '#111827',
-    gray800: '#1f2937',
-    gray700: '#374151',
-    gray600: '#4b5563',
-    gray300: '#d1d5db',
-    gray100: '#f3f4f6',
-    accent: '#fbbf24',
-  };
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
-  const customStyles = {
+  const customStyles = useMemo(() => ({
     table: {
       style: {
-        backgroundColor: colors.gray800,
-        color: colors.gray100,
+        backgroundColor: isDark ? '#1f2937' : '#ffffff',
+        color: isDark ? '#f3f4f6' : '#1f2937',
       },
     },
     header: {
       style: {
-        backgroundColor: colors.gray800,
-        color: colors.gray100,
+        backgroundColor: isDark ? '#1f2937' : '#ffffff',
+        color: isDark ? '#f3f4f6' : '#1f2937',
         fontSize: '1.25rem',
         fontWeight: '700',
       },
     },
     headRow: {
       style: {
-        backgroundColor: colors.gray700,
+        backgroundColor: isDark ? '#374151' : '#f3f4f6',
         borderBottomWidth: '1px',
-        borderBottomColor: colors.gray600,
+        borderBottomColor: isDark ? '#4b5563' : '#d1d5db',
         minHeight: '52px',
       },
     },
     headCells: {
       style: {
-        color: colors.accent,
+        color: isDark ? '#fbbf24' : '#374151',
         fontWeight: '600',
         fontSize: '0.875rem',
         paddingLeft: '16px',
@@ -50,19 +44,19 @@ export default function StyledDataTable(props) {
     },
     rows: {
       style: {
-        backgroundColor: colors.gray800,
-        color: colors.gray300,
+        backgroundColor: isDark ? '#1f2937' : '#ffffff',
+        color: isDark ? '#d1d5db' : '#1f2937',
         fontSize: '0.875rem',
         borderBottomWidth: '1px',
-        borderBottomColor: colors.gray700,
+        borderBottomColor: isDark ? '#374151' : '#e5e7eb',
         minHeight: '60px',
       },
       highlightOnHoverStyle: {
-        backgroundColor: colors.gray700,
-        color: '#fff',
+        backgroundColor: isDark ? '#374151' : '#f9fafb',
+        color: isDark ? '#fff' : '#000',
         transitionDuration: '0.15s',
         transitionProperty: 'background-color',
-        borderBottomColor: colors.gray600,
+        borderBottomColor: isDark ? '#4b5563' : '#d1d5db',
         outline: 'none',
       },
     },
@@ -74,10 +68,10 @@ export default function StyledDataTable(props) {
     },
     pagination: {
       style: {
-        backgroundColor: colors.gray800,
-        color: colors.gray300,
+        backgroundColor: isDark ? '#1f2937' : '#ffffff',
+        color: isDark ? '#d1d5db' : '#1f2937',
         borderTopWidth: '1px',
-        borderTopColor: colors.gray600,
+        borderTopColor: isDark ? '#4b5563' : '#d1d5db',
       },
       pageButtonsStyle: {
         borderRadius: '50%',
@@ -87,31 +81,31 @@ export default function StyledDataTable(props) {
         margin: '2px',
         cursor: 'pointer',
         transition: '0.2s',
-        color: colors.gray300,
-        fill: colors.gray300,
+        color: isDark ? '#d1d5db' : '#1f2937',
+        fill: isDark ? '#d1d5db' : '#1f2937',
         backgroundColor: 'transparent',
         '&:hover:not(:disabled)': {
-          backgroundColor: colors.gray700,
+          backgroundColor: isDark ? '#374151' : '#f3f4f6',
         },
         '&:focus': {
           outline: 'none',
-          backgroundColor: colors.gray700,
+          backgroundColor: isDark ? '#374151' : '#f3f4f6',
         },
         '&:disabled': {
           cursor: 'not-allowed',
-          color: colors.gray600,
-          fill: colors.gray600,
+          color: isDark ? '#4b5563' : '#9ca3af',
+          fill: isDark ? '#4b5563' : '#9ca3af',
         },
       },
     },
     noData: {
       style: {
-        backgroundColor: colors.gray800,
-        color: colors.gray300,
+        backgroundColor: isDark ? '#1f2937' : '#ffffff',
+        color: isDark ? '#d1d5db' : '#1f2937',
         padding: '24px',
       },
     },
-  };
+  }), [isDark]);
 
   return (
     <DataTable

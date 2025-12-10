@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import BackendErrorFallback from "../../../../components/BackendErrorFallback";
 import ClassPlansDataTable from "./DataTable";
 import Link from "next/link";
-import { FaPlus, FaFileInvoice, FaAngleRight } from 'react-icons/fa';
+import { FaPlus, FaCog, FaAngleRight } from 'react-icons/fa';
 import { LoadingText, PageBreadcrumb, PageContainer, PageHeader } from "@/components/admin";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -117,7 +117,8 @@ export default function ClassPlansPage() {
     <div>
       <PageBreadcrumb 
         items={[
-          { icon: <FaFileInvoice className="w-3 h-3" />, label: 'Class Plans' }
+          { icon: <FaCog className="w-3 h-3" />, label: 'Settings', href: '/admin/class/plans' },
+          { label: 'Class Plans' }
         ]}
       />
       <PageContainer>

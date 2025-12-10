@@ -5,9 +5,10 @@ import BookingDataTable from './BookingDataTable';
 import Image from 'next/image';
 import { Html5Qrcode } from 'html5-qrcode';
 import { format, differenceInDays, parseISO } from "date-fns";
-import { de, enUS } from "date-fns/locale";
+import { id, enUS } from "date-fns/locale";
 import { useRouter } from 'next/navigation';
 import BackendErrorFallback from '../../components/BackendErrorFallback';
+import { formatInTimeZone } from "date-fns-tz";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -24,8 +25,10 @@ export default function BarcodePage() {
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
   const [backendError, setBackendError] = useState(false);
+  const [latestCheckin, setLatestCheckin] = useState(null);
   const router = useRouter();
 
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
   const [buffer, setBuffer] = useState("");
   const timerRef = useRef(null);
 
@@ -47,7 +50,6 @@ export default function BarcodePage() {
       setBookingPTError("");
       setBookingPTSuccess("");
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
         // API sudah sesuai: /api/personaltrainersessions/member/:id
         const params = new URLSearchParams({ page, limit });
         if (search) params.append('search', search);
@@ -103,7 +105,6 @@ export default function BarcodePage() {
       setBookingPTError("");
       setBookingPTSuccess("");
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
         // Cari data session yang dibooking
         const bookedSession = availablePTSessions.find(s => s.id === sessionId);
         let bookingTime = null;
@@ -154,7 +155,6 @@ export default function BarcodePage() {
     setBookingClassError("");
     setBookingClassSuccess("");
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
       const params = new URLSearchParams({ page, limit });
       if (search) params.append('search', search);
       const res = await fetch(`${API_URL}/api/classes?${params.toString()}`, {
@@ -209,7 +209,6 @@ export default function BarcodePage() {
     setBookingClassError("");
     setBookingClassSuccess("");
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
       // Cari data kelas yang dibooking
       const bookedClass = availableClasses.find(cls => cls.id === classId);
       let checkedInAt = null;
@@ -335,7 +334,6 @@ export default function BarcodePage() {
     if (!showPTModal) return;
     const fetchPlans = async () => {
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
         const res = await fetch(`${API_URL}/api/ptsessionplans`, {
           headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
         });
@@ -350,7 +348,35 @@ export default function BarcodePage() {
       }
     };
     fetchPlans();
-  }, [showPTModal, API_URL]);
+  }, [showPTModal]);
+
+  // Fetch latest checkin saat user berubah
+  useEffect(() => {
+    if (!user?.id) {
+      setLatestCheckin(null);
+      return;
+    }
+    const fetchLatestCheckin = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/checkinptsession/latest-time/${user.id}`, {
+          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
+        });
+        const data = await res.json();
+        if (data.status === 'success' && data.data?.checkin_time) {
+          // Format datetime menggunakan date-fns
+          // const formattedDate = `${data.data.checkin_time} || ${format(parseISO(data.data.checkin_time), "dd MMM yyyy, HH:mm", { locale: enUS })}`;
+          const formattedDate = formatInTimeZone( data.data.checkin_time, 'UTC', "dd MMM yyyy, HH:mm", { locale: enUS } );
+          setLatestCheckin(formattedDate);
+        } else {
+          setLatestCheckin(null);
+        }
+      } catch (err) {
+        console.error('Error fetching latest checkin:', err);
+        setLatestCheckin(null);
+      }
+    };
+    fetchLatestCheckin();
+  }, [user]);
 
   // Keep manual QR input always focused, kecuali modal booking class/PT session sedang terbuka
   useEffect(() => {
@@ -442,7 +468,6 @@ export default function BarcodePage() {
   // Inisialisasi scanner saat scanMode true
   useEffect(() => {
     const userData = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
     if (!userData || !token) {
       router.replace('/login');
       return;
@@ -604,7 +629,6 @@ export default function BarcodePage() {
     const fetchUser = async () => {
       try {
         const userData = localStorage.getItem('user');
-        const token = localStorage.getItem('token');
         if (!userData || !token) {
           router.replace('/login');
           return;
@@ -678,7 +702,8 @@ useEffect(() => {
             const joinDateObj = parseISO(ptsession.join_date);
             endDateCalc = format(new Date(joinDateObj.getTime() + ptplan.duration_value * 24 * 60 * 60 * 1000), "dd MMM yyyy", { locale: enUS });
           }
-          ptPeriod = `${joinDate}${endDateCalc ? ` - ${endDateCalc}` : ""}`;
+          // ptPeriod = `${joinDate}${endDateCalc ? ` - ${endDateCalc}` : ""}`;
+          ptPeriod = `${endDateCalc ? `${endDateCalc}` : ""}`;
       // Hitung sisa waktu
       const now = new Date();
       ptDiffMs = endDate - now;
@@ -701,20 +726,20 @@ useEffect(() => {
       }
     }
     return (
-      <div className="mt-6 p-4 bg-gray-700 rounded-lg border border-gray-600 shadow">
-        <div className="font-semibold text-amber-400 mb-2">PT Session Info</div>
-        <div className="mb-1 text-gray-200"><span className="font-semibold">Session Name:</span> {ptsession.name || ptplan?.name}</div>
-        <div className="mb-1 text-gray-200"><span className="font-semibold">Session Period:</span> {ptPeriod}</div>
-        <div className="mb-1 text-gray-200"><span className="font-semibold">Trainer:</span> {trainer?.name}</div>
-        {/* <div className="mb-1 text-gray-200"><span className="font-semibold">Plan Duration:</span> {ptplan?.duration} days</div> */}
-        <div className="mb-1 text-gray-200"><span className="font-semibold">Max Session:</span> {ptplan?.max_session}</div>
-        <div className="mb-1 text-gray-200">
+      <div className="mt-6 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 shadow">
+        <div className="font-semibold text-gray-800 dark:text-amber-400 mb-2">PT Session Info</div>
+        {/* <div className="mb-1 text-gray-700 dark:text-gray-200"><span className="font-semibold">Session:</span> {ptsession.ptplan.name ? ptsession.ptplan.name : ""} - {ptsession.trainer.name ? ptsession.trainer.name : ""}</div> */}
+        <div className="mb-1 text-gray-700 dark:text-gray-200"><span className="font-semibold">Expired Period:</span> {ptPeriod}</div>
+        <div className="mb-1 text-gray-700 dark:text-gray-200"><span className="font-semibold">Trainer:</span> {trainer?.name}</div>
+        {/* <div className="mb-1 text-gray-700 dark:text-gray-200"><span className="font-semibold">Plan Duration:</span> {ptplan?.duration} days</div> */}
+        <div className="mb-1 text-gray-700 dark:text-gray-200"><span className="font-semibold">Max Session:</span> {ptplan?.max_session}</div>
+        <div className="mb-1 text-gray-700 dark:text-gray-200">
           <span className="font-semibold">Session Status:</span> {' '}
           {ptsession.status === 'active' && (
             <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full font-bold">Active</span>
           )}
           {ptsession.status === 'pending' && (
-            <span className="bg-gray-200 text-gray-700 px-2 py-1 rounded-full font-bold">Finished</span>
+            <span className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-2 py-1 rounded-full font-bold">Finished</span>
           )}
           {ptsession.status === 'expired' && (
             <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full font-bold">Cancelled</span>
@@ -724,7 +749,7 @@ useEffect(() => {
           )}
         </div>
         {ptRemainingText && (
-          <div className={`mt-3 font-bold text-lg ${ptDiffMs > 0 ? 'text-red-400' : 'text-gray-500'}`}>
+          <div className={`mt-3 font-bold text-lg ${ptDiffMs > 0 ? 'text-red-500 dark:text-red-400' : 'text-gray-600 dark:text-gray-500'}`}>
             <span className="font-semibold">PT Session deadline:</span> {ptRemainingText}
           </div>
         )}
@@ -733,12 +758,12 @@ useEffect(() => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 px-2 py-8">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-2 py-8">
       {/* 🔴 Tombol Logout pojok kanan atas */}
       <div className="absolute top-4 right-6">
         <button
           onClick={handleLogout}
-          className="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-gray-200 px-4 py-2 rounded-lg font-semibold shadow-lg transition-all duration-200"
+          className="flex items-center gap-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg font-semibold shadow-lg transition-all duration-200"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -759,7 +784,7 @@ useEffect(() => {
         </button>
       </div>
 
-      <h1 className="text-4xl font-extrabold mb-8 text-amber-400 drop-shadow-lg tracking-tight text-center">
+      <h1 className="text-4xl font-extrabold mb-8 text-gray-800 dark:text-amber-400 drop-shadow-lg tracking-tight text-center">
         <span className="inline-block align-middle mr-2">
           <svg width="40" height="40" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-camera"><rect x="3" y="7" width="34" height="26" rx="4" ry="4"/><circle cx="20" cy="22" r="7"/><path d="M8 7V5a4 4 0 0 1 4-4h4"/></svg>
         </span>
@@ -768,11 +793,11 @@ useEffect(() => {
 
       {/* ===== TAMPILAN AWAL: belum ada hasil check-in (atau user belum scan) ===== */}
       {!message && (
-        <div className="bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-md text-center border border-gray-700 flex flex-col items-center">
+        <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-md text-center border border-gray-200 dark:border-gray-700 flex flex-col items-center">
           {!scanMode && (
             <>
               <button
-                className="bg-amber-400 hover:bg-amber-500 text-gray-900 px-8 py-4 rounded-lg font-bold mb-8 shadow-lg transition-all duration-200 text-xl flex items-center gap-2"
+                className="bg-gray-800 hover:bg-amber-600 dark:bg-amber-400 dark:hover:bg-amber-500 text-white dark:text-gray-900 px-8 py-4 rounded-lg font-bold mb-8 shadow-lg transition-all duration-200 text-xl flex items-center gap-2"
                 onClick={() => { setScanMode(true); setMessage(''); }}
                 disabled={loading}
               >
@@ -784,13 +809,13 @@ useEffect(() => {
                 <input
                   type="text"
                   placeholder="Enter QR code manually"
-                  className="w-full p-4 border-2 border-gray-600 rounded-lg text-lg tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-amber-400 bg-gray-700 text-gray-200 placeholder:text-gray-400 shadow"
+                  className="w-full p-4 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-lg tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-gray-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder:text-gray-400 shadow"
                   value={buffer} // Show buffered input
                   onChange={(e) => handleBufferedInput(e.target.value)} // Pass the full input value
                   autoFocus
                   ref={manualQrInputRef}
                 />
-                <div className="text-xs text-gray-400 mt-1">
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   You can enter the QR code manually if the scanner is not working
                 </div>
               </div>
@@ -816,14 +841,14 @@ useEffect(() => {
               />
               <div className="flex gap-4 justify-center mt-6">
                 <button
-                  className="bg-gray-600 hover:bg-gray-500 text-gray-200 px-6 py-2 rounded-lg font-semibold shadow transition"
+                  className="bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 px-6 py-2 rounded-lg font-semibold shadow transition"
                   onClick={handleCancelScan}
                   disabled={loading}
                 >
                   Cancel
                 </button>
                 <button
-                  className="bg-amber-400 hover:bg-amber-500 text-gray-900 px-6 py-2 rounded-lg font-semibold shadow transition"
+                  className="bg-amber-500 hover:bg-amber-600 dark:bg-amber-400 dark:hover:bg-amber-500 text-white dark:text-gray-900 px-6 py-2 rounded-lg font-semibold shadow transition"
                   onClick={handleRetryScan}
                   disabled={loading}
                 >
@@ -843,37 +868,39 @@ useEffect(() => {
 
       {/* ===== Layout hasil scan (full width card, grid 3 kolom responsif) ===== */}
       {message && (
-        <div className={`bg-gray-800 rounded-2xl shadow-2xl min-h-[75vh] w-full max-w-[1500px] border ${messageType === 'success' ? 'border-green-500' : 'border-red-500'} p-16 grid grid-cols-1 md:grid-cols-3 gap-20 justify-center items-center`}
+        <div className={`bg-white dark:bg-gray-800 rounded-2xl shadow-2xl min-h-[75vh] w-full max-w-[1500px] border ${messageType === 'success' ? 'border-green-500' : 'border-red-500'} p-16 grid grid-cols-1 md:grid-cols-3 gap-20 justify-center items-center`}
           style={{ minHeight: '75vh', minWidth: '340px' }}
         >
           {/* kolom kiri: foto (tampil hanya jika success) */}
           {messageType === 'success' ? (
             <div className="flex items-center justify-center h-full">
-              <div className="w-96 h-96 bg-gray-700 rounded-2xl flex items-center justify-center text-gray-400 font-medium overflow-hidden border-4 border-amber-400 shadow-2xl p-2">
+              <div className="w-96 h-96 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center text-gray-500 dark:text-gray-400 font-medium overflow-hidden border-4 border-gray-600 dark:border-amber-400 shadow-2xl p-2">
                 {user?.photo ? (
                   <Image src={user.photo.startsWith('http') ? user.photo : `${API_URL?.replace(/\/$/, '')}${user.photo}`} alt="Foto Member" width={300} height={300} className="w-full h-full object-cover scale-105 rounded-xl" />
                 ) : (
-                  <span className="text-gray-400 text-lg">No photo available</span>
+                  <span className="text-gray-500 dark:text-gray-400 text-lg">No photo available</span>
                 )}
               </div>
             </div>
           ) : (
             <div className="flex items-center justify-center h-full">
-              <div className="w-72 h-72 flex items-center justify-center bg-gray-700 rounded-2xl border-4 border-red-500 shadow-xl">
+              <div className="w-72 h-72 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-2xl border-4 border-red-500 shadow-xl">
                 <svg width="96" height="96" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-alert-triangle text-red-400"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="48" y1="36" x2="48" y2="52"/><line x1="48" y1="68" x2="48.01" y2="68"/></svg>
               </div>
             </div>
           )}
 
           {/* kolom tengah: detail member (hanya jika success) */}
-          <div className="text-left text-lg text-gray-200 flex flex-col justify-center">
+          <div className="text-left text-lg text-gray-700 dark:text-gray-200 flex flex-col justify-center">
             {messageType === 'success' ? (
               <>
-                <p className="font-bold text-3xl text-amber-400 mb-4 leading-tight">{user?.name || '-'}</p>
+                <p className="font-bold text-3xl text-gray-800 dark:text-amber-400 mb-4 leading-tight">{user?.name || '-'}</p>
                 <p className="mb-2 text-lg"><span className="font-semibold">Email:</span> {user?.email || '-'}</p>
                 <p className="mb-2 text-lg">
-                  <span className="font-semibold whitespace-nowrap">Membership period:</span>
-                  <span className="whitespace-nowrap"> {startDate}{endDate ? ` - ${endDate}` : ""}</span>
+                  {/* <span className="font-semibold whitespace-nowrap">Membership period:</span>
+                  <span className="whitespace-nowrap"> {startDate}{endDate ? ` - ${endDate}` : ""}</span> */}
+                  <span className="font-semibold whitespace-nowrap">Membership expired period:</span>
+                  <span className="whitespace-nowrap"> {endDate ? endDate : ""}</span>
                 </p>
                 <p className="mb-2 text-lg">
                   <span className="font-semibold">Membership type: </span>
@@ -897,17 +924,25 @@ useEffect(() => {
                     {user?.membership_plan?.name || "-"}
                   </span>
                 </p>
-                <p className="mb-2 text-lg"><span className="font-semibold">Membership status:</span> {user?.membership?.status === 'active' ? (
+                {/* <p className="mb-2 text-lg"><span className="font-semibold">Membership status:</span> {user?.membership?.status === 'active' ? (
                   <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full font-bold">Active</span>
                 ) : (
                   <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full font-bold">Inactive</span>
-                )}</p>
+                )}</p> */}
+                <p className="mb-2 text-lg">
+                  <span className="font-semibold">Latest Checkin:</span> 
+                  {latestCheckin ? (
+                    <span className="text-green-600 dark:text-green-400 font-bold ml-1">{latestCheckin}</span>
+                  ) : (
+                    <span className="text-gray-500 dark:text-gray-400 ml-1">-</span>
+                  )}
+                </p>
                 {diffMs > 0 && remainingDays <= 7 && (
                   <>
-                    <p className="text-red-400 font-bold text-lg mt-4">
+                    <p className="text-red-500 dark:text-red-400 font-bold text-lg mt-4">
                        Membership deadline: {remainingText}
                     </p>
-                    <p className="mt-2 text-amber-400 text-base">
+                    <p className="mt-2 text-amber-600 dark:text-amber-400 text-base">
                       Please renew your membership soon by contacting admin 08123123123
                     </p>
                   </>
@@ -915,9 +950,9 @@ useEffect(() => {
                 {renderPTSessionInfo(result)}
               </>
             ) : (
-              <div className="text-gray-400 text-center">
-                <p className="mt-2 text-base text-red-400 font-semibold">{message}</p>
-                <p className="mt-2 text-sm text-gray-500">Please try to check-in again</p>
+              <div className="text-gray-500 dark:text-gray-400 text-center">
+                <p className="mt-2 text-base text-red-500 dark:text-red-400 font-semibold">{message}</p>
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-500">Please try to check-in again</p>
               </div>
             )}
           </div>
@@ -925,7 +960,7 @@ useEffect(() => {
           {/* kolom kanan: tombol check-in / input manual / message */}
           <div className="flex flex-col text-lg items-center justify-center gap-4">
             <button
-              className="flex items-center justify-center gap-2 bg-amber-400 hover:bg-amber-500 text-gray-900 px-6 py-3 rounded-lg font-bold shadow-lg transition-all duration-200 text-lg w-full"
+              className="flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 dark:bg-amber-400 dark:hover:bg-amber-500 text-white dark:text-gray-900 px-6 py-3 rounded-lg font-bold shadow-lg transition-all duration-200 text-lg w-full"
               onClick={() => { setScanMode(true); setMessage(''); }}
               disabled={loading}
             >
@@ -947,8 +982,8 @@ useEffect(() => {
             </button>
             <input
               type="text"
-              placeholder="Input QR code manual"
-              className="w-full p-3 border-2 border-gray-600 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-amber-400 mb-2 bg-gray-700 text-gray-200 placeholder:text-gray-400 shadow"
+              placeholder="Enter QR code manually"
+              className="w-full p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-gray-400 mb-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder:text-gray-400 shadow"
               value={buffer}
               onChange={(e) => handleBufferedInput(e.target.value)}
               autoFocus
@@ -964,152 +999,135 @@ useEffect(() => {
               Booking Class
             </button>
                   {/* Modal Booking Class */}
-                  <Modal
-    isOpen={showClassModal}
-    onRequestClose={() => setShowClassModal(false)}
-    contentLabel="Booking Class"
-    ariaHideApp={false}
-    style={{
-        overlay: { 
-            zIndex: 1000, 
-            backgroundColor: 'rgba(0,0,0,0.7)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-        content: { 
-            maxWidth: 1200, 
-            minWidth: 750,
-            margin: 'auto', 
-            borderRadius: 12, 
-            padding: 32,
-            boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
-            border: 'none',
-            backgroundColor: '#1f2937',
-        }
-    }}
->
-    {/* HEADER MODAL */}
-    <div className="flex justify-between items-center border-b border-gray-700 pb-4 mb-6">
-        <div>
-          <h2 className="text-3xl font-extrabold text-amber-400">🗓️ Booking Class</h2>
-          {user?.membership_plan?.id === 2 ? (
-            <p className="text-sm text-green-400 mt-1">✓ Gold Member - Free Booking Available</p>
-          ) : (
-            <p className="text-sm text-amber-400 mt-1">⚠ {user?.membership_plan?.name || 'Non-Gold'} Member - Purchase Required</p>
-          )}
-        </div>
-        {/* Tombol close di sudut kanan atas */}
-        <button
-            className="text-gray-400 hover:text-gray-200 transition duration-150"
-            onClick={() => setShowClassModal(false)}
-        >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-        </button>
-    </div>
+            <Modal
+                isOpen={showClassModal}
+                onRequestClose={() => setShowClassModal(false)}
+                contentLabel="Booking Class"
+                ariaHideApp={false}
+                className=" bg-white dark:bg-gray-800 rounded-xl max-w-[1200px] min-w-[750px] w-full mx-auto p-8 shadow-2xl outline-none max-h-[95vh] overflow-y-auto border border-gray-200 dark:border-gray-700 " overlayClassName="fixed inset-0 bg-black/70 flex items-center  justify-center z-[1000]" portalClassName="z-[1000]"
+            >
+              {/* HEADER MODAL */}
+              <div className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-2 mb-3">
+                  <div>
+                    <h2 className="text-3xl font-extrabold text-amber-500 dark:text-amber-400">🗓️ Booking Class</h2>
+                    {user?.membership_plan?.name ? 
+                      user?.membership_plan?.name?.toLowerCase() === "silver" ? (
+                        <p className="text-sm text-amber-600 dark:text-amber-400 mt-1">⚠ {user?.membership_plan?.name || 'silver / trial'} Member - Purchase Required</p>) : (
+                        <p className="text-sm text-amber-600 dark:text-amber-400 mt-1">✓ {user?.membership_plan?.name || ''} Member - Free Booking Available</p>) : 
+                      ""
+                    }
+                  </div>
+                  {/* Tombol close di sudut kanan atas */}
+                  <button
+                      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition duration-150"
+                      onClick={() => setShowClassModal(false)}
+                  >
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                      </svg>
+                  </button>
+              </div>
 
-    {/* FEEDBACK AREA */}
-    <div className="mb-4">
-        {bookingClassLoading && <div className="p-3 bg-blue-900 text-blue-200 border-l-4 border-blue-500 rounded-md font-medium">Memuat data...</div>}
-        {bookingClassError && <div className="p-3 bg-red-900 text-red-200 border-l-4 border-red-500 rounded-md font-medium">Error: {bookingClassError}</div>}
-        {bookingClassSuccess && <div className="p-3 bg-green-900 text-green-200 border-l-4 border-green-500 rounded-md font-medium">Berhasil: {bookingClassSuccess}</div>}
-    </div>
-    
-    {/* SEARCH INPUT & DATA TABLE */}
-    <div className="mb-4 flex items-center gap-4">
-      <input
-        type="text"
-        className="p-3 border-2 border-gray-600 rounded-lg text-lg w-96 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-gray-700 text-gray-200 placeholder:text-gray-400 shadow"
-        placeholder="Search class, instructor, date (28/11/2025)"
-        value={classSearch}
-        onChange={handleClassSearchChange}
-        autoFocus
-      />
-      <span className="text-gray-400 text-sm">Press Enter or wait for 0.4 seconds</span>
-    </div>
-    <div className="shadow-lg rounded-lg overflow-hidden border border-gray-700">
-      <BookingDataTable
-        columns={[
-          { name: 'Nama Kelas', selector: row => row.name, sortable: true, grow: 2 },
-          { name: 'Tanggal', selector: row => row.class_date?.slice(0, 10), sortable: true },
-          { name: 'Mulai', selector: row => row.start_time?.slice(11, 16), sortable: true },
-          { name: 'Selesai', selector: row => row.end_time?.slice(11, 16), sortable: true },
-          { name: 'Instruktur', selector: row => row.instructor?.name || '-', sortable: true, grow: 1.5 },
-          { 
-            name: 'Aksi', 
-            cell: row => {
-              // Cek apakah user memiliki Gold membership (id=2)
-              // const isGoldMember = user?.membership_plan?.id === 2;
-              const planName = user?.membership_plan?.name?.toLowerCase();
-              const isGoldMember = planName === "gold" || planName === "platinum";
-
+              {/* FEEDBACK AREA */}
+              <div className="mb-4">
+                  {bookingClassLoading && <div className="p-3 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border-l-4 border-blue-500 rounded-md font-medium">Memuat data...</div>}
+                  {bookingClassError && <div className="p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 border-l-4 border-red-500 rounded-md font-medium">Error: {bookingClassError}</div>}
+                  {bookingClassSuccess && <div className="p-3 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200 border-l-4 border-green-500 rounded-md font-medium">Berhasil: {bookingClassSuccess}</div>}
+              </div>
               
-              if (isGoldMember) {
-                // Gold member: tampilkan tombol Book
-                return (
-                  <button
-                    className={`px-4 py-2 rounded-lg font-semibold transition duration-200 ${
-                      bookingClassLoading 
-                        ? 'bg-gray-600 text-gray-400 cursor-not-allowed' 
-                        : 'bg-green-600 text-white hover:bg-green-700 shadow-md hover:shadow-lg'
-                    }`}
-                    onClick={() => handleBookClass(row.id)}
-                    disabled={bookingClassLoading}
-                  >
-                    {bookingClassLoading ? 'Processing...' : 'Book'}
-                  </button>
-                );
-              } else {
-                // Non-Gold member: tampilkan tombol Buy
-                return (
-                  <button
-                    className={`px-4 py-2 rounded-lg font-semibold transition duration-200 ${
-                      bookingClassLoading 
-                        ? 'bg-gray-600 text-gray-400 cursor-not-allowed' 
-                        : 'bg-amber-500 text-white hover:bg-amber-600 shadow-md hover:shadow-lg'
-                    }`}
-                    onClick={() => handleBuyClass(row.id)}
-                    disabled={bookingClassLoading}
-                  >
-                    {bookingClassLoading ? 'Processing...' : 'Buy Class'}
-                  </button>
-                );
-              }
-            }, 
-            ignoreRowClick: true 
-          },
-        ]}
-        data={availableClasses}
-        pagination={true}
-        paginationServer={true}
-        paginationTotalRows={classTotalRows}
-        paginationPerPage={classLimit}
-        currentPage={classPage}
-        onChangePage={handleClassTablePageChange}
-        onChangeRowsPerPage={handleClassTableRowsPerPageChange}
-        paginationRowsPerPageOptions={[10, 25, 50]}
-        customStyles={{
-          header: { style: { backgroundColor: '#374151' } },
-          rows: { 
-            style: { backgroundColor: '#1f2937', color: '#e5e7eb' },
-            highlightOnHoverStyle: { backgroundColor: '#374151' } 
-          },
-        }}
-      />
-    </div>
+              {/* SEARCH INPUT & DATA TABLE */}
+              <div className="mb-4 flex items-center gap-4">
+                <input
+                  type="text"
+                  className="p-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-base w-96 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder:text-gray-400 shadow"
+                  placeholder="Search class, instructor, date (28/11/2025)"
+                  value={classSearch}
+                  onChange={handleClassSearchChange}
+                  autoFocus
+                />
+                <span className="text-gray-500 dark:text-gray-400 text-sm">Press Enter or wait for 0.4 seconds</span>
+              </div>
+              <div className="shadow-lg rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                <BookingDataTable
+                  columns={[
+                    { name: 'Nama Kelas', selector: row => row.name, sortable: true, grow: 2 },
+                    { name: 'Tanggal', selector: row => row.class_date?.slice(0, 10), sortable: true },
+                    { name: 'Mulai', selector: row => row.start_time?.slice(11, 16), sortable: true },
+                    { name: 'Selesai', selector: row => row.end_time?.slice(11, 16), sortable: true },
+                    { name: 'Instruktur', selector: row => row.instructor?.name || '-', sortable: true, grow: 1.5 },
+                    { 
+                      name: 'Aksi', 
+                      cell: row => {
+                        // Cek apakah user memiliki Gold membership (id=2)
+                        // const isGoldMember = user?.membership_plan?.id === 2;
+                        const planName = user?.membership_plan?.name?.toLowerCase();
+                        const isGoldMember = planName === "gold" || planName === "platinum";
 
-    {/* FOOTER MODAL / BUTTON CLOSE */}
-    <div className="flex justify-end mt-6 pt-4 border-t border-gray-700">
-        <button
-            className="bg-gray-600 hover:bg-gray-500 text-gray-200 px-5 py-2 rounded-lg font-bold transition duration-200 shadow-md"
-            onClick={() => setShowClassModal(false)}
-        >
-            Tutup
-        </button>
-    </div>
-</Modal>
+                        
+                        if (isGoldMember) {
+                          // Gold member: tampilkan tombol Book
+                          return (
+                            <button
+                              className={`px-4 py-2 rounded-lg font-semibold transition duration-200 ${
+                                bookingClassLoading 
+                                  ? 'bg-gray-600 text-gray-400 cursor-not-allowed' 
+                                  : 'bg-green-600 text-white hover:bg-green-700 shadow-md hover:shadow-lg'
+                              }`}
+                              onClick={() => handleBookClass(row.id)}
+                              disabled={bookingClassLoading}
+                            >
+                              {bookingClassLoading ? 'Processing...' : 'Book'}
+                            </button>
+                          );
+                        } else {
+                          // Non-Gold member: tampilkan tombol Buy
+                          return (
+                            <button
+                              className={`px-4 py-2 rounded-lg font-semibold transition duration-200 ${
+                                bookingClassLoading 
+                                  ? 'bg-gray-600 text-gray-400 cursor-not-allowed' 
+                                  : 'bg-amber-500 text-white hover:bg-amber-600 shadow-md hover:shadow-lg'
+                              }`}
+                              onClick={() => handleBuyClass(row.id)}
+                              disabled={bookingClassLoading}
+                            >
+                              {bookingClassLoading ? 'Processing...' : 'Buy Class'}
+                            </button>
+                          );
+                        }
+                      }, 
+                      ignoreRowClick: true 
+                    },
+                  ]}
+                  data={availableClasses}
+                  pagination={true}
+                  paginationServer={true}
+                  paginationTotalRows={classTotalRows}
+                  paginationPerPage={classLimit}
+                  currentPage={classPage}
+                  onChangePage={handleClassTablePageChange}
+                  onChangeRowsPerPage={handleClassTableRowsPerPageChange}
+                  paginationRowsPerPageOptions={[10, 25, 50]}
+                  customStyles={{
+                    header: { style: { backgroundColor: '#374151' } },
+                    rows: { 
+                      style: { backgroundColor: '#1f2937', color: '#e5e7eb' },
+                      highlightOnHoverStyle: { backgroundColor: '#374151' } 
+                    },
+                  }}
+                />
+              </div>
+
+              {/* FOOTER MODAL / BUTTON CLOSE */}
+              <div className="flex justify-end mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <button
+                    className="bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 px-5 py-2 rounded-lg font-bold transition duration-200 shadow-md"
+                    onClick={() => setShowClassModal(false)}
+                >
+                    Tutup
+                </button>
+              </div>
+            </Modal>
             <button
               className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-bold shadow-lg transition w-full"
               onClick={handleBookingPTSession}
@@ -1123,30 +1141,12 @@ useEffect(() => {
               onRequestClose={() => setShowPTModal(false)}
               contentLabel="Booking PT Session"
               ariaHideApp={false}
-              style={{
-                overlay: {
-                  zIndex: 1000,
-                  backgroundColor: 'rgba(0,0,0,0.7)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                },
-                content: {
-                  maxWidth: 1200,
-                  minWidth: 750,
-                  margin: 'auto',
-                  borderRadius: 12,
-                  padding: 32,
-                  boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
-                  border: 'none',
-                  backgroundColor: '#1f2937',
-                }
-              }}
+              className=" bg-white dark:bg-gray-800 rounded-xl max-w-[1200px] min-w-[750px] w-full mx-auto p-8 shadow-2xl outline-none max-h-[95vh] overflow-y-auto border border-gray-200 dark:border-gray-700 " overlayClassName="fixed inset-0 bg-black/70 flex items-center  justify-center z-[1000]" portalClassName="z-[1000]"
             >
-              <div className="flex justify-between items-center border-b border-gray-700 pb-4 mb-6">
-                <h2 className="text-3xl font-extrabold text-amber-400">💪 Booking PT Session</h2>
+              <div className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-4 mb-6">
+                <h2 className="text-3xl font-extrabold text-amber-500 dark:text-amber-400">💪 Booking PT Session</h2>
                 <button
-                  className="text-gray-400 hover:text-gray-200 transition duration-150"
+                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition duration-150"
                   onClick={() => setShowPTModal(false)}
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -1155,22 +1155,22 @@ useEffect(() => {
                 </button>
               </div>
               <div className="mb-4">
-                {bookingPTLoading && <div className="p-3 bg-blue-900 text-blue-200 border-l-4 border-blue-500 rounded-md font-medium">Memuat data...</div>}
-                {bookingPTError && <div className="p-3 bg-red-900 text-red-200 border-l-4 border-red-500 rounded-md font-medium">Error: {bookingPTError}</div>}
-                {bookingPTSuccess && <div className="p-3 bg-green-900 text-green-200 border-l-4 border-green-500 rounded-md font-medium">Berhasil: {bookingPTSuccess}</div>}
+                {bookingPTLoading && <div className="p-3 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border-l-4 border-blue-500 rounded-md font-medium">Memuat data...</div>}
+                {bookingPTError && <div className="p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 border-l-4 border-red-500 rounded-md font-medium">Error: {bookingPTError}</div>}
+                {bookingPTSuccess && <div className="p-3 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200 border-l-4 border-green-500 rounded-md font-medium">Berhasil: {bookingPTSuccess}</div>}
               </div>
               <div className="mb-4 flex items-center gap-4">
                 <input
                   type="text"
-                  className="p-3 border-2 border-gray-600 rounded-lg text-lg w-96 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-gray-700 text-gray-200 placeholder:text-gray-400 shadow"
+                  className="p-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-base w-96 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder:text-gray-400 shadow"
                   placeholder="Search PT session, trainer, date (28/11/2025)"
                   value={ptSearch}
                   onChange={handlePTSearchChange}
                   autoFocus
                 />
-                <span className="text-gray-400 text-sm">Press Enter or wait for 0.4 seconds</span>
+                <span className="text-gray-500 dark:text-gray-400 text-sm">Press Enter or wait for 0.4 seconds</span>
               </div>
-              <div className="shadow-lg rounded-lg overflow-hidden border border-gray-700">
+              <div className="shadow-lg rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
                 <BookingDataTable
                   columns={[
                     // { name: 'Nama Session', selector: row => row.name, sortable: true },
@@ -1224,9 +1224,9 @@ useEffect(() => {
                   }}
                 />
               </div>
-              <div className="flex justify-end mt-6 pt-4 border-t border-gray-700">
+              <div className="flex justify-end mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <button
-                  className="bg-gray-600 hover:bg-gray-500 text-gray-200 px-5 py-2 rounded-lg font-bold transition duration-200 shadow-md"
+                  className="bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 px-5 py-2 rounded-lg font-bold transition duration-200 shadow-md"
                   onClick={() => setShowPTModal(false)}
                 >
                   Tutup

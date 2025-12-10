@@ -14,7 +14,7 @@ export default function ClassPlansDataTable({ data }) {
     {
       name: 'Actions',
       cell: row => (
-         <Link href={`/admin/class/plans/edit?id=${row.id}`} className="bg-gray-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500">Detail</Link>
+         <Link href={`/admin/class/plans/edit?id=${row.id}`} className="bg-gray-600 dark:bg-blue-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-700 dark:hover:bg-blue-700">Detail</Link>
       ),
     },
   ];

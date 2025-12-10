@@ -99,7 +99,7 @@ export default function PTBookingPage() {
   return (
     <div>
       <PageBreadcrumb items={[
-        { icon: FaChalkboardTeacher, label: 'PT Session', href: '/admin/pt/session' },
+        { icon: <FaChalkboardTeacher className="w-3 h-3" />, label: 'PT Session', href: '/admin/pt/session' },
         { label: 'Booking' }
       ]} />
       
@@ -108,8 +108,8 @@ export default function PTBookingPage() {
           searchPlaceholder="Search member/plan/status..."
           searchValue={searchInput}
           onSearchChange={(e) => setSearchInput(e.target.value)}
-          actionHref="/admin/pt/booking/create"
-          actionIcon={FaPlus}
+          actionHref="/admin/pt/booking/create"          
+          actionIcon={<FaPlus />}
           actionText="New Booking"
         />
         {loading ? (

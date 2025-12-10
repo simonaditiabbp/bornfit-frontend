@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import BackendErrorFallback from "../../../../../components/BackendErrorFallback";
-import { FaCalendarCheck } from 'react-icons/fa';
+import { FaChalkboardTeacher } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -158,19 +158,19 @@ export default function PTSessionEditPage() {
     return <BackendErrorFallback onRetry={() => window.location.reload()} />;
   }
   if (loading || !form) {
-    return <div className="text-amber-300 text-center font-medium mt-20">Loading...</div>;
+    return <div className="text-gray-800 dark:text-amber-300 text-center font-medium mt-20">Loading...</div>;
   }
 
   return (
     <div>
       <PageBreadcrumb items={[
-        { icon: FaCalendarCheck, label: 'PT Session', href: '/admin/pt/session' },
+        { icon: <FaChalkboardTeacher className="w-3 h-3" />, label: 'PT Session', href: '/admin/pt/session' },
         { label: 'Detail / Edit' }
       ]} />
 
       <PageContainerInsert>
         <div className="flex items-center justify-between mb-8 border-b border-gray-700 pb-4">
-          <h1 className="text-3xl font-bold text-amber-300">PT Session Details</h1>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-amber-300">PT Session Details</h1>
           <ActionButton
             variant="gray"
             href="/admin/pt/session"

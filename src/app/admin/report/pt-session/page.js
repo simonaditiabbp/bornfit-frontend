@@ -93,51 +93,51 @@ export default function PTSessionReportPage() {
 
   return (
     <div>
-      <div className="bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-700">
+      <div className="bg-white dark:bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-200 dark:border-gray-700">
         <nav className="flex" aria-label="Breadcrumb">
           <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
             <li className="inline-flex items-center">
-              <FaChalkboardTeacher className="w-4 h-4 me-2.5 text-amber-300" /> 
-              <span className="ms-1 text-sm font-medium text-gray-200">PT Session Reports</span>
+              <FaChalkboardTeacher className="w-4 h-4 me-2.5 text-amber-500 dark:text-amber-300" /> 
+              <span className="ms-1 text-sm font-medium text-gray-700 dark:text-gray-200">PT Session Reports</span>
             </li>
           </ol>
         </nav>
       </div>
       
-      <div className="m-5 p-5 bg-gray-800 border border-gray-700 rounded-lg">
-        <h1 className="text-2xl font-bold text-amber-400 mb-6">PT Session Bookings</h1>
+      <div className="m-5 p-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+        <h1 className="text-2xl font-bold text-amber-500 dark:text-amber-400 mb-6">PT Session Bookings</h1>
 
         {/* Filters */}
-        <div className="mb-6 p-4 bg-gray-900 rounded-lg border border-gray-700">
+        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2 mb-3">
-            <FaFilter className="text-amber-400" />
-            <h3 className="text-lg font-semibold text-gray-200">Filter Data</h3>
+            <FaFilter className="text-amber-500 dark:text-amber-400" />
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">Filter Data</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Start Date</label>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Start Date</label>
               <input
                 type="date"
                 value={filters.start_date}
                 onChange={(e) => setFilters({ ...filters, start_date: e.target.value, page: 1 })}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white"
+                className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-gray-800 dark:text-white"
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-400 mb-1">End Date</label>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">End Date</label>
               <input
                 type="date"
                 value={filters.end_date}
                 onChange={(e) => setFilters({ ...filters, end_date: e.target.value, page: 1 })}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white"
+                className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-gray-800 dark:text-white"
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Status</label>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Status</label>
               <select
                 value={filters.status}
                 onChange={(e) => setFilters({ ...filters, status: e.target.value, page: 1 })}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white"
+                className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-gray-800 dark:text-white"
               >
                 <option value="">All Status</option>
                 <option value="pending">Pending</option>
@@ -149,7 +149,7 @@ export default function PTSessionReportPage() {
             <div className="flex items-end">
               <button
                 onClick={() => setFilters({ start_date: '', end_date: '', status: '', page: 1, limit: 50 })}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition w-full"
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded transition w-full"
               >
                 Reset Filters
               </button>
@@ -159,8 +159,8 @@ export default function PTSessionReportPage() {
 
         {/* Data Table */}
         <div className="mb-6 overflow-x-auto">
-          <table className="w-full text-sm text-left text-gray-300">
-            <thead className="text-xs uppercase bg-gray-700 text-gray-300">
+          <table className="w-full text-sm text-left text-gray-700 dark:text-gray-300">
+            <thead className="text-xs uppercase bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
               <tr>
                 <th className="px-4 py-3">Booking Time</th>
                 <th className="px-4 py-3">Member</th>
@@ -172,24 +172,24 @@ export default function PTSessionReportPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan="6" className="text-center py-8 text-gray-400">Loading...</td></tr>
+                <tr><td colSpan="6" className="text-center py-8 text-gray-500 dark:text-gray-400">Loading...</td></tr>
               ) : data.length === 0 ? (
-                <tr><td colSpan="6" className="text-center py-8 text-gray-400">No data found</td></tr>
+                <tr><td colSpan="6" className="text-center py-8 text-gray-500 dark:text-gray-400">No data found</td></tr>
               ) : (
                 data.map((item) => (
-                  <tr key={item.id} className="border-b border-gray-700 hover:bg-gray-750">
+                  <tr key={item.id} className="border-b border-gray-200 dark:border-gray-700">
                     <td className="px-4 py-3">{formatDate(item.booking_time)}</td>
                     <td className="px-4 py-3">
                       <div className="font-semibold">{item.member_name}</div>
-                      <div className="text-xs text-gray-400">{item.member_email}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{item.member_email}</div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="font-semibold">{item.trainer_name}</div>
-                      <div className="text-xs text-gray-400">{item.trainer_email}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{item.trainer_email}</div>
                     </td>
                     <td className="px-4 py-3">{item.plan_name}</td>
-                    <td className="px-4 py-3 font-semibold text-green-400">{formatCurrency(item.plan_price)}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 font-semibold text-green-600 dark:text-green-400">{formatCurrency(item.plan_price)}</td>
+                    <td className="px-4 py-3 text-white">
                       <span className={`px-2 py-1 rounded text-xs font-semibold ${
                         item.status === 'completed' ? 'bg-green-600' :
                         item.status === 'confirmed' ? 'bg-blue-600' :
@@ -208,10 +208,10 @@ export default function PTSessionReportPage() {
 
         {/* Download Buttons */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-gray-200">Download Reports</h2>
+          <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200">Download Reports</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
-              <h3 className="text-sm font-semibold text-gray-300 mb-2">Bookings</h3>
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Bookings</h3>
               <div className="flex gap-2">
                 <button onClick={() => handleDownload('bookings', 'csv')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
                   <FaFileCsv className="inline mr-1" /> CSV
@@ -221,8 +221,8 @@ export default function PTSessionReportPage() {
                 </button>
               </div>
             </div>
-            <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
-              <h3 className="text-sm font-semibold text-gray-300 mb-2">Attendance</h3>
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Attendance</h3>
               <div className="flex gap-2">
                 <button onClick={() => handleDownload('attendance', 'csv')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
                   <FaFileCsv className="inline mr-1" /> CSV
@@ -232,8 +232,8 @@ export default function PTSessionReportPage() {
                 </button>
               </div>
             </div>
-            <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
-              <h3 className="text-sm font-semibold text-gray-300 mb-2">Trainer Performance</h3>
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Trainer Performance</h3>
               <div className="flex gap-2">
                 <button onClick={() => handleDownload('trainer-performance', 'csv')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
                   <FaFileCsv className="inline mr-1" /> CSV

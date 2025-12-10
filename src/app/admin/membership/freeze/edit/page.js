@@ -192,7 +192,7 @@ export default function FreezeMembershipEditPage() {
   }
   
   if (loading || !form) {
-    return <div className="text-amber-300 text-center font-medium mt-20">Loading...</div>;
+    return <div className="text-gray-800 dark:text-amber-300 text-center font-medium mt-20">Loading...</div>;
   }
 
   return (
@@ -207,7 +207,7 @@ export default function FreezeMembershipEditPage() {
 
       <PageContainerInsert>
         <div className="flex items-center justify-between mb-8 border-b border-gray-700 pb-4">
-          <h1 className="text-3xl font-bold text-amber-300">Edit Freeze Membership</h1>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-amber-300">Freeze Membership Details</h1>
           <ActionButton href="/admin/membership/freeze" variant="gray">Back</ActionButton>
         </div>
 
