@@ -38,25 +38,45 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
+    setError('');
     try {
       const res = await fetch(`${API_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, latitude, longitude }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Login gagal');
+      const dataRes = await res.json();
+      
+      // Handle error responses dengan message spesifik
+      if (!res.ok) {
+        // Error dari backend (404, 401, 403, dll)
+        if (res.status === 404) {
+          setError(`User not found. \n Please re-check your input email.`);
+        } else if (res.status === 401) {
+          setError('Incorrect password. Please try again.');
+        } else if (res.status === 403) {
+          setError('Access denied. Only admin & opscan can login.');
+        } else {
+          setError(dataRes.message || 'Login failed. Please try again.');
+        }
+        setLoading(false);
+        return;
+      }
+      
+      const data = dataRes.data;
+      
       // Simpan token dan user info
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-      if (data.user.role == "admin") {
+      
+      if (data.user.role === "admin") {
         router.push('/admin/dashboard');
-      }
-      if (data.user.role == "opscan") {
+      } else if (data.user.role === "opscan") {
         router.push('/barcode');
       }
     } catch (err) {
+      // Network error atau backend tidak bisa diakses
+      console.error('Login error:', err);
       setBackendError(true);
     }
     setLoading(false);
@@ -96,7 +116,7 @@ export default function LoginPage() {
         </h1>
 
         {error && (
-          <div className="bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 p-2 mb-4 rounded text-center border border-red-200 dark:border-red-700">
+          <div className="bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 p-2 mb-4 rounded text-center border border-red-200 dark:border-red-700" style={{whiteSpace: "pre-line"}}>
             {error}
           </div>
         )}
