@@ -3,8 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FaCog } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainerInsert, FormActions, FormInput } from '@/components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import api from '@/utils/fetchClient';
 
 export default function ClassPlanInsertPage() {
   const initialFormState = {
@@ -54,7 +53,6 @@ export default function ClassPlanInsertPage() {
     setLoading(true);
     setError("");
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
       const payload = {
         name: form.name,
         access_type: form.access_type,
@@ -67,14 +65,7 @@ export default function ClassPlanInsertPage() {
         daily_limit: form.unlimited_daily_session ? 999999 : parseInt(form.daily_limit, 10),
         is_active: form.is_active
       };
-      await fetch(`${API_URL}/api/eventplans`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(payload),
-      });
+      await api.post('/api/eventplans', payload);
       router.push("/admin/class/plans");
     } catch (err) {
       setError("Gagal menyimpan plan");

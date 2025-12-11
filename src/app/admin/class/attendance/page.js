@@ -4,8 +4,7 @@ import Link from 'next/link';
 import ClassAttendanceDataTable from './DataTable';
 import { FaPlus, FaDumbbell, FaAngleRight } from 'react-icons/fa';
 import { LoadingText, PageBreadcrumb, PageContainer, PageHeader } from '@/components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import api from '@/utils/fetchClient';
 
 export default function ClassAttendancePage() {
   const [search, setSearch] = useState('');
@@ -18,32 +17,19 @@ export default function ClassAttendancePage() {
   const [backendError, setBackendError] = useState(false);
 
   useEffect(() => {
-    setLoading(true);
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-    const fetchWith401 = async (url) => {
-      const res = await fetch(url, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-      if (res.status === 401) {
-        setAttendances([]);
-        localStorage.removeItem('token');
-        window.location.replace('/login');
-      }
-      return res.json();
-    };
-
     const fetchAll = async () => {
       setLoading(true);
+      setBackendError(false);
       try {
         if (search && search.trim() !== '') {
           let allMatches = null;
           try {
-            const resSearch = await fetch(`${API_URL}/api/classattendances?search=${encodeURIComponent(search)}`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-            const dataAttendances = await resSearch.json();
+            const dataAttendances = await api.get(`/api/classattendances?search=${encodeURIComponent(search)}`);
             if (Array.isArray(dataAttendances.data.attendances)) allMatches = dataAttendances.data.attendances;
           } catch (e) {}
 
           if (!allMatches) {
-            const resAll = await fetch(`${API_URL}/api/classattendances`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-            const dataAttendances = await resAll.json();
+            const dataAttendances = await api.get('/api/classattendances');
             if (Array.isArray(dataAttendances.data.attendances)) {
               allMatches = dataAttendances.data.attendances.filter(b =>
                 (b.user_member?.name || '').toLowerCase().includes(search.toLowerCase()) ||
@@ -58,14 +44,13 @@ export default function ClassAttendancePage() {
           setAttendances(pageSlice);
           setTotal(allMatches.length);
         } else {
-          const res = await fetch(`${API_URL}/api/classattendances?page=${page}&limit=${limit}`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-          const dataAttendances = await res.json();
+          const dataAttendances = await api.get(`/api/classattendances?page=${page}&limit=${limit}`);
           setAttendances(dataAttendances.data.attendances || []);
           setTotal(dataAttendances.data.total || 0);
         }
       } catch (err) {
         setAttendances([]);
-        setBackendError(true);
+        if (err.isNetworkError) setBackendError(true);
       }
       setLoading(false);
     };

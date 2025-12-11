@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaIdCard } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import api from '@/utils/fetchClient';
+import LoadingSpin from '@/components/admin/LoadingSpin';
 
 export default function EditMembershipSessionPage() {
   const [form, setForm] = useState(null);
@@ -25,18 +25,15 @@ export default function EditMembershipSessionPage() {
   const formatDateForInput = (isoString) => isoString ? isoString.split("T")[0] : "";
 
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
     const fetchData = async () => {
       setLoading(true);
       try {
-        const resSession = await fetch(`${API_URL}/api/memberships/${id}`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const resUsers = await fetch(`${API_URL}/api/users?role=member`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const resUserStaff = await fetch(`${API_URL}/api/users?exclude_role=member`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const resPlans = await fetch(`${API_URL}/api/membership-plans`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const sessionData = await resSession.json();
-        const usersData = await resUsers.json();
-        const usersDataStaff = await resUserStaff.json();
-        const plansData = await resPlans.json();
+        const [sessionData, usersData, usersDataStaff, plansData] = await Promise.all([
+          api.get(`/api/memberships/${id}`),
+          api.get('/api/users?role=member'),
+          api.get('/api/users?exclude_role=member'),
+          api.get('/api/membership-plans')
+        ]);
         setForm(sessionData.data || null);
         setUsers(usersData.data?.users || []);
         setStaff(usersDataStaff.data?.users || []);
@@ -56,35 +53,27 @@ export default function EditMembershipSessionPage() {
     setError('');
     setSuccess('');
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
       let startDateIso = form.start_date;
       if (startDateIso && startDateIso.length === 10) {
         startDateIso = startDateIso + 'T00:00:00.000Z';
       }
-      await fetch(`${API_URL}/api/memberships/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({
-          user_id: Number(form.user_id),
-          membership_plan_id: Number(form.membership_plan_id),
-          start_date: startDateIso,
-          // end_date: form.end_date,
-          sales_type: form.sales_type,
-          additional_fee: form.additional_fee ? Number(form.additional_fee) : 0,
-          discount_type: form.discount_type,
-          discount_amount: form.discount_type === 'amount' && form.discount_amount !== '' ? Number(form.discount_amount) : null,
-          discount_percent: form.discount_type === 'percent' && form.discount_percent !== '' ? Number(form.discount_percent) : null,
-          extra_duration_days: form.extra_duration_days ? Number(form.extra_duration_days) : 0,
-          note: form.note,
-          referral_user_member_id: form.referral_user_member_id ? Number(form.referral_user_member_id) : null,
-          referral_user_staff_id: form.referral_user_staff_id ? Number(form.referral_user_staff_id) : null,
-          status: form.status,
-          is_active: form.is_active,
-          final_price: Number(form.final_price)
-        })
+      await api.put(`/api/memberships/${id}`, {
+        user_id: Number(form.user_id),
+        membership_plan_id: Number(form.membership_plan_id),
+        start_date: startDateIso,
+        // end_date: form.end_date,
+        sales_type: form.sales_type,
+        additional_fee: form.additional_fee ? Number(form.additional_fee) : 0,
+        discount_type: form.discount_type,
+        discount_amount: form.discount_type === 'amount' && form.discount_amount !== '' ? Number(form.discount_amount) : null,
+        discount_percent: form.discount_type === 'percent' && form.discount_percent !== '' ? Number(form.discount_percent) : null,
+        extra_duration_days: form.extra_duration_days ? Number(form.extra_duration_days) : 0,
+        note: form.note,
+        referral_user_member_id: form.referral_user_member_id ? Number(form.referral_user_member_id) : null,
+        referral_user_staff_id: form.referral_user_staff_id ? Number(form.referral_user_staff_id) : null,
+        status: form.status,
+        is_active: form.is_active,
+        final_price: Number(form.final_price)
       });
       setSuccess('Session updated');
       setEdit(false);
@@ -99,8 +88,7 @@ export default function EditMembershipSessionPage() {
     if (!confirm('Yakin ingin menghapus session ini?')) return;
     setFormLoading(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      await fetch(`${API_URL}/api/memberships/${id}`, { method: 'DELETE', headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+      await api.delete(`/api/memberships/${id}`);
       router.push('/admin/membership/session');
     } catch (err) {
       setError('Gagal menghapus session');
@@ -108,7 +96,7 @@ export default function EditMembershipSessionPage() {
     setFormLoading(false);
   };
 
-  if (loading || !form) return <div className="text-gray-800 dark:text-amber-300 text-center font-medium mt-20">Loading...</div>;
+  if (loading || !form) return <LoadingSpin />;
 
   return (
     <div>      

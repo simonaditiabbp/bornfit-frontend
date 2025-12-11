@@ -2,9 +2,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FaIdCard } from 'react-icons/fa';
+import api from '@/utils/fetchClient';
 import { PageBreadcrumb, PageContainerInsert, FormActions, FormInput } from '@/components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function TransferMembershipInsertPage() {
   const [members, setMembers] = useState([]);
@@ -37,14 +36,10 @@ export default function TransferMembershipInsertPage() {
   useEffect(() => {
     const fetchMembers = async () => {
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-        const res = await fetch(`${API_URL}/api/users?role=member`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-        });
-        const data = await res.json();
-        if (res.ok) setMembers(data.data?.users || []);
+        const data = await api.get('/api/users?role=member');
+        setMembers(data.data?.users || []);
       } catch (err) {
-        console.error("Failed to fetch members:", err);
+        // Silently fail - dropdown will be empty
       }
     };
     fetchMembers();
@@ -59,21 +54,15 @@ export default function TransferMembershipInsertPage() {
 
     const fetchMemberships = async () => {
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-        const res = await fetch(`${API_URL}/api/memberships?role=member`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-        });
-        const data = await res.json();
-        if (res.ok) {
-          const allMemberships = data.data?.memberships || [];
-          // Filter active memberships for selected user
-          const userMemberships = allMemberships.filter(m => 
-            m.user_id === Number(form.from_user_id) && m.status === 'active'
-          );
-          setMemberships(userMemberships);
-        }
+        const data = await api.get('/api/memberships?role=member');
+        const allMemberships = data.data?.memberships || [];
+        // Filter active memberships for selected user
+        const userMemberships = allMemberships.filter(m => 
+          m.user_id === Number(form.from_user_id) && m.status === 'active'
+        );
+        setMemberships(userMemberships);
       } catch (err) {
-        console.error("Failed to fetch memberships:", err);
+        // Silently fail - dropdown will be empty
         setMemberships([]);
       }
     };
@@ -87,24 +76,14 @@ export default function TransferMembershipInsertPage() {
     setSuccess("");
 
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      const res = await fetch(`${API_URL}/api/membership-transfers`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({
-          from_membership_id: Number(form.from_membership_id),
-          from_user_id: Number(form.from_user_id),
-          to_user_id: Number(form.to_user_id),
-          transfer_date: form.transfer_date ? new Date(form.transfer_date).toISOString() : new Date().toISOString(),
-          fee: Number(form.fee) || 0,
-          reason: form.reason || null
-        }),
+      await api.post('/api/membership-transfers', {
+        from_membership_id: Number(form.from_membership_id),
+        from_user_id: Number(form.from_user_id),
+        to_user_id: Number(form.to_user_id),
+        transfer_date: form.transfer_date ? new Date(form.transfer_date).toISOString() : new Date().toISOString(),
+        fee: Number(form.fee) || 0,
+        reason: form.reason || null
       });
-      
-      if (!res.ok) throw new Error("Gagal transfer membership");
       
       setSuccess("Berhasil transfer membership");
       setTimeout(() => {

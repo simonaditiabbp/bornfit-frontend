@@ -2,9 +2,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FaCog } from 'react-icons/fa';
+import api from '@/utils/fetchClient';
 import { PageBreadcrumb, PageContainerInsert, FormActions, FormInput, FormInputGroup } from '@/components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function PTPlanInsertPage() {
   const router = useRouter();
@@ -38,15 +37,7 @@ export default function PTPlanInsertPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      await fetch(`${API_URL}/api/ptsessionplans`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(form),
-      });
+      await api.post('/api/ptsessionplans', form);
       router.push("/admin/pt/plans");
     } catch (err) {
       alert("Gagal menyimpan plan");

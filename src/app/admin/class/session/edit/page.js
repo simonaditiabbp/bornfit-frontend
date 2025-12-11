@@ -4,8 +4,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import BackendErrorFallback from "../../../../../components/BackendErrorFallback";
 import { FaDumbbell } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import LoadingSpin from "@/components/admin/LoadingSpin";
+import api from '@/utils/fetchClient';
 
 export default function ClassSessionEditPage() {
   const [plans, setPlans] = useState([]);
@@ -56,35 +56,24 @@ export default function ClassSessionEditPage() {
   }, [form?.event_plan_id, form?.recurrence_start_time, form?.start_time, form?.is_recurring, edit, plans]);
 
   useEffect(() => {
-    const fetchPlans = async () => {
+    const fetchDropdownData = async () => {
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-        const res = await fetch(`${API_URL}/api/eventplans`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const dataPlans = await res.json();
-        if (res.ok) setPlans(dataPlans.data.plans);
+        const [dataPlans, dataMember, dataInstructor] = await Promise.all([
+          api.get('/api/eventplans'),
+          api.get('/api/users?role=member&membership=active'),
+          api.get('/api/users?role=instructor')
+        ]);
+        setPlans(dataPlans.data.plans || []);
+        setMembers(dataMember.data.users || []);
+        setInstructors(dataInstructor.data.users || []);
       } catch {}
     };
-    fetchPlans();
-    const fetchUsers = async () => {
-      try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-        const resMember = await fetch(`${API_URL}/api/users?role=member&membership=active`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const resInstructor = await fetch(`${API_URL}/api/users?role=instructor`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const dataMember = await resMember.json();
-        const dataInstructor = await resInstructor.json();
-        if (resMember.ok) setMembers(dataMember.data.users);
-        if (resInstructor.ok) setInstructors(dataInstructor.data.users);
-      } catch {}
-    };
-    fetchUsers();
+    fetchDropdownData();
     const fetchSession = async () => {
       setLoading(true);
       setBackendError(false);
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-        const res = await fetch(`${API_URL}/api/classes/${id}`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        if (!res.ok) throw new Error("Gagal fetch class");
-        const dataClass = await res.json();
+        const dataClass = await api.get(`/api/classes/${id}`);
         const data = dataClass.data;
         setSession(data);
         setIsRecurring(data.is_recurring || false);
@@ -125,7 +114,7 @@ export default function ClassSessionEditPage() {
           });
         }
       } catch (err) {
-        setBackendError(true);
+        if (err.isNetworkError) setBackendError(true);
       }
       setLoading(false);
     };
@@ -184,8 +173,6 @@ export default function ClassSessionEditPage() {
     setError("");
     setSuccess("");
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      
       let payload = {};
       
       if (form.is_recurring) {
@@ -223,16 +210,7 @@ export default function ClassSessionEditPage() {
         };
       }
       
-      const res = await fetch(`${API_URL}/api/classes/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify(payload)
-      });
-      
-      if (!res.ok) throw new Error("Gagal update class");
+      await api.put(`/api/classes/${id}`, payload);
       
       if (form.is_recurring) {
         setSuccess("Recurring class pattern berhasil diupdate! Semua class instances telah di-regenerate.");
@@ -262,14 +240,8 @@ export default function ClassSessionEditPage() {
     
     setFormLoading(true);
     try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-        await fetch(`${API_URL}/api/classes/${id}`, {
-        method: 'DELETE',
-        headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {})
-        }
-        });
-        router.push('/admin/class/session');
+      await api.delete(`/api/classes/${id}`);
+      router.push('/admin/class/session');
     } catch (err) {
       setError("Gagal menghapus class");
     }
@@ -279,9 +251,8 @@ export default function ClassSessionEditPage() {
   if (backendError) {
     return <BackendErrorFallback onRetry={() => window.location.reload()} />;
   }
-  if (loading || !form) {
-    return <div className="text-gray-800 dark:text-amber-300 text-center font-medium mt-20">Loading...</div>;
-  }
+
+  if (loading || !form) return <LoadingSpin />;
 
   return (
     <div>

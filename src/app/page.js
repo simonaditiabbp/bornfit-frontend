@@ -19,7 +19,7 @@ export default function Home() {
         if (user.role === "admin") {
           router.replace("/admin/dashboard");
         } else if (user.role === "opscan") {
-          router.replace("/barcode");
+          router.replace("/checkin");
         } else {
           router.replace("/login");
         }

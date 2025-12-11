@@ -8,6 +8,7 @@ import timezone from 'dayjs/plugin/timezone';
 import BackendErrorFallback from '../../../components/BackendErrorFallback';
 import { FaSnowflake } from 'react-icons/fa';
 import { useTheme } from '@/contexts/ThemeContext';
+import api from '@/utils/fetchClient';
 
 const ApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
@@ -41,41 +42,18 @@ export default function AdminDashboardPage() {
   });
   const [backendError, setBackendError] = useState(false);
 
-  const router = require('next/navigation').useRouter();
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
-    if (!userData || !token) {
-      router.replace('/login');
-      return;
-    }
-    const userObj = JSON.parse(userData);
-    if (userObj.role !== 'admin') {
-      router.replace('/barcode');
-      return;
-    }
-    const API_URL = process.env.NEXT_PUBLIC_API_URL;
     const fetchStats = async () => {
       setLoading(true);
       try {
-        // Helper fetch with 401 handling
-        const fetchWith401 = async (url) => {
-          const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-          if (res.status === 401) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            router.replace('/login');
-            // throw new Error('Unauthorized');
-          }
-          return res.json();
-        };
+        // Use FetchClient with automatic token injection & 401 redirect
         const [usersRes, membershipsRes, checkinsRes, ptsessionsRes, classesRes, ptBookingsRes] = await Promise.all([
-          fetchWith401(`${API_URL}/api/users`),
-          fetchWith401(`${API_URL}/api/memberships`),
-          fetchWith401(`${API_URL}/api/checkins`),
-          fetchWith401(`${API_URL}/api/personaltrainersessions`),
-          fetchWith401(`${API_URL}/api/classes/paginated?page=1&limit=10`),
-          fetchWith401(`${API_URL}/api/ptsessionbookings`),
+          api.get('/api/users'),
+          api.get('/api/memberships'),
+          api.get('/api/checkins'),
+          api.get('/api/personaltrainersessions'),
+          api.get('/api/classes/paginated?page=1&limit=10'),
+          api.get('/api/ptsessionbookings'),
         ]);
         // console.log("usersRes:", usersRes);
         // const totalUsers = usersRes.length;
@@ -227,7 +205,7 @@ export default function AdminDashboardPage() {
       setLoading(false);
     };
     fetchStats();
-  }, [router]);
+  }, []);
 
   if (backendError) {
     return <BackendErrorFallback onRetry={() => { setBackendError(false); window.location.reload(); }} />;

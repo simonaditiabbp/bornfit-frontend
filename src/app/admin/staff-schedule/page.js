@@ -1,8 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { FaCalendar, FaPlus, FaTrash, FaChevronLeft, FaChevronRight, FaFilter } from 'react-icons/fa';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import api from '@/utils/fetchClient';
+import LoadingSpin from '@/components/admin/LoadingSpin';
 
 export default function StaffScheduleCalendarPage() {
   const [schedules, setSchedules] = useState([]);
@@ -33,39 +33,31 @@ export default function StaffScheduleCalendarPage() {
 
   const fetchStaffMembers = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/staff-schedules/staff-members`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
+      const data = await api.get('/api/staff-schedules/staff-members');
       if (data.success) {
         setStaffMembers(data.data);
       }
     } catch (error) {
-      console.error('Error fetching staff:', error);
+      // Silently fail - staff filter will be empty
     }
   };
 
   const fetchSchedules = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
       const { startDate, endDate } = getDateRange();
       
-      let url = `${API_URL}/api/staff-schedules/combined?start_date=${startDate}&end_date=${endDate}`;
+      let url = `/api/staff-schedules/combined?start_date=${startDate}&end_date=${endDate}`;
       if (selectedStaff.length > 0) {
         url += `&staff_ids=${selectedStaff.join(',')}`;
       }
       
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
+      const data = await api.get(url);
       if (data.success) {
         setSchedules(data.data);
       }
     } catch (error) {
-      console.error('Error fetching schedules:', error);
+      // Error handled by fetchClient
     }
     setLoading(false);
   };
@@ -238,22 +230,12 @@ export default function StaffScheduleCalendarPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
       const payload = {
         ...formData,
         staff_id: Number(formData.staff_id),
       };
 
-      const res = await fetch(`${API_URL}/api/staff-schedules`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
+      const data = await api.post('/api/staff-schedules', payload);
       if (data.success) {
         alert('Schedule created!');
         setShowForm(false);
@@ -263,7 +245,6 @@ export default function StaffScheduleCalendarPage() {
         alert(data.message || 'Error saving schedule');
       }
     } catch (error) {
-      console.error('Error saving schedule:', error);
       alert('Error saving schedule');
     }
   };
@@ -272,19 +253,13 @@ export default function StaffScheduleCalendarPage() {
     if (!confirm('Delete this manual schedule?')) return;
     
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/staff-schedules/${sourceId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      
-      const data = await res.json();
+      const data = await api.delete(`/api/staff-schedules/${sourceId}`);
       if (data.success) {
         alert('Schedule deleted!');
         fetchSchedules();
       }
     } catch (error) {
-      console.error('Error deleting schedule:', error);
+      alert('Error deleting schedule');
     }
   };
 
@@ -415,7 +390,7 @@ export default function StaffScheduleCalendarPage() {
       {/* Calendar Grid */}
       <div className="p-5 overflow-x-auto">
         {loading ? (
-          <div className="text-center text-amber-500 dark:text-amber-300 py-20">Loading...</div>
+          <LoadingSpin />
         ) : (
           <div className="min-w-[1200px]">
             {/* Day Headers */}

@@ -1,11 +1,9 @@
-// Insert Membership Schedule
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaAngleRight, FaCalendar } from 'react-icons/fa';
+import api from '@/utils/fetchClient';
 import Link from 'next/link';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function InsertMembershipSchedulePage() {
   const initialFormState = {
@@ -28,13 +26,12 @@ export default function InsertMembershipSchedulePage() {
   };
 
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
     const fetchDropdowns = async () => {
       try {
-        const resUsers = await fetch(`${API_URL}/api/users?role=member`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const resPlans = await fetch(`${API_URL}/api/membership-plans`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const usersData = await resUsers.json();
-        const plansData = await resPlans.json();
+        const [usersData, plansData] = await Promise.all([
+          api.get('/api/users?role=member'),
+          api.get('/api/membership-plans')
+        ]);
         setUsers(usersData.data?.users || []);
         setPlans(plansData.data?.membershipPlans || []);
       } catch {}
@@ -49,19 +46,11 @@ export default function InsertMembershipSchedulePage() {
     setLoading(true);
     setError('');
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      await fetch(`${API_URL}/api/membership-plan-schedules`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({
-          user_id: Number(form.user_id),
-          membership_plan_id: Number(form.membership_plan_id),
-          schedule_date: form.schedule_date,
-          status: form.status
-        })
+      await api.post('/api/membership-plan-schedules', {
+        user_id: Number(form.user_id),
+        membership_plan_id: Number(form.membership_plan_id),
+        schedule_date: form.schedule_date,
+        status: form.status
       });
       router.push('/admin/membership/schedules');
     } catch (err) {

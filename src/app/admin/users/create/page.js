@@ -4,6 +4,7 @@ import Image from "next/image";
 import Webcam from "react-webcam";
 import { useRouter } from "next/navigation";
 import BackendErrorFallback from '../../../../components/BackendErrorFallback';
+import api from '@/utils/fetchClient';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -48,42 +49,6 @@ export default function CreateUserPage() {
   const [backendError, setBackendError] = useState(false);
   const router = useRouter();
   const [continueToMembership, setContinueToMembership] = useState(false);
-
-  const getJwtExp = () => {
-    const tokenCheck = localStorage.getItem('token');
-    if (!tokenCheck) return null;
-    try {
-      const payload = tokenCheck.split('.')[1];
-      const decoded = JSON.parse(atob(payload));
-      return decoded.exp;
-    } catch {
-      return null;
-    }
-  }
-
-  useEffect(() => {
-    // Only admin can access
-    const userData = localStorage.getItem('user');
-    const tokenData = localStorage.getItem('token');
-    if (!userData || !tokenData) {
-      router.replace('/login');
-      return;
-    }
-    const userObj = JSON.parse(userData);
-    if (userObj.role !== 'admin') {
-      router.replace('/barcode');
-      return;
-    }
-
-    const currentTime = Math.floor(Date.now() / 1000); // waktu sekarang dalam detik
-    const exp = getJwtExp(tokenData);
-    if (exp && currentTime >= exp) {
-      localStorage.removeItem('user');
-      localStorage.removeItem('token');
-      router.replace('/login');
-      return;
-    }
-  }, [router]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -130,6 +95,7 @@ export default function CreateUserPage() {
       if (dobIso && dobIso.length === 10) {
         dobIso = dobIso + "T00:00:00.000Z";
       }
+      // Get token only for FormData upload
       const token = localStorage.getItem("token");
       const formData = new FormData();
       Object.entries(form).forEach(([key, value]) => {
@@ -157,6 +123,8 @@ export default function CreateUserPage() {
       if (photo) {
         formData.append('photo', photo);
       }
+      
+      // Use manual fetch for FormData (cannot use api client with multipart/form-data)
       const res = await fetch(`${API_URL}/api/users`, {
         method: "POST",
         headers: {
@@ -164,15 +132,24 @@ export default function CreateUserPage() {
         },
         body: formData,
       });
+      
+      // Handle 401 manually for FormData requests
+      if (res.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        return;
+      }
+      
       const dataUser = await res.json();
       const data = dataUser.data;
       if (!res.ok) {
-        if (res.status === 409 && data.code === "EMAIL_EXISTS") {
+        if (res.status === 409 && dataUser.code === "EMAIL_EXISTS") {
           setError("Email is already registered");
           setLoading(false);
           return;
         }
-        throw new Error(data.message || "Failed to create user");
+        throw new Error(dataUser.message || "Failed to create user");
       }
       setSuccess("User created successfully!");
       setForm({

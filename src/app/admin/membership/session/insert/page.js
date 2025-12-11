@@ -1,11 +1,9 @@
-// Insert Membership Session
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaIdCard } from 'react-icons/fa';
+import api from '@/utils/fetchClient';
 import { PageBreadcrumb, PageContainerInsert, FormActions, FormInput, FormInputGroup } from '@/components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function InsertMembershipSessionPage() {
   const searchParams = useSearchParams();
@@ -42,15 +40,13 @@ export default function InsertMembershipSessionPage() {
   };
 
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
     const fetchDropdowns = async () => {
       try {
-        const resUsers = await fetch(`${API_URL}/api/users?role=member`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const resPlans = await fetch(`${API_URL}/api/membership-plans`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const resStaff = await fetch(`${API_URL}/api/users?exclude_role=member`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const usersData = await resUsers.json();
-        const plansData = await resPlans.json();
-        const staffData = await resStaff.json();
+        const [usersData, plansData, staffData] = await Promise.all([
+          api.get('/api/users?role=member'),
+          api.get('/api/membership-plans'),
+          api.get('/api/users?exclude_role=member')
+        ]);
         setUsers(usersData.data?.users || []);
         setPlans(plansData.data?.membershipPlans || []);
         setStaff(staffData.data?.users || []);
@@ -66,32 +62,23 @@ export default function InsertMembershipSessionPage() {
     setLoading(true);
     setError('');
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
       let startDateIso = form.start_date;
       if (startDateIso && startDateIso.length === 10) {
         startDateIso = startDateIso + 'T00:00:00.000Z';
       }
-      await fetch(`${API_URL}/api/memberships`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({
-          user_id: Number(form.user_id),
-          membership_plan_id: Number(form.membership_plan_id),
-          start_date: startDateIso,
-          sales_type: form.sales_type,
-          additional_fee: form.additional_fee ? Number(form.additional_fee) : 0,
-          discount_type: form.discount_type,
-          discount_amount: form.discount_type === 'amount' && form.discount_amount !== '' ? Number(form.discount_amount) : null,
-          discount_percent: form.discount_type === 'percent' && form.discount_percent !== '' ? Number(form.discount_percent) : null,
-          extra_duration_days: form.extra_duration_days ? Number(form.extra_duration_days) : 0,
-          note: form.note,
-          // status: form.status ? form.status : '',
-          referral_user_member_id: form.referral_user_member_id ? Number(form.referral_user_member_id) : null,
-          referral_user_staff_id: form.referral_user_staff_id ? Number(form.referral_user_staff_id) : null,          
-        })
+      await api.post('/api/memberships', {
+        user_id: Number(form.user_id),
+        membership_plan_id: Number(form.membership_plan_id),
+        start_date: startDateIso,
+        sales_type: form.sales_type,
+        additional_fee: form.additional_fee ? Number(form.additional_fee) : 0,
+        discount_type: form.discount_type,
+        discount_amount: form.discount_type === 'amount' && form.discount_amount !== '' ? Number(form.discount_amount) : null,
+        discount_percent: form.discount_type === 'percent' && form.discount_percent !== '' ? Number(form.discount_percent) : null,
+        extra_duration_days: form.extra_duration_days ? Number(form.extra_duration_days) : 0,
+        note: form.note,
+        referral_user_member_id: form.referral_user_member_id ? Number(form.referral_user_member_id) : null,
+        referral_user_staff_id: form.referral_user_staff_id ? Number(form.referral_user_staff_id) : null,          
       });
       router.push('/admin/membership/session');
     } catch (err) {

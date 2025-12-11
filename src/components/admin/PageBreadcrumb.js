@@ -17,7 +17,7 @@ export default function PageBreadcrumb({ items = [] }) {
 
   return (
     <div className="bg-white dark:bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-300 dark:border-gray-600">
-      <nav className="flex items-center mt-1" aria-label="Breadcrumb">
+      <nav className="flex items-center mt-4" aria-label="Breadcrumb">
         {items.map((item, index) => {
           const isLast = index === items.length - 1;
           
@@ -36,12 +36,12 @@ export default function PageBreadcrumb({ items = [] }) {
               {item.href ? (
                 <Link 
                   href={item.href} 
-                  className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-amber-300 transition-colors"
+                  className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-amber-300 transition-colors"
                 >
                   {item.label}
                 </Link>
               ) : (
-                <span className="text-sm font-medium text-gray-700 dark:text-amber-300">
+                <span className="text-sm font-bold dark:font-medium text-black dark:text-amber-300">
                   {item.label}
                 </span>
               )}

@@ -1,12 +1,10 @@
-// Halaman membership/plans
 'use client';
 import { useEffect, useState } from 'react';
+import api from '@/utils/fetchClient';
 import BackendErrorFallback from '../../../../components/BackendErrorFallback';
 import MembershipPlansDataTable from './DataTable';
 import { FaPlus, FaCog } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainer, PageHeader, LoadingText } from '../../../../components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function MembershipPlansPage() {
   const [plans, setPlans] = useState([]);
@@ -15,15 +13,15 @@ export default function MembershipPlansPage() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
     const fetchPlans = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${API_URL}/api/membership-plans`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const data = await res.json();
+        const data = await api.get('/api/membership-plans');
         setPlans(data.data?.membershipPlans || []);
       } catch (err) {
-        setBackendError(true);
+        if (err.isNetworkError) {
+          setBackendError(true);
+        }
       }
       setLoading(false);
     };

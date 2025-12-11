@@ -1,11 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import api from '@/utils/fetchClient';
 import BackendErrorFallback from "../../../../../components/BackendErrorFallback";
 import { FaChalkboardTeacher } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import LoadingSpin from "@/components/admin/LoadingSpin";
 
 export default function PTSessionEditPage() {
   const [plans, setPlans] = useState([]);
@@ -27,47 +27,25 @@ export default function PTSessionEditPage() {
   const formatDateForInput = (isoString) => isoString ? isoString.split("T")[0] : "";
 
   useEffect(() => {
-    // Fetch plans for dropdown
-    const fetchPlans = async () => {
+    // Fetch plans, members, and trainers for dropdown
+    const fetchDropdownData = async () => {
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-        const res = await fetch(`${API_URL}/api/ptsessionplans`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-        });
-        const dataPlans = await res.json();
-        if (res.ok) setPlans(dataPlans.data.plans);
+        const [dataPlans, dataMember, dataTrainer] = await Promise.all([
+          api.get('/api/ptsessionplans'),
+          api.get('/api/users?role=member&membership=active'),
+          api.get('/api/users?role=trainer')
+        ]);
+        setPlans(dataPlans.data.plans || []);
+        setMembers(dataMember.data.users || []);
+        setTrainers(dataTrainer.data.users || []);
       } catch {}
     };
-    fetchPlans();
-    // Fetch member & trainer for dropdown
-    const fetchUsers = async () => {
-      try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-        const resMember = await fetch(`${API_URL}/api/users?role=member&membership=active`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-        });
-        const resTrainer = await fetch(`${API_URL}/api/users?role=trainer`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-        });
-        const dataMember = await resMember.json();
-        const dataTrainer = await resTrainer.json();
-        if (resMember.ok) setMembers(dataMember.data.users);
-        if (resTrainer.ok) setTrainers(dataTrainer.data.users);
-      } catch {}
-    };
-    fetchUsers();
+    fetchDropdownData();
     const fetchSession = async () => {
       setLoading(true);
       setBackendError(false);
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-        const res = await fetch(`${API_URL}/api/personaltrainersessions/${id}`, {
-          headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {})
-          }
-        });
-        if (!res.ok) throw new Error("Gagal fetch session");
-        const dataPTSessions = await res.json();
+        const dataPTSessions = await api.get(`/api/personaltrainersessions/${id}`);
         console.log("data: ", dataPTSessions)
         setSession(dataPTSessions.data);
         setForm({
@@ -78,7 +56,7 @@ export default function PTSessionEditPage() {
           status: dataPTSessions.data.status
         });
       } catch (err) {
-        setBackendError(true);
+        if (err.isNetworkError) setBackendError(true);
       }
       setLoading(false);
     };
@@ -109,27 +87,17 @@ export default function PTSessionEditPage() {
     setError("");
     setSuccess("");
     try {
-      const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-      const res = await fetch(`${API_URL}/api/personaltrainersessions/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({
-          pt_session_plan_id: Number(form.pt_session_plan_id),
-          user_member_id: Number(form.user_member_id),
-          user_pt_id: Number(form.user_pt_id),
-          start_date: formatDateToISO(form.start_date),
-          status: form.status,
-          id: Number(id)
-        })
+      await api.put(`/api/personaltrainersessions/${id}`, {
+        pt_session_plan_id: Number(form.pt_session_plan_id),
+        user_member_id: Number(form.user_member_id),
+        user_pt_id: Number(form.user_pt_id),
+        start_date: formatDateToISO(form.start_date),
+        status: form.status,
+        id: Number(id)
       });
-      if (!res.ok) throw new Error("Gagal update session");
       setSuccess("Session berhasil diupdate!");
       setEdit(false);
       setTimeout(() => window.location.reload(), 500);
-    //   setTimeout(() => window.location.reload(), 1200);
     } catch (err) {
       setError("Gagal update session");
     }
@@ -140,14 +108,8 @@ export default function PTSessionEditPage() {
     if (!confirm('Yakin ingin menghapus session ini?')) return;
     setFormLoading(true);
     try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-        await fetch(`${API_URL}/api/personaltrainersessions/${id}`, {
-        method: 'DELETE',
-        headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {})
-        }
-        });
-        router.push('/admin/pt/session');
+      await api.delete(`/api/personaltrainersessions/${id}`);
+      router.push('/admin/pt/session');
     } catch (err) {
       setError("Gagal menghapus session");
     }
@@ -157,9 +119,8 @@ export default function PTSessionEditPage() {
   if (backendError) {
     return <BackendErrorFallback onRetry={() => window.location.reload()} />;
   }
-  if (loading || !form) {
-    return <div className="text-gray-800 dark:text-amber-300 text-center font-medium mt-20">Loading...</div>;
-  }
+  
+  if (loading || !form) return <LoadingSpin />;
 
   return (
     <div>

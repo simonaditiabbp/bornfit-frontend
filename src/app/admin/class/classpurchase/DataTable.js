@@ -3,7 +3,7 @@ import { StyledDataTable } from '@/components/admin';
 
 export default function ClassPurchaseDataTable({ data }) {
   const columns = [
-    { name: 'No', cell: (row, i) => i + 1, width: '70px', center: true },
+    { name: 'No', cell: (row, i) => i + 1, width: '70px', center: "true" },
     { name: 'User', selector: row => row.user?.name || '-', sortable: true, cell: row => <span className="font-semibold">{row.user?.name || '-'}</span> },
     { name: 'Class', selector: row => row.class?.name || '-', sortable: true },
     { name: 'Price', selector: row => row.price, sortable: true },

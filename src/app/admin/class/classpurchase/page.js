@@ -6,8 +6,7 @@ import Link from 'next/link';
 import { FaPlus, FaDumbbell, FaAngleRight } from 'react-icons/fa';
 import { LoadingText, PageBreadcrumb, PageContainer, PageHeader } from '@/components/admin';
 import ClassPurchaseDataTable from './DataTable';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import api from '@/utils/fetchClient';
 
 export default function ClassPurchaseListPage() {
   const [purchases, setPurchases] = useState([]);
@@ -24,12 +23,8 @@ export default function ClassPurchaseListPage() {
       setLoading(true);
       setError('');
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-        const res = await fetch(`${API_URL}/api/classpurchases?limit=${limit}&page=${page}&search=${encodeURIComponent(search)}`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-        });
-        const data = await res.json();
-        if (res.ok && Array.isArray(data.data?.purchases)) {
+        const data = await api.get(`/api/classpurchases?limit=${limit}&page=${page}&search=${encodeURIComponent(search)}`);
+        if (Array.isArray(data.data?.purchases)) {
           setPurchases(data.data.purchases);
           setTotal(data.data.total || 0);
         } else {
@@ -40,7 +35,7 @@ export default function ClassPurchaseListPage() {
       } catch (err) {
         setPurchases([]);
         setTotal(0);
-        setError('Gagal mengambil data');
+        setError(err.data?.message || 'Gagal mengambil data');
       }
       setLoading(false);
     };

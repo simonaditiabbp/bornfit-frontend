@@ -4,8 +4,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import BackendErrorFallback from "../../../../../components/BackendErrorFallback";
 import { FaIdCard } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import api from '@/utils/fetchClient';
+import LoadingSpin from "@/components/admin/LoadingSpin";
 
 export default function TransferMembershipEditPage() {
   const [members, setMembers] = useState([]);
@@ -25,14 +25,10 @@ export default function TransferMembershipEditPage() {
   useEffect(() => {
     const fetchMembers = async () => {
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-        const res = await fetch(`${API_URL}/api/users?role=member`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-        });
-        const data = await res.json();
-        if (res.ok) setMembers(data.data?.users || []);
+        const data = await api.get('/api/users?role=member');
+        setMembers(data.data?.users || []);
       } catch (err) {
-        console.error("Failed to fetch members:", err);
+        // Silently fail - dropdown will be empty
       }
     };
     fetchMembers();
@@ -41,13 +37,7 @@ export default function TransferMembershipEditPage() {
       setLoading(true);
       setBackendError(false);
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-        const res = await fetch(`${API_URL}/api/membership-transfers/${id}`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-        });
-        if (!res.ok) throw new Error("Gagal fetch transfer");
-        
-        const data = await res.json();
+        const data = await api.get(`/api/membership-transfers/${id}`);
         const transferData = data.data;
         setTransfer(transferData);
         setForm({
@@ -76,20 +66,14 @@ export default function TransferMembershipEditPage() {
 
     const fetchMemberships = async () => {
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-        const res = await fetch(`${API_URL}/api/memberships?role=member`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-        });
-        const data = await res.json();
-        if (res.ok) {
-          const allMemberships = data.data?.memberships || [];
-          const userMemberships = allMemberships.filter(m => 
-            m.user_id === Number(form.from_user_id) && m.status === 'active'
-          );
-          setMemberships(userMemberships);
-        }
+        const data = await api.get('/api/memberships?role=member');
+        const allMemberships = data.data?.memberships || [];
+        const userMemberships = allMemberships.filter(m => 
+          m.user_id === Number(form.from_user_id) && m.status === 'active'
+        );
+        setMemberships(userMemberships);
       } catch (err) {
-        console.error("Failed to fetch memberships:", err);
+        // Silently fail - dropdown will be empty
         setMemberships([]);
       }
     };
@@ -122,24 +106,15 @@ export default function TransferMembershipEditPage() {
     setError("");
     setSuccess("");
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      const res = await fetch(`${API_URL}/api/membership-transfers/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({
-          from_membership_id: Number(form.from_membership_id),
-          from_user_id: Number(form.from_user_id),
-          to_user_id: Number(form.to_user_id),
-          transfer_date: form.transfer_date,
-          fee: Number(form.fee) || 0,
-          reason: form.reason || null,
-          status: form.status
-        })
+      await api.put(`/api/membership-transfers/${id}`, {
+        from_membership_id: Number(form.from_membership_id),
+        from_user_id: Number(form.from_user_id),
+        to_user_id: Number(form.to_user_id),
+        transfer_date: form.transfer_date,
+        fee: Number(form.fee) || 0,
+        reason: form.reason || null,
+        status: form.status
       });
-      if (!res.ok) throw new Error("Gagal update transfer");
       setSuccess("Transfer berhasil diupdate!");
       setEdit(false);
     } catch (err) {
@@ -152,13 +127,7 @@ export default function TransferMembershipEditPage() {
     if (!confirm('Yakin ingin menghapus transfer ini?')) return;
     setFormLoading(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      await fetch(`${API_URL}/api/membership-transfers/${id}`, {
-        method: 'DELETE',
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        }
-      });
+      await api.delete(`/api/membership-transfers/${id}`);
       router.push('/admin/membership/transfer');
     } catch (err) {
       setError("Gagal menghapus transfer");
@@ -172,14 +141,7 @@ export default function TransferMembershipEditPage() {
     setError("");
     setSuccess("");
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      const res = await fetch(`${API_URL}/api/membership-transfers/${id}/approve`, {
-        method: 'POST',
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        }
-      });
-      if (!res.ok) throw new Error("Gagal approve transfer");
+      await api.post(`/api/membership-transfers/${id}/approve`);
       setSuccess("Transfer berhasil diapprove!");
       setTimeout(() => {
         window.location.reload();
@@ -196,14 +158,7 @@ export default function TransferMembershipEditPage() {
     setError("");
     setSuccess("");
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      const res = await fetch(`${API_URL}/api/membership-transfers/${id}/reject`, {
-        method: 'POST',
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        }
-      });
-      if (!res.ok) throw new Error("Gagal reject transfer");
+      await api.post(`/api/membership-transfers/${id}/reject`);
       setSuccess("Transfer berhasil direject!");
       setTimeout(() => {
         window.location.reload();
@@ -217,10 +172,8 @@ export default function TransferMembershipEditPage() {
   if (backendError) {
     return <BackendErrorFallback onRetry={() => window.location.reload()} />;
   }
-  
-  if (loading || !form) {
-    return <div className="text-gray-800 dark:text-amber-300 text-center font-medium mt-20">Loading...</div>;
-  }
+    
+  if (loading || !form) return <LoadingSpin />;
 
   return (
     <div>

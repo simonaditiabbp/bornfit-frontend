@@ -23,7 +23,6 @@ export default function PTSessionDataTable({ data, plans, members, trainers }) {
       selector: row => {
         const plan = plans.find(p => p.id === row.pt_session_plan_id);
         const max = plan ? plan.max_session : '...';
-        console.log("row.remaining_session:", row.remaining_session);
         const sisa = typeof row.remaining_session === 'number' ? row.remaining_session : '...';
         return `${sisa} of ${max} sessions remaining`;
       },

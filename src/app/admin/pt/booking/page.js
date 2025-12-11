@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from 'react';
+import api from '@/utils/fetchClient';
 import PTBookingDataTable from './DataTable';
 import { FaChalkboardTeacher, FaPlus } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainer, PageHeader, LoadingText, StyledDataTable } from '@/components/admin';
@@ -15,29 +16,13 @@ export default function PTBookingPage() {
   const [backendError, setBackendError] = useState(false);
 
   useEffect(() => {
-    setLoading(true);
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-    const fetchWith401 = async (url) => {
-      const res = await fetch(url, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-      if (res.status === 401) {
-        setBookings([]);
-        localStorage.removeItem('token');
-        window.location.replace('/login');
-      }
-      return res.json();
-    };
-
     const fetchAll = async () => {
       setLoading(true);
       try {
         if (search && search.trim() !== '') {
           let allMatches = null;
           try {
-            // Try endpoint that may support searching and return an array
-            const bookingsSearchRes = await fetch(`http://localhost:3002/api/ptsessionbookings?search=${encodeURIComponent(search)}`, {
-              headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-            });
-            const bookingData = await bookingsSearchRes.json();
+            const bookingData = await api.get(`/api/ptsessionbookings?search=${encodeURIComponent(search)}`);
             const arr = bookingData.data?.bookings || [];
             if (Array.isArray(arr)) {
               allMatches = arr;
@@ -47,11 +32,7 @@ export default function PTBookingPage() {
           }
 
           if (!allMatches) {
-            // fallback: fetch all bookings and filter client-side
-            const allRes = await fetch(`http://localhost:3002/api/ptsessionbookings`, {
-              headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-            });
-            const bookingData = await allRes.json();
+            const bookingData = await api.get('/api/ptsessionbookings');
             const arr = bookingData.data?.bookings || [];
             if (Array.isArray(arr)) {
               allMatches = arr.filter(b =>
@@ -64,23 +45,21 @@ export default function PTBookingPage() {
             }
           }
 
-          // Paginate matches for the table UI
           const start = (page - 1) * limit;
           const pageSlice = allMatches.slice(start, start + limit);
           setBookings(pageSlice);
           setTotal(allMatches.length);
         } else {
-          const bookingsRes = await fetch(`http://localhost:3002/api/ptsessionbookings/paginated?page=${page}&limit=${limit}`, {
-            headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-          });
-          const bookingData = await bookingsRes.json();
+          const bookingData = await api.get(`/api/ptsessionbookings/paginated?page=${page}&limit=${limit}`);
           const result = bookingData.data || {};
           setBookings(result.bookings || []);
           setTotal(result.total || 0);
         }
       } catch (err) {
         setBookings([]);
-        setBackendError(true);
+        if (err.isNetworkError) {
+          setBackendError(true);
+        }
       }
       setLoading(false);
     };

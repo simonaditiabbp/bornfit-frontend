@@ -1,10 +1,10 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import api from '@/utils/fetchClient';
 import { FaChalkboardTeacher } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import LoadingSpin from '@/components/admin/LoadingSpin';
 
 export default function PTBookingEditPage() {
   const router = useRouter();
@@ -17,12 +17,10 @@ export default function PTBookingEditPage() {
   // Fetch members for dropdown
   useEffect(() => {
     const fetchMembers = async () => {
-      const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-      const res = await fetch(`${API_URL}/api/users?role=member&membership=active`, {
-        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-      });
-      const dataMembers = await res.json();
-      if (res.ok) setMembers(dataMembers.data.users);
+      try {
+        const dataMembers = await api.get('/api/users?role=member&membership=active');
+        setMembers(dataMembers.data.users || []);
+      } catch {}
     };
     fetchMembers();
   }, []);
@@ -31,14 +29,13 @@ export default function PTBookingEditPage() {
   useEffect(() => {
     if (!form?.user_member_id) { setPTSessions([]); return; }
     const fetchPTSessions = async () => {
-      const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-      const res = await fetch(`${API_URL}/api/personaltrainersessions/member/${form.user_member_id}`, {
-        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-      });
-      const data = await res.json();
-      console.log("Fetched PT sessions: ", data);
-      if (res.ok) setPTSessions(data.data.sessions);
-      else setPTSessions([]);
+      try {
+        const data = await api.get(`/api/personaltrainersessions/member/${form.user_member_id}`);
+        console.log("Fetched PT sessions: ", data);
+        setPTSessions(data.data.sessions || []);
+      } catch {
+        setPTSessions([]);
+      }
     };
     fetchPTSessions();
   }, [form?.user_member_id]);
@@ -53,14 +50,8 @@ export default function PTBookingEditPage() {
     if (!id) return;
     const fetchBooking = async () => {
       setLoading(true);
-      const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
       try {
-        const res = await fetch(`${API_URL}/api/ptsessionbookings/${id}`, {
-          headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {})
-          }
-        });
-        const data = await res.json();
+        const data = await api.get(`/api/ptsessionbookings/${id}`);
         const bookingObj = data?.data;
         console.log("bookingObj: ", bookingObj);
         setBooking(bookingObj || null);
@@ -107,27 +98,17 @@ export default function PTBookingEditPage() {
       setFormLoading(false);
       return;
     }
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
     try {
-      const res = await fetch(`${API_URL}/api/ptsessionbookings/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          user_member_id: Number(form.user_member_id),
-          personal_trainer_session_id: Number(form.personal_trainer_session_id),
-          booking_time: formatDateToISO(form.booking_time),
-          status: form.status
-        })
+      await api.put(`/api/ptsessionbookings/${id}`, {
+        user_member_id: Number(form.user_member_id),
+        personal_trainer_session_id: Number(form.personal_trainer_session_id),
+        booking_time: formatDateToISO(form.booking_time),
+        status: form.status
       });
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.message || "Gagal update booking");
-      } else {
-        setSuccess("Booking berhasil diupdate!");
-        setEdit(false);
-      }
+      setSuccess("Booking berhasil diupdate!");
+      setEdit(false);
     } catch (err) {
-      setError("Gagal update booking");
+      setError(err.data?.message || "Gagal update booking");
     }
     setFormLoading(false);
   };
@@ -135,12 +116,8 @@ export default function PTBookingEditPage() {
   const handleDelete = async () => {
     if (!confirm('Yakin ingin menghapus booking ini?')) return;
     setFormLoading(true);
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
     try {
-      await fetch(`${API_URL}/api/ptsessionbookings/${id}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/api/ptsessionbookings/${id}`);
       router.push('/admin/pt/booking');
     } catch (err) {
       setError("Gagal menghapus booking");
@@ -148,7 +125,7 @@ export default function PTBookingEditPage() {
     setFormLoading(false);
   };
 
-  if (loading || !form) return <div className="text-center text-gray-800 dark:text-amber-300 font-medium mt-20">Loading...</div>;
+  if (loading || !form) return <LoadingSpin />;
   if (!booking) return <div className="text-center text-red-400 font-medium mt-20">Booking not found</div>;
 
   return (

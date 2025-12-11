@@ -2,11 +2,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FaPlus, FaIdCard } from 'react-icons/fa';
+import api from '@/utils/fetchClient';
 import FreezeDataTable from "./DataTable";
 import BackendErrorFallback from "@/components/BackendErrorFallback";
 import { PageBreadcrumb, PageContainer, PageHeader, LoadingText } from '@/components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function FreezeMembershipPage() {
   const [search, setSearch] = useState('');
@@ -24,17 +23,14 @@ export default function FreezeMembershipPage() {
       setLoading(true);
       setBackendError(false);
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-        
         if (search && search.trim() !== '') {
           // Search mode - client-side filtering for now
           let allMatches = null;
           try {
-            const res = await fetch(`${API_URL}/api/membership-freezes?search=${encodeURIComponent(search)}`, {
-              headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-            });
-            const data = await res.json();
+            const data = await api.get(`/api/membership-freezes?search=${encodeURIComponent(search)}`);
             const arr = data.data?.freezes || [];
+            console.log("Search API data:", data);
+            console.log("arr:", arr);
             if (Array.isArray(arr)) {
               allMatches = arr;
             }
@@ -43,10 +39,7 @@ export default function FreezeMembershipPage() {
           }
 
           if (!allMatches) {
-            const allRes = await fetch(`${API_URL}/api/membership-freezes`, {
-              headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-            });
-            const allData = await allRes.json();
+            const allData = await api.get('/api/membership-freezes');
             const arr = allData.data?.freezes || [];
             if (Array.isArray(arr)) {
               allMatches = arr.filter(f =>
@@ -65,18 +58,16 @@ export default function FreezeMembershipPage() {
           setTotalRows(allMatches.length);
         } else {
           // Pagination mode
-          const res = await fetch(`${API_URL}/api/membership-freezes?page=${page}&limit=${perPage}`, {
-            headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-          });
-          if (!res.ok) throw new Error("Gagal fetch freezes");
-          const data = await res.json();
+          const data = await api.get(`/api/membership-freezes?page=${page}&limit=${perPage}`);
           const result = data.data || {};
           setFreezes(result.freezes || []);
           setTotalRows(result.total || 0);
         }
       } catch (err) {
         setFreezes([]);
-        setBackendError(true);
+        if (err.isNetworkError) {
+          setBackendError(true);
+        }
       }
       setLoading(false);
     };

@@ -4,8 +4,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import BackendErrorFallback from "../../../../../components/BackendErrorFallback";
 import { FaIdCard } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput, FormInputGroup } from '@/components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import api from '@/utils/fetchClient';
+import LoadingSpin from "@/components/admin/LoadingSpin";
 
 export default function FreezeMembershipEditPage() {
   const [members, setMembers] = useState([]);
@@ -25,14 +25,10 @@ export default function FreezeMembershipEditPage() {
   useEffect(() => {
     const fetchMembers = async () => {
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-        const res = await fetch(`${API_URL}/api/users?role=member`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-        });
-        const data = await res.json();
-        if (res.ok) setMembers(data.data?.users || []);
+        const data = await api.get('/api/users?role=member');
+        setMembers(data.data?.users || []);
       } catch (err) {
-        console.error("Failed to fetch members:", err);
+        // Silently fail - dropdown will be empty
       }
     };
     fetchMembers();
@@ -41,13 +37,7 @@ export default function FreezeMembershipEditPage() {
       setLoading(true);
       setBackendError(false);
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-        const res = await fetch(`${API_URL}/api/membership-freezes/${id}`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-        });
-        if (!res.ok) throw new Error("Gagal fetch freeze");
-        
-        const data = await res.json();
+        const data = await api.get(`/api/membership-freezes/${id}`);
         const freezeData = data.data;
         setFreeze(freezeData);
         setForm({
@@ -75,20 +65,14 @@ export default function FreezeMembershipEditPage() {
 
     const fetchMemberships = async () => {
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-        const res = await fetch(`${API_URL}/api/memberships?role=member`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-        });
-        const data = await res.json();
-        if (res.ok) {
-          const allMemberships = data.data?.memberships || [];
-          const userMemberships = allMemberships.filter(m => 
-            m.user_id === freeze.membership.user_id && m.status === 'active'
-          );
-          setMemberships(userMemberships);
-        }
+        const data = await api.get('/api/memberships?role=member');
+        const allMemberships = data.data?.memberships || [];
+        const userMemberships = allMemberships.filter(m => 
+          m.user_id === freeze.membership.user_id && m.status === 'active'
+        );
+        setMemberships(userMemberships);
       } catch (err) {
-        console.error("Failed to fetch memberships:", err);
+        // Silently fail - dropdown will be empty
         setMemberships([]);
       }
     };
@@ -120,23 +104,14 @@ export default function FreezeMembershipEditPage() {
     setError("");
     setSuccess("");
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      const res = await fetch(`${API_URL}/api/membership-freezes/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({
-          membership_id: Number(form.membership_id),
-          freeze_at: form.freeze_at,
-          unfreeze_at: form.unfreeze_at || null,
-          fee: Number(form.fee) || 0,
-          status: form.status,
-          reason: form.reason || null
-        })
+      await api.put(`/api/membership-freezes/${id}`, {
+        membership_id: Number(form.membership_id),
+        freeze_at: form.freeze_at,
+        unfreeze_at: form.unfreeze_at || null,
+        fee: Number(form.fee) || 0,
+        status: form.status,
+        reason: form.reason || null
       });
-      if (!res.ok) throw new Error("Gagal update freeze");
       setSuccess("Freeze berhasil diupdate!");
       setEdit(false);
     } catch (err) {
@@ -149,13 +124,7 @@ export default function FreezeMembershipEditPage() {
     if (!confirm('Yakin ingin menghapus freeze ini?')) return;
     setFormLoading(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      await fetch(`${API_URL}/api/membership-freezes/${id}`, {
-        method: 'DELETE',
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        }
-      });
+      await api.delete(`/api/membership-freezes/${id}`);
       router.push('/admin/membership/freeze');
     } catch (err) {
       setError("Gagal menghapus freeze");
@@ -169,14 +138,7 @@ export default function FreezeMembershipEditPage() {
     setError("");
     setSuccess("");
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      const res = await fetch(`${API_URL}/api/membership-freezes/${id}/unfreeze`, {
-        method: 'POST',
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        }
-      });
-      if (!res.ok) throw new Error("Gagal unfreeze");
+      await api.post(`/api/membership-freezes/${id}/unfreeze`);
       setSuccess("Membership berhasil di-unfreeze!");
       setTimeout(() => {
         window.location.reload();
@@ -189,11 +151,9 @@ export default function FreezeMembershipEditPage() {
 
   if (backendError) {
     return <BackendErrorFallback onRetry={() => window.location.reload()} />;
-  }
-  
-  if (loading || !form) {
-    return <div className="text-gray-800 dark:text-amber-300 text-center font-medium mt-20">Loading...</div>;
-  }
+  }  
+
+  if (loading || !form) return <LoadingSpin />;
 
   return (
     <div>

@@ -4,7 +4,7 @@ import { StyledDataTable } from '@/components/admin';
 export default function PTBookingDataTable({ data }) {  
 
   const columns = [
-    { name: 'No', cell: (row, i) => i + 1, width: '70px', center: true },
+    { name: 'No', cell: (row, i) => i + 1, width: '70px', center: "true" },
     // { name: 'ID', selector: row => row.id, sortable: true },
     { name: 'Member', selector: row => row.user_member?.name || row.user_member_id, sortable: true },
     { name: 'PT Session', selector: row => `${row.pt_session_plan?.name} - ${row.personal_trainer_session.user_pt.name}` || '', sortable: true },

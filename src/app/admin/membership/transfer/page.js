@@ -2,11 +2,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FaPlus, FaIdCard } from 'react-icons/fa';
+import api from '@/utils/fetchClient';
 import TransferDataTable from "./DataTable";
 import BackendErrorFallback from "@/components/BackendErrorFallback";
 import { PageBreadcrumb, PageContainer, PageHeader, LoadingText } from '@/components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function TransferMembershipPage() {
   const [search, setSearch] = useState('');
@@ -24,16 +23,11 @@ export default function TransferMembershipPage() {
       setLoading(true);
       setBackendError(false);
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-        
         if (search && search.trim() !== '') {
           // Search mode - client-side filtering for now
           let allMatches = null;
           try {
-            const res = await fetch(`${API_URL}/api/membership-transfers?search=${encodeURIComponent(search)}`, {
-              headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-            });
-            const data = await res.json();
+            const data = await api.get(`/api/membership-transfers?search=${encodeURIComponent(search)}`);
             const arr = data.data?.transfers || [];
             if (Array.isArray(arr)) {
               allMatches = arr;
@@ -43,10 +37,7 @@ export default function TransferMembershipPage() {
           }
 
           if (!allMatches) {
-            const allRes = await fetch(`${API_URL}/api/membership-transfers`, {
-              headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-            });
-            const allData = await allRes.json();
+            const allData = await api.get('/api/membership-transfers');
             const arr = allData.data?.transfers || [];
             if (Array.isArray(arr)) {
               allMatches = arr.filter(t =>
@@ -65,18 +56,16 @@ export default function TransferMembershipPage() {
           setTotalRows(allMatches.length);
         } else {
           // Pagination mode
-          const res = await fetch(`${API_URL}/api/membership-transfers?page=${page}&limit=${perPage}`, {
-            headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-          });
-          if (!res.ok) throw new Error("Gagal fetch transfers");
-          const data = await res.json();
+          const data = await api.get(`/api/membership-transfers?page=${page}&limit=${perPage}`);
           const result = data.data || {};
           setTransfers(result.transfers || []);
           setTotalRows(result.total || 0);
         }
       } catch (err) {
         setTransfers([]);
-        setBackendError(true);
+        if (err.isNetworkError) {
+          setBackendError(true);
+        }
       }
       setLoading(false);
     };

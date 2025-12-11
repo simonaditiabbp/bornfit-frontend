@@ -72,7 +72,7 @@ export default function LoginPage() {
       if (data.user.role === "admin") {
         router.push('/admin/dashboard');
       } else if (data.user.role === "opscan") {
-        router.push('/barcode');
+        router.push('/checkin');
       }
     } catch (err) {
       // Network error atau backend tidak bisa diakses

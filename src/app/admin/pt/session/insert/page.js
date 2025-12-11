@@ -2,9 +2,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FaChalkboardTeacher } from 'react-icons/fa';
+import api from '@/utils/fetchClient';
 import { PageBreadcrumb, PageContainerInsert, FormInput, FormActions } from '@/components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function PTSessionInsertPage() {
   const [plans, setPlans] = useState([]);
@@ -12,34 +11,19 @@ export default function PTSessionInsertPage() {
   const [trainers, setTrainers] = useState([]);
   // Fetch member & trainer for dropdown
   useEffect(() => {
-    // Fetch plans for dropdown
-    const fetchPlans = async () => {
+    const fetchData = async () => {
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-        const res = await fetch(`${API_URL}/api/ptsessionplans`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-        });
-        const data = await res.json();
-        if (res.ok) setPlans(data.data.plans);
+        const [plansData, membersData, trainersData] = await Promise.all([
+          api.get('/api/ptsessionplans'),
+          api.get('/api/users?role=member&membership=active'),
+          api.get('/api/users?role=trainer')
+        ]);
+        setPlans(plansData.data.plans || []);
+        setMembers(membersData.data.users || []);
+        setTrainers(trainersData.data.users || []);
       } catch {}
     };
-    fetchPlans();
-    const fetchUsers = async () => {
-      try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-        const resMember = await fetch(`${API_URL}/api/users?role=member&membership=active`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-        });
-        const resTrainer = await fetch(`${API_URL}/api/users?role=trainer`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-        });
-        const dataMember = await resMember.json();
-        const dataTrainer = await resTrainer.json();
-        if (resMember.ok) setMembers(dataMember.data.users);
-        if (resTrainer.ok) setTrainers(dataTrainer.data.users);
-      } catch {}
-    };
-    fetchUsers();
+    fetchData();
   }, []);
   const formatDateToISO = (val) => val ? (val.length === 16 ? val + ":00.000Z" : val) : "";
   
@@ -68,22 +52,13 @@ export default function PTSessionInsertPage() {
     setError("");
     setSuccess("");
     try {
-      const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-      const res = await fetch(`${API_URL}/api/personaltrainersessions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({
-          pt_session_plan_id: Number(form.pt_session_plan_id),
-          user_member_id: Number(form.user_member_id),
-          user_pt_id: Number(form.user_pt_id),
-          start_date: formatDateToISO(form.start_date),
-          status: form.status
-        })
+      await api.post('/api/personaltrainersessions', {
+        pt_session_plan_id: Number(form.pt_session_plan_id),
+        user_member_id: Number(form.user_member_id),
+        user_pt_id: Number(form.user_pt_id),
+        start_date: formatDateToISO(form.start_date),
+        status: form.status
       });
-      if (!res.ok) throw new Error("Gagal insert session");
       setSuccess("Session berhasil ditambahkan!");
       setTimeout(() => router.push("/admin/pt/session"), 1200);
     } catch (err) {

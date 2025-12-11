@@ -8,8 +8,7 @@ import Link from "next/link";
 import { jsPDF } from "jspdf";
 import { FaPlus, FaDumbbell, FaAngleRight } from 'react-icons/fa';
 import { LoadingText, PageBreadcrumb, PageContainer, PageHeader } from "@/components/admin";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import api from '@/utils/fetchClient';
 
 export default function ClassSessionListPage() {
   const [qrSession, setQrSession] = useState(null);
@@ -46,19 +45,14 @@ export default function ClassSessionListPage() {
   useEffect(() => {
     const fetchMeta = async () => {
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-        const resPlans = await fetch(`${API_URL}/api/eventplans`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const resMembers = await fetch(`${API_URL}/api/users/?role=member`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const resInstructors = await fetch(`${API_URL}/api/users/?role=instructor`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const plansData = await resPlans.json();
-        const membersData = await resMembers.json();
-        const instructorsData = await resInstructors.json();
-        const arrPlans = plansData.data?.plans || [];
-        const arrMembers = membersData.data?.users || [];
-        const arrInstructors = instructorsData.data?.users || [];
-        if (resPlans.ok) setPlans(arrPlans);
-        if (resMembers.ok) setMembers(arrMembers);
-        if (resInstructors.ok) setInstructors(arrInstructors);
+        const [plansData, membersData, instructorsData] = await Promise.all([
+          api.get('/api/eventplans'),
+          api.get('/api/users/?role=member'),
+          api.get('/api/users/?role=instructor')
+        ]);
+        setPlans(plansData.data?.plans || []);
+        setMembers(membersData.data?.users || []);
+        setInstructors(instructorsData.data?.users || []);
       } catch {}
     };
     fetchMeta();
@@ -70,8 +64,6 @@ export default function ClassSessionListPage() {
       setBackendError(false);
       
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-        
         const params = new URLSearchParams({
           page: page.toString(),
           limit: perPage.toString(),
@@ -84,20 +76,13 @@ export default function ClassSessionListPage() {
         
         console.log('[Fetch] API call:', params.toString());
         
-        const res = await fetch(`${API_URL}/api/classes/paginated?${params.toString()}`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        });
-        
-        if (!res.ok) throw new Error("Gagal fetch classes");
-        
-        const classData = await res.json();
+        const classData = await api.get(`/api/classes/paginated?${params.toString()}`);
         const result = classData.data || {};
         setSessions(result.classes || []);
         setTotalRows(result.total || 0);
       } catch (err) {
-        console.error('[Fetch] Error:', err);
         setSessions([]);
-        setBackendError(true);
+        if (err.isNetworkError) setBackendError(true);
       }
       setLoading(false);
     };
@@ -142,14 +127,14 @@ export default function ClassSessionListPage() {
         
         {/* Schedule Type Filter */}
         <div className="flex items-center gap-3">
-          <span className="text-gray-300 font-medium">Filter by Type:</span>
+          <span className="text-gray-700 dark:text-gray-300 font-medium">Filter by Type:</span>
             <div className="flex gap-2">
               <button
                 onClick={() => { setScheduleTypeFilter('all'); setPage(1); }}
                 className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
                   scheduleTypeFilter === 'all' 
-                    ? 'bg-amber-400 text-gray-900' 
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    ? 'bg-amber-400 text-gray-900 dark:bg-amber-400 dark:text-gray-900' 
+                    : 'bg-gray-300 text-gray-800 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
                 All Classes
@@ -159,7 +144,7 @@ export default function ClassSessionListPage() {
                 className={`px-4 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2 ${
                   scheduleTypeFilter === 'recurring_patterns' 
                     ? 'bg-amber-600 text-white' 
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    : 'bg-gray-300 text-gray-800 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
                 🔁 Recurring Patterns Only
@@ -169,7 +154,7 @@ export default function ClassSessionListPage() {
                 className={`px-4 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2 ${
                   scheduleTypeFilter === 'instances' 
                     ? 'bg-blue-600 text-white' 
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    : 'bg-gray-300 text-gray-800 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
                 📅 Instances Only
@@ -179,7 +164,7 @@ export default function ClassSessionListPage() {
                 className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
                   scheduleTypeFilter === 'single' 
                     ? 'bg-gray-500 text-white' 
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    : 'bg-gray-300 text-gray-800 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
                 Single Classes Only

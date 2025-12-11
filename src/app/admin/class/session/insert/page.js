@@ -3,8 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FaDumbbell } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainerInsert, FormActions, FormInput } from '@/components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import api from '@/utils/fetchClient';
 
 export default function ClassSessionInsertPage() {
   const now = new Date();
@@ -31,27 +30,19 @@ export default function ClassSessionInsertPage() {
   const [members, setMembers] = useState([]);
   const [instructors, setInstructors] = useState([]);
   useEffect(() => {
-    const fetchPlans = async () => {
+    const fetchData = async () => {
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-        const res = await fetch(`${API_URL}/api/eventplans?is_active=true`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const data = await res.json();
-        if (res.ok) setPlans(data.data.plans);
+        const [dataPlans, dataMember, dataInstructor] = await Promise.all([
+          api.get('/api/eventplans?is_active=true'),
+          api.get('/api/users/?role=member&membership=active'),
+          api.get('/api/users/?role=instructor')
+        ]);
+        setPlans(dataPlans.data.plans || []);
+        setMembers(dataMember.data.users || []);
+        setInstructors(dataInstructor.data.users || []);
       } catch {}
     };
-    fetchPlans();
-    const fetchUsers = async () => {
-      try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-        const resMember = await fetch(`${API_URL}/api/users/?role=member&membership=active`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const resInstructor = await fetch(`${API_URL}/api/users/?role=instructor`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const dataMember = await resMember.json();
-        const dataInstructor = await resInstructor.json();
-        if (resMember.ok) setMembers(dataMember.data.users);
-        if (resInstructor.ok) setInstructors(dataInstructor.data.users);
-      } catch {}
-    };
-    fetchUsers();
+    fetchData();
   }, []);
 
   const [form, setForm] = useState(initialFormState);
@@ -96,8 +87,6 @@ export default function ClassSessionInsertPage() {
     setError("");
     setSuccess("");
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      
       let payload = {};
       
       if (form.is_recurring) {
@@ -131,15 +120,7 @@ export default function ClassSessionInsertPage() {
         };
       }
       
-      const res = await fetch(`${API_URL}/api/classes`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error("Gagal simpan");
+      await api.post('/api/classes', payload);
       setSuccess("Berhasil simpan");
       router.push("/admin/class/session");
     } catch (err) {

@@ -8,6 +8,8 @@ import { FaAngleLeft, FaAngleRight, FaUser, FaEnvelope } from 'react-icons/fa';
 import Link from 'next/link';
 import Webcam from 'react-webcam';
 import SendQRCodeModal from '../../../../components/SendQRCodeModal';
+import api from '@/utils/fetchClient';
+import { PageBreadcrumb } from '@/components/admin';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -32,7 +34,6 @@ export default function UserDetailPage() {
     // latitude: null,
     // longitude: null,
   });
-  const [token, setToken] = useState('');
   const [photo, setPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -42,35 +43,12 @@ export default function UserDetailPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    const tokenData = localStorage.getItem('token');
-    setToken(tokenData);
-    if (!userData || !tokenData) {
-      router.replace('/login');
-      return;
-    }
-    const userObj = JSON.parse(userData);
-    if (userObj.role !== 'admin') {
-      router.replace('/barcode');
-      return;
-    }
-
-    const fetchWith401 = async (url) => {
-      const res = await fetch(url, { headers: { Authorization: `Bearer ${tokenData}` } });
-      if (res.status === 401) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        router.replace('/login');
-        // throw new Error('Unauthorized');
-      }
-      return res.json();
-    };
-
     const fetchDetail = async () => {
       setLoading(true);
       try {
-        const userRes = await fetchWith401(`${API_URL}/api/users/${id}`);
-        const checkinsRes = await fetchWith401(`${API_URL}/api/checkins/user/${id}`);
+        // Use FetchClient with automatic token injection & 401 redirect
+        const userRes = await api.get(`/api/users/${id}`);
+        const checkinsRes = await api.get(`/api/checkins/user/${id}`);
         const userData = userRes.data;
         setUser(userData);
         setCheckins(checkinsRes);
@@ -94,7 +72,7 @@ export default function UserDetailPage() {
     };
 
     fetchDetail();
-  }, [id, router]);
+  }, [id]);
 
   const handleEdit = () => setEdit(true);
   const handleCancel = () => {
@@ -114,6 +92,9 @@ export default function UserDetailPage() {
       if (dobIso && dobIso.length === 10) {
         dobIso = dobIso + "T00:00:00.000Z";
       }
+      // Get token only when needed for FormData upload
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
+      
       if (photo) {
         const formData = new FormData();
         formData.append('name', form.name);
@@ -142,6 +123,7 @@ export default function UserDetailPage() {
         });
         data = await res.json();
       } else {
+        // Use api client for non-FormData requests
         const cleanForm = {
           ...form,
           email: form.email?.trim() === "" ? null : form.email,
@@ -149,13 +131,8 @@ export default function UserDetailPage() {
           date_of_birth: form.date_of_birth?.trim() === "" ? null : dobIso,
         };
 
-        res = await fetch(`${API_URL}/api/users/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify(cleanForm),
-        });
-        const userData = await res.json();
-        data = userData;
+        data = await api.put(`/api/users/${id}`, cleanForm);
+        res = { ok: true };
       }
       if (!res.ok) {
         if (res.status === 409 && data.code === "EMAIL_EXISTS") {
@@ -202,24 +179,12 @@ export default function UserDetailPage() {
 
   return (
     <div>
-      <div className="bg-white dark:bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-200 dark:border-gray-600">
-        <nav className="flex" aria-label="Breadcrumb">
-          <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-            <li>
-              <div className="inline-flex items-center">
-                <FaUser className="w-3 h-3 me-2.5 text-gray-700 dark:text-amber-300" /> 
-                <Link href="/admin/users" className="ms-1 text-sm font-medium text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-amber-300 md:ms-2">User Data</Link>
-              </div>
-            </li>
-            <li aria-current="page">
-              <div className="flex items-center">
-                <FaAngleRight className="w-3 h-3 text-gray-700 dark:text-amber-300 mx-1" />
-                <span className="ms-1 text-sm font-medium text-gray-800 dark:text-amber-300 md:ms-2">Detail / Edit</span>
-              </div>
-            </li>
-          </ol>
-        </nav>
-      </div>
+      <PageBreadcrumb 
+        items={[
+          { icon: <FaUser className="w-3 h-3" />, label: 'User Data', href: '/admin/users' },
+          { label: 'Detail / Edit' }
+        ]}
+      />
 
       <div className="p-5">
         <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-10 border border-gray-200 dark:border-gray-600">

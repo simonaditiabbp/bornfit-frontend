@@ -1,12 +1,10 @@
-// Halaman membership/session
 'use client';
 import { useEffect, useState } from 'react';
+import api from '@/utils/fetchClient';
 import BackendErrorFallback from '../../../../components/BackendErrorFallback';
 import MembershipSessionDataTable from './DataTable';
 import { FaPlus, FaIdCard } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainer, PageHeader, LoadingText } from '../../../../components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function MembershipSessionPage() {
   const [sessions, setSessions] = useState([]);
@@ -15,15 +13,15 @@ export default function MembershipSessionPage() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
     const fetchSessions = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${API_URL}/api/memberships`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const data = await res.json();
+        const data = await api.get('/api/memberships');
         setSessions(data.data?.memberships || []);
       } catch (err) {
-        setBackendError(true);
+        if (err.isNetworkError) {
+          setBackendError(true);
+        }
       }
       setLoading(false);
     };

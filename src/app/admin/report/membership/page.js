@@ -2,8 +2,8 @@
 import { useEffect, useState } from 'react';
 import { FaIdCard, FaFileCsv, FaFileExcel, FaUsers, FaUserClock, FaUserPlus, FaFilter } from 'react-icons/fa';
 import BackendErrorFallback from '../../../../components/BackendErrorFallback';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import api from '@/utils/fetchClient';
+import { PageBreadcrumb } from '@/components/admin';
 
 export default function MembershipReportPage() {
   const [data, setData] = useState([]);
@@ -21,36 +21,23 @@ export default function MembershipReportPage() {
 
   const fetchData = async () => {
     setLoading(true);
+    setBackendError(false);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
       const params = new URLSearchParams(Object.fromEntries(Object.entries(filters).filter(([_, v]) => v !== '')));
-      const res = await fetch(`${API_URL}/api/membership-reports/data?${params}`, {
-        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-      });
-      if (res.ok) {
-        const result = await res.json();
-        setData(result.data.data);
-      } else {
-        setBackendError(true);
-      }
+      const result = await api.get(`/api/membership-reports/data?${params}`);
+      setData(result.data.data);
     } catch (err) {
-      setBackendError(true);
+      if (err.isNetworkError) setBackendError(true);
     }
     setLoading(false);
   };
 
   const fetchSummary = async () => {
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      const res = await fetch(`${API_URL}/api/membership-reports/summary`, {
-        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-      });
-      if (res.ok) {
-        const result = await res.json();
-        setSummary(result.data);
-      }
+      const result = await api.get('/api/membership-reports/summary');
+      setSummary(result.data);
     } catch (err) {
-      console.error('Failed to fetch summary:', err);
+      // Silently fail - summary is optional
     }
   };
 
@@ -63,24 +50,16 @@ export default function MembershipReportPage() {
   const handleDownload = async (endpoint, filename) => {
     setDownloading(filename);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
       const params = new URLSearchParams(Object.fromEntries(Object.entries(filters).filter(([_, v]) => v !== '')));
-      const res = await fetch(`${API_URL}/api/membership-reports/${endpoint}?${params}`, {
-        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-      });
-      if (res.ok) {
-        const blob = await res.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(url);
-      } else {
-        alert('Failed to download report.');
-      }
+      const blob = await api.get(`/api/membership-reports/${endpoint}?${params}`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
     } catch (err) {
       alert('An error occurred while downloading the report.');
     }
@@ -134,19 +113,14 @@ export default function MembershipReportPage() {
 
   return (
     <div>
-      <div className="bg-white dark:bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-200 dark:border-gray-700">
-        <nav className="flex" aria-label="Breadcrumb">
-          <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-            <li className="inline-flex items-center">
-              <FaIdCard className="w-4 h-4 me-2.5 text-amber-500 dark:text-amber-300" /> 
-              <span className="ms-1 text-sm font-medium text-gray-700 dark:text-gray-200">Membership Reports</span>
-            </li>
-          </ol>
-        </nav>
-      </div>
+      <PageBreadcrumb 
+        items={[
+          { icon: <FaIdCard className="w-3 h-3" />, label: 'Membership Reports' }
+        ]}
+      />
       
       <div className="m-5 p-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
-        <h1 className="text-2xl font-bold text-amber-500 dark:text-amber-400 mb-6">Membership Report</h1>
+        <h1 className="text-2xl font-bold text-black dark:text-amber-400 mb-6">Membership Report</h1>
         
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">

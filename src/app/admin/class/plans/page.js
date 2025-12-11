@@ -5,8 +5,7 @@ import ClassPlansDataTable from "./DataTable";
 import Link from "next/link";
 import { FaPlus, FaCog, FaAngleRight } from 'react-icons/fa';
 import { LoadingText, PageBreadcrumb, PageContainer, PageHeader } from "@/components/admin";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import api from '@/utils/fetchClient';
 
 export default function ClassPlansPage() {
   const [search, setSearch] = useState('');
@@ -20,15 +19,12 @@ export default function ClassPlansPage() {
 
   const fetchPlans = useCallback(async () => {
     setLoading(true);
+    setBackendError(false);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
       if (search && search.trim() !== '') {
         let allMatches = null;
         try {
-          const resSearch = await fetch(`${API_URL}/api/eventplans?search=${encodeURIComponent(search)}`, {
-            headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-          });
-          const dataEvent = await resSearch.json();
+          const dataEvent = await api.get(`/api/eventplans?search=${encodeURIComponent(search)}`);
           const arr = dataEvent.data?.plans || [];
           if (Array.isArray(arr)) {
             allMatches = arr;
@@ -37,10 +33,7 @@ export default function ClassPlansPage() {
           // ignore and fallback
         }
         if (!allMatches) {
-          const resAll = await fetch(`${API_URL}/api/eventplans`, {
-            headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-          });
-          const dataEvent = await resAll.json();
+          const dataEvent = await api.get('/api/eventplans');
           const arr = dataEvent.data?.plans || [];
           if (Array.isArray(arr)) {
             allMatches = arr.filter(p =>
@@ -56,16 +49,13 @@ export default function ClassPlansPage() {
         setPlans(pageSlice);
         setTotal(allMatches.length);
       } else {
-        const res = await fetch(`${API_URL}/api/eventplans?page=${page}&limit=${limit}`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-        });
-        const dataEvent = await res.json();
+        const dataEvent = await api.get(`/api/eventplans?page=${page}&limit=${limit}`);
         const arr = dataEvent.data?.plans || [];
         setPlans(Array.isArray(arr) ? arr : []);
         setTotal(dataEvent?.data?.total ?? 0);
       }
     } catch (err) {
-      setBackendError(true);
+      if (err.isNetworkError) setBackendError(true);
     }
     setLoading(false);
   }, [page, limit, search]);
@@ -95,13 +85,7 @@ export default function ClassPlansPage() {
     if (!confirm('Yakin ingin menghapus plan ini?')) return;
     setLoading(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      await fetch(`${API_URL}/api/eventplans/${id}`, {
-        method: 'DELETE',
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        }
-      });
+      await api.delete(`/api/eventplans/${id}`);
       await fetchPlans();
     } catch (err) {
       alert('Gagal menghapus plan');

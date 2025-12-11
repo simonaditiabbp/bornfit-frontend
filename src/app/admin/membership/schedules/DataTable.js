@@ -80,7 +80,7 @@ export default function MembershipSchedulesDataTable({ data }) {
   }), [isDark]);
 
   const columns = [
-    { name: 'No', cell: (row, i) => i + 1, width: '70px', center: true },
+    { name: 'No', cell: (row, i) => i + 1, width: '70px', center: "true" },
     { 
       name: 'Plan', 
       selector: row => row.membershipPlan?.name || '-', 

@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaCalendar } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import api from '@/utils/fetchClient';
+import LoadingSpin from '@/components/admin/LoadingSpin';
 
 export default function EditMembershipSchedulePage() {
   const [form, setForm] = useState(null);
@@ -21,16 +21,14 @@ export default function EditMembershipSchedulePage() {
   const id = params.get('id');
 
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
     const fetchData = async () => {
       setLoading(true);
       try {
-        const resSchedule = await fetch(`${API_URL}/api/membership-plan-schedules/${id}`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const resUsers = await fetch(`${API_URL}/api/users?role=member`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const resPlans = await fetch(`${API_URL}/api/membership-plans`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const scheduleData = await resSchedule.json();
-        const usersData = await resUsers.json();
-        const plansData = await resPlans.json();
+        const [scheduleData, usersData, plansData] = await Promise.all([
+          api.get(`/api/membership-plan-schedules/${id}`),
+          api.get('/api/users?role=member'),
+          api.get('/api/membership-plans')
+        ]);
         setForm(scheduleData.data || null);
         console.log('scheduleData:', scheduleData.data);
         setUsers(usersData.data?.users || []);
@@ -50,19 +48,11 @@ export default function EditMembershipSchedulePage() {
     setError('');
     setSuccess('');
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      await fetch(`${API_URL}/api/membership-plan-schedules/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({
-          user_id: Number(form.user_id),
-          membership_plan_id: Number(form.membership_plan_id),
-          schedule_date: form.schedule_date,
-          status: form.status
-        })
+      await api.put(`/api/membership-plan-schedules/${id}`, {
+        user_id: Number(form.user_id),
+        membership_plan_id: Number(form.membership_plan_id),
+        schedule_date: form.schedule_date,
+        status: form.status
       });
       setSuccess('Schedule updated');
       setEdit(false);
@@ -76,8 +66,7 @@ export default function EditMembershipSchedulePage() {
     if (!confirm('Yakin ingin menghapus schedule ini?')) return;
     setFormLoading(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      await fetch(`${API_URL}/api/membership-plan-schedules/${id}`, { method: 'DELETE', headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+      await api.delete(`/api/membership-plan-schedules/${id}`);
       router.push('/admin/membership/schedules');
     } catch (err) {
       setError('Gagal menghapus schedule');
@@ -85,7 +74,7 @@ export default function EditMembershipSchedulePage() {
     setFormLoading(false);
   };
 
-  if (loading || !form) return <div className="text-gray-800 dark:text-amber-300 text-center font-medium mt-20">Loading...</div>;
+  if (loading || !form) return <LoadingSpin />;
 
   return (
     <div>

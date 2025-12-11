@@ -2,8 +2,8 @@
 import { useEffect, useState } from 'react';
 import { FaUserCheck, FaFileCsv, FaFileExcel, FaFilter } from 'react-icons/fa';
 import BackendErrorFallback from '../../../../components/BackendErrorFallback';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import api from '@/utils/fetchClient';
+import { PageBreadcrumb } from '@/components/admin';
 
 export default function CheckinReportPage() {
   const [data, setData] = useState([]);
@@ -19,20 +19,13 @@ export default function CheckinReportPage() {
 
   const fetchData = async () => {
     setLoading(true);
+    setBackendError(false);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
       const params = new URLSearchParams(filters);
-      const res = await fetch(`${API_URL}/api/checkin-reports/data?${params}`, {
-        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-      });
-      if (res.ok) {
-        const result = await res.json();
-        setData(result.data.data);
-      } else {
-        setBackendError(true);
-      }
+      const result = await api.get(`/api/checkin-reports/data?${params}`);
+      setData(result.data.data);
     } catch (err) {
-      setBackendError(true);
+      if (err.isNetworkError) setBackendError(true);
     }
     setLoading(false);
   };
@@ -45,25 +38,17 @@ export default function CheckinReportPage() {
   const handleDownload = async (type, format) => {
     setDownloading(`${type}-${format}`);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
       const params = new URLSearchParams({ start_date: filters.start_date, end_date: filters.end_date });
-      const res = await fetch(`${API_URL}/api/checkin-reports/${type}/${format}?${params}`, {
-        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-      });
-      if (res.ok) {
-        const blob = await res.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        const extension = format === 'excel' ? 'xlsx' : 'csv';
-        a.download = `${type}_checkin_${new Date().getTime()}.${extension}`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(url);
-      } else {
-        alert('Failed to download report.');
-      }
+      const blob = await api.get(`/api/checkin-reports/${type}/${format}?${params}`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const extension = format === 'excel' ? 'xlsx' : 'csv';
+      a.download = `${type}_checkin_${new Date().getTime()}.${extension}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
     } catch (err) {
       alert('An error occurred while downloading the report.');
     }
@@ -84,19 +69,14 @@ export default function CheckinReportPage() {
 
   return (
     <div>
-      <div className="bg-white dark:bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-200 dark:border-gray-700">
-        <nav className="flex" aria-label="Breadcrumb">
-          <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-            <li className="inline-flex items-center">
-              <FaUserCheck className="w-4 h-4 me-2.5 text-amber-500 dark:text-amber-300" /> 
-              <span className="ms-1 text-sm font-medium text-gray-700 dark:text-gray-200">Check-in Reports</span>
-            </li>
-          </ol>
-        </nav>
-      </div>
+      <PageBreadcrumb 
+        items={[
+          { icon: <FaUserCheck className="w-3 h-3" />, label: 'Check-in Reports' }
+        ]}
+      />
       
       <div className="m-5 p-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
-        <h1 className="text-2xl font-bold text-amber-500 dark:text-amber-400 mb-6">Check-in Data</h1>
+        <h1 className="text-2xl font-bold text-black dark:text-amber-400 mb-6">Check-in Data</h1>
 
         {/* Filters */}
         <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">

@@ -3,8 +3,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { FaArrowLeft, FaUser, FaClock, FaCalendar, FaUsers, FaCheckCircle, FaClock as FaPending, FaBan } from 'react-icons/fa';
 import Link from 'next/link';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import api from '@/utils/fetchClient';
+import LoadingSpin from '@/components/admin/LoadingSpin';
 
 export default function ClassDetailPage() {
   const params = useParams();
@@ -21,11 +21,7 @@ export default function ClassDetailPage() {
   const fetchClassDetail = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/classes/${params.id}/details`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
+      const data = await api.get(`/api/classes/${params.id}/details`);
 
       if (data.status === "success") {
         setClassData(data.data);
@@ -34,7 +30,6 @@ export default function ClassDetailPage() {
         router.push('/admin/class-schedule');
       }
     } catch (error) {
-      console.error('Error fetching class detail:', error);
       alert('Error loading class detail');
     }
     setLoading(false);
@@ -94,9 +89,7 @@ export default function ClassDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex items-center justify-center">
-        <div className="text-amber-500 dark:text-amber-300 text-xl">Loading...</div>
-      </div>
+      <LoadingSpin />
     );
   }
 

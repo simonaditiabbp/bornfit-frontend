@@ -4,8 +4,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import BackendErrorFallback from "../../../../../components/BackendErrorFallback";
 import { FaCog } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import LoadingSpin from "@/components/admin/LoadingSpin";
+import api from '@/utils/fetchClient';
 
 export default function ClassPlanEditPage() {
   const [form, setForm] = useState(null);
@@ -23,11 +23,9 @@ export default function ClassPlanEditPage() {
   useEffect(() => {
     const fetchPlan = async () => {
       setLoading(true);
+      setBackendError(false);
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-        const res = await fetch(`${API_URL}/api/eventplans/${id}`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        if (!res.ok) throw new Error('Gagal fetch plan');
-        const dataEvent = await res.json();
+        const dataEvent = await api.get(`/api/eventplans/${id}`);
         const data = dataEvent.data || [];
         console.log('Fetched plan data:', data);
         const planForm = {
@@ -45,7 +43,7 @@ export default function ClassPlanEditPage() {
         setForm(planForm);
         setInitialForm(planForm);
       } catch (err) {
-        setBackendError(true);
+        if (err.isNetworkError) setBackendError(true);
       }
       setLoading(false);
     };
@@ -74,13 +72,7 @@ export default function ClassPlanEditPage() {
     setError("");
     setSuccess("");
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      const res = await fetch(`${API_URL}/api/eventplans/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify(form),
-      });
-      if (!res.ok) throw new Error('Gagal update');
+      await api.put(`/api/eventplans/${id}`, form);
       setSuccess('Plan updated');
       setEdit(false);
     } catch (err) {
@@ -93,8 +85,7 @@ export default function ClassPlanEditPage() {
     if (!confirm('Yakin ingin menghapus plan ini?')) return;
     setFormLoading(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      await fetch(`${API_URL}/api/eventplans/${id}`, { method: 'DELETE', headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+      await api.delete(`/api/eventplans/${id}`);
       router.push('/admin/class/plans');
     } catch (err) {
       setError('Gagal menghapus plan');
@@ -103,7 +94,7 @@ export default function ClassPlanEditPage() {
   };
 
   if (backendError) return <BackendErrorFallback onRetry={() => window.location.reload()} />;
-  if (loading || !form) return <div className="text-gray-800 dark:text-amber-300 text-center font-medium mt-20">Loading...</div>;
+  if (loading || !form) return <LoadingSpin />;
 
   return (
     <div>

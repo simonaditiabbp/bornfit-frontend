@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react';
 import { FaCalendar, FaChevronLeft, FaChevronRight, FaUsers, FaFilter } from 'react-icons/fa';
 import Link from 'next/link';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import api from '@/utils/fetchClient';
+import LoadingSpin from '@/components/admin/LoadingSpin';
 
 export default function ClassSchedulePage() {
   const [classes, setClasses] = useState([]);
@@ -27,41 +27,32 @@ export default function ClassSchedulePage() {
 
   const fetchEventPlans = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/eventplans`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
+      const data = await api.get('/api/eventplans');
       if (data.success) {
         setEventPlans(data.data?.plans || []);
       }
     } catch (error) {
-      console.error('Error fetching event plans:', error);
+      // Silently fail - filter will be empty
     }
   };
 
   const fetchInstructors = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/users?exclude_role=member`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
+      const data = await api.get('/api/users?exclude_role=member');
       if (data.success) {
         setInstructors(data.data?.users || []);
       }
     } catch (error) {
-      console.error('Error fetching instructors:', error);
+      // Silently fail - filter will be empty
     }
   };
 
   const fetchClasses = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
       const { startDate, endDate } = getDateRange();
       
-      let url = `${API_URL}/api/classes/date-range?start_date=${startDate}&end_date=${endDate}`;
+      let url = `/api/classes/date-range?start_date=${startDate}&end_date=${endDate}`;
       if (selectedEventPlan !== 'all') {
         url += `&event_plan_id=${selectedEventPlan}`;
       }
@@ -69,23 +60,12 @@ export default function ClassSchedulePage() {
         url += `&instructor_id=${selectedInstructor}`;
       }
       
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
+      const data = await api.get(url);
       if (data.status === 'success') {
-        console.log('Classes received:', data.data?.length || 0);
-        if (viewMode === 'day' && data.data?.length > 0) {
-          console.log('Sample classes:', data.data.slice(0, 3).map(c => ({
-            date: c.class_date.split('T')[0],
-            start: c.start_time,
-            name: c.name
-          })));
-        }
         setClasses(data.data || []);
       }
     } catch (error) {
-      console.error('Error fetching classes:', error);
+      // Error handled by fetchClient
     }
     setLoading(false);
   };
@@ -276,7 +256,7 @@ export default function ClassSchedulePage() {
             </button>
             <Link
               href="/admin/class/session/insert"
-              className="bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-semibold transition"
+              className="bg-gray-500 hover:bg-amber-600 dark:bg-gray-500 dark:hover:bg-amber-700 text-white  px-4 py-2 rounded-lg font-semibold transition"
             >
               Create Class
             </Link>
@@ -289,7 +269,7 @@ export default function ClassSchedulePage() {
               onClick={() => setViewMode('day')}
               className={`px-4 py-2 rounded font-semibold transition ${
                 viewMode === 'day'
-                  ? 'bg-amber-500 dark:bg-amber-600 text-white'
+                  ? 'bg-gray-500 dark:bg-gray-500 text-white'
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
               }`}
             >
@@ -299,8 +279,8 @@ export default function ClassSchedulePage() {
               onClick={() => setViewMode('week')}
               className={`px-4 py-2 rounded font-semibold transition ${
                 viewMode === 'week'
-                  ? 'bg-amber-600 text-white'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  ? 'bg-gray-500 dark:bg-gray-500 text-white'
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
               }`}
             >
               Week
@@ -309,8 +289,8 @@ export default function ClassSchedulePage() {
               onClick={() => setViewMode('month')}
               className={`px-4 py-2 rounded font-semibold transition ${
                 viewMode === 'month'
-                  ? 'bg-amber-600 text-white'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  ? 'bg-gray-500 dark:bg-gray-500 text-white'
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
               }`}
             >
               Month
@@ -371,7 +351,7 @@ export default function ClassSchedulePage() {
       {/* Calendar Grid */}
       <div className="p-5 overflow-x-auto">
         {loading ? (
-          <div className="text-center text-amber-500 dark:text-amber-300 py-20">Loading...</div>
+          <LoadingSpin />
         ) : (
           <div className="min-w-[1200px]">
             {/* Day Headers */}

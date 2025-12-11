@@ -3,8 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaDumbbell } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainerInsert, FormActions, FormInput } from '@/components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import api from '@/utils/fetchClient';
 
 export default function ClassPurchaseInsertPage() {
   const searchParams = useSearchParams();
@@ -36,16 +35,10 @@ export default function ClassPurchaseInsertPage() {
   const fetchUsers = async () => {
     setFetchingData(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      const res = await fetch(`${API_URL}/api/users`, {
-        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setUsers(data.data?.users || []);
-      }
+      const data = await api.get('/api/users');
+      setUsers(data.data?.users || []);
     } catch (err) {
-      console.error('Error fetching users:', err);
+      // Silently fail - dropdown will be empty
     }
     setFetchingData(false);
   };
@@ -54,16 +47,10 @@ export default function ClassPurchaseInsertPage() {
   const fetchClasses = async () => {
     setFetchingData(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      const res = await fetch(`${API_URL}/api/classes`, {
-        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setClasses(data.data?.classes || []);
-      }
+      const data = await api.get('/api/classes');
+      setClasses(data.data?.classes || []);
     } catch (err) {
-      console.error('Error fetching classes:', err);
+      // Silently fail - dropdown will be empty
     }
     setFetchingData(false);
   };
@@ -88,28 +75,14 @@ export default function ClassPurchaseInsertPage() {
     setLoading(true);
     setError('');
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      const res = await fetch(`${API_URL}/api/classpurchases`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({
-          user_id: parseInt(userId, 10),
-          class_id: parseInt(classId, 10),
-          price: parseInt(price, 10),
-          // ...(purchaseDate ? { purchase_date: purchaseDate } : {})
-        })
+      await api.post('/api/classpurchases', {
+        user_id: parseInt(userId, 10),
+        class_id: parseInt(classId, 10),
+        price: parseInt(price, 10),
       });
-      if (res.ok) {
-        router.push('/admin/class/classpurchase');
-      } else {
-        const data = await res.json();
-        setError(data.message || 'Gagal menambah purchase');
-      }
+      router.push('/admin/class/classpurchase');
     } catch (err) {
-      setError('Gagal menambah purchase');
+      setError(err.data?.message || 'Gagal menambah purchase');
     }
     setLoading(false);
   };

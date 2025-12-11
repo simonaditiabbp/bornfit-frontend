@@ -3,8 +3,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FaDumbbell, FaSearch, FaTimes } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainerInsert, FormActions, FormInput } from '@/components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import api from '@/utils/fetchClient';
 
 export default function InsertAttendancePage() {
   const now = new Date();
@@ -50,18 +49,14 @@ export default function InsertAttendancePage() {
   useEffect(() => {
     const fetchAllClasses = async () => {
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
         let allClasses = [];
         let currentPage = 1;
         let hasMore = true;
 
         while (hasMore) {
-          const res = await fetch(`${API_URL}/api/classes/paginated?page=${currentPage}&limit=100&scheduleType=all`, {
-            headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-          });
-          const data = await res.json();
+          const data = await api.get(`/api/classes/paginated?page=${currentPage}&limit=100&scheduleType=all`);
           
-          if (res.ok && data.data?.classes) {
+          if (data.data?.classes) {
             allClasses = [...allClasses, ...data.data.classes];
             // Check if there are more pages
             hasMore = data.data.classes.length === 100;
@@ -85,7 +80,7 @@ export default function InsertAttendancePage() {
         
         setClasses(filteredClasses);
       } catch (err) {
-        console.error('Error fetching classes:', err);
+        // Silently fail - dropdown will be empty but form still usable
       }
     };
     fetchAllClasses();
@@ -95,18 +90,14 @@ export default function InsertAttendancePage() {
   useEffect(() => {
     const fetchAllMembers = async () => {
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
         let allMembers = [];
         let currentPage = 1;
         let hasMore = true;
 
         while (hasMore) {
-          const res = await fetch(`${API_URL}/api/users?page=${currentPage}&limit=100&role=member`, {
-            headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-          });
-          const data = await res.json();
+          const data = await api.get(`/api/users?page=${currentPage}&limit=100&role=member`);
           
-          if (res.ok && data.data?.users) {
+          if (data.data?.users) {
             allMembers = [...allMembers, ...data.data.users];
             hasMore = data.data.users.length === 100;
             currentPage++;
@@ -116,44 +107,28 @@ export default function InsertAttendancePage() {
         }
         
         // Fetch memberships to filter out Silver plan members
-        const membershipRes = await fetch(`${API_URL}/api/memberships`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
+        const membershipData = await api.get('/api/memberships');
+        const memberships = membershipData.data?.memberships || [];
+        
+        // Fetch membership plans to get plan names
+        const plansData = await api.get('/api/membership-plans');
+        const plans = plansData.data?.membershipPlans || [];
+
+        // Filter members - exclude those with Silver plan
+        const filteredMembers = allMembers.filter(member => {
+          const membership = memberships.find(m => m.user_id === member.id && m.is_active);
+          if (!membership) return false; // No active membership
+          
+          const plan = plans.find(p => p.id === membership.membership_plan_id);
+          if (!plan) return false;
+          
+          // Exclude Silver plan (case insensitive)
+          return plan.name.toLowerCase() !== 'silver';
         });
         
-        if (membershipRes.ok) {
-          const membershipData = await membershipRes.json();
-          const memberships = membershipData.data?.memberships || [];
-          
-          // Fetch membership plans to get plan names
-          const plansRes = await fetch(`${API_URL}/api/membership-plans`, {
-            headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-          });
-
-          if (plansRes.ok) {
-            const plansData = await plansRes.json();
-            const plans = plansData.data?.membershipPlans || [];
-
-            // Filter members - exclude those with Silver plan
-            const filteredMembers = allMembers.filter(member => {
-              const membership = memberships.find(m => m.user_id === member.id && m.is_active);
-              if (!membership) return false; // No active membership
-              
-              const plan = plans.find(p => p.id === membership.membership_plan_id);
-              if (!plan) return false;
-              
-              // Exclude Silver plan (case insensitive)
-              return plan.name.toLowerCase() !== 'silver';
-            });
-            
-            setMembers(filteredMembers);
-          } else {
-            setMembers(allMembers);
-          }
-        } else {
-          setMembers(allMembers);
-        }
+        setMembers(filteredMembers);
       } catch (err) {
-        console.error('Error fetching members:', err);
+        // Silently fail - dropdown will be empty but form still usable
       }
     };
     fetchAllMembers();
@@ -261,43 +236,27 @@ export default function InsertAttendancePage() {
     setError("");
     
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      
       // Check class capacity before submitting
       const selectedClass = classes.find(c => c.id == form.class_id);
       if (selectedClass) {
         // Fetch class attendance count for the specific class
-        const attendanceRes = await fetch(`${API_URL}/api/classattendances`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-        });
+        const attendanceData = await api.get('/api/classattendances');
+        console.log("attendanceData: ", attendanceData)
+        // Filter attendance untuk class yang dipilih saja dan exclude yang Cancelled
+        const currentAttendance = attendanceData.data?.attendances?.filter(
+          a => a.class_id === form.class_id && a.status !== 'Cancelled'
+        ).length || 0;
         
-        if (attendanceRes.ok) {
-          const attendanceData = await attendanceRes.json();
-          console.log("attendanceData: ", attendanceData)
-          // Filter attendance untuk class yang dipilih saja dan exclude yang Cancelled
-          const currentAttendance = attendanceData.data?.attendances?.filter(
-            a => a.class_id === form.class_id && a.status !== 'Cancelled'
-          ).length || 0;
-          
-          // Fetch event plan to get max_visitor
-          const planRes = await fetch(`${API_URL}/api/eventplans/${selectedClass.event_plan_id}`, {
-            headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-          });
-          
-          if (planRes.ok) {
-            const planData = await planRes.json();
-            console.log("planData: ", planData)
-            const maxVisitor = planData.data?.max_visitor || 0;
+        // Fetch event plan to get max_visitor
+        const planData = await api.get(`/api/eventplans/${selectedClass.event_plan_id}`);tor || 0;
 
-            console.log("maxVisitor: ", maxVisitor, "currentAttendance:", currentAttendance);
+        console.log("maxVisitor: ", maxVisitor, "currentAttendance:", currentAttendance);
 
-            if (maxVisitor > 0 && currentAttendance >= maxVisitor) {
-              setError(`Class sudah penuh! Kapasitas maksimal: ${maxVisitor} orang, Saat ini: ${currentAttendance} orang`);
-              setLoading(false);
-              alert(`Class sudah penuh!\n\nKapasitas maksimal: ${maxVisitor} orang\nJumlah peserta saat ini: ${currentAttendance} orang\n\nSilakan pilih class lain atau hubungi admin untuk menambah kapasitas.`);
-              return;
-            }
-          }
+        if (maxVisitor > 0 && currentAttendance >= maxVisitor) {
+          setError(`Class sudah penuh! Kapasitas maksimal: ${maxVisitor} orang, Saat ini: ${currentAttendance} orang`);
+          setLoading(false);
+          alert(`Class sudah penuh!\n\nKapasitas maksimal: ${maxVisitor} orang\nJumlah peserta saat ini: ${currentAttendance} orang\n\nSilakan pilih class lain atau hubungi admin untuk menambah kapasitas.`);
+          return;
         }
       }
       
@@ -307,24 +266,12 @@ export default function InsertAttendancePage() {
         checkedInAtIso = checkedInAtIso + ':00.000Z';
       }
       
-      const res = await fetch(`${API_URL}/api/classattendances`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          class_id: Number(form.class_id),
-          member_id: Number(form.member_id),
-          checked_in_at: checkedInAtIso,
-          status: form.status,
-        }),
+      await api.post('/api/classattendances', {
+        class_id: Number(form.class_id),
+        member_id: Number(form.member_id),
+        checked_in_at: checkedInAtIso,
+        status: form.status,
       });
-      
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Gagal menyimpan attendance');
-      }
       
       router.push("/admin/class/attendance");
     } catch (err) {

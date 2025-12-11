@@ -1,12 +1,11 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
+import api from '@/utils/fetchClient';
 import BackendErrorFallback from "../../../../components/BackendErrorFallback";
 import PTPlansDataTable from "./DataTable";
 import Link from "next/link";
 import { FaCog, FaPlus } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainer, PageHeader, LoadingText, StyledDataTable } from '../../../../components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function PTPlansPage() {
   const [search, setSearch] = useState('');
@@ -20,15 +19,10 @@ export default function PTPlansPage() {
   const fetchPlans = useCallback(async () => {
     setLoading(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
       if (search && search.trim() !== '') {
         let allMatches = null;
         try {
-          // Try endpoint that may support searching and return an array
-          const resSearch = await fetch(`${API_URL}/api/ptsessionplans?search=${encodeURIComponent(search)}`, {
-            headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-          });
-          const sessionData = await resSearch.json();
+          const sessionData = await api.get(`/api/ptsessionplans?search=${encodeURIComponent(search)}`);
           const arr = sessionData.data?.plans || [];
           if (Array.isArray(arr)) {
             allMatches = arr;
@@ -37,11 +31,7 @@ export default function PTPlansPage() {
           // ignore and fallback
         }
         if (!allMatches) {
-          // fallback: fetch all plans and filter client-side
-          const resAll = await fetch(`${API_URL}/api/ptsessionplans`, {
-            headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-          });
-          const sessionPlansData = await resAll.json();
+          const sessionPlansData = await api.get('/api/ptsessionplans');
           const arr = sessionPlansData.data?.plans || [];
           if (Array.isArray(arr)) {
             allMatches = arr.filter(p =>
@@ -52,22 +42,20 @@ export default function PTPlansPage() {
             allMatches = [];
           }
         }
-        // Paginate matches for the table UI
         const start = (page - 1) * limit;
         const pageSlice = allMatches.slice(start, start + limit);
         setPlans(pageSlice);
         setTotal(allMatches.length);
       } else {
-        const res = await fetch(`${API_URL}/api/ptsessionplans?page=${page}&limit=${limit}`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-        });
-        const sessionPlansData = await res.json();
+        const sessionPlansData = await api.get(`/api/ptsessionplans?page=${page}&limit=${limit}`);
         const arr = sessionPlansData.data?.plans || [];
         setPlans(arr);
         setTotal(sessionPlansData.data?.total || 0);
       }
     } catch (err) {
-      setBackendError(true);
+      if (err.isNetworkError) {
+        setBackendError(true);
+      }
     }
     setLoading(false);
   }, [page, limit, search]);
@@ -98,13 +86,7 @@ export default function PTPlansPage() {
     if (!confirm('Yakin ingin menghapus plan ini?')) return;
     setLoading(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      await fetch(`${API_URL}/api/ptsessionplans/${id}`, {
-        method: 'DELETE',
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        }
-      });
+      await api.delete(`/api/ptsessionplans/${id}`);
       await fetchPlans();
     } catch (err) {
       alert('Gagal menghapus plan');

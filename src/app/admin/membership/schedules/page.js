@@ -1,12 +1,10 @@
-// Halaman membership/schedules
 'use client';
 import { useEffect, useState } from 'react';
+import api from '@/utils/fetchClient';
 import BackendErrorFallback from '../../../../components/BackendErrorFallback';
 import MembershipSchedulesDataTable from './DataTable';
 import { FaPlus, FaCalendar } from 'react-icons/fa';
 import Link from 'next/link';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function MembershipSchedulesPage() {
   const [schedules, setSchedules] = useState([]);
@@ -15,15 +13,15 @@ export default function MembershipSchedulesPage() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
     const fetchSchedules = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${API_URL}/api/membership-plan-schedules`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const data = await res.json();
+        const data = await api.get('/api/membership-plan-schedules');
         setSchedules(data.data?.membershipPlanSchedules || []);
       } catch (err) {
-        setBackendError(true);
+        if (err.isNetworkError) {
+          setBackendError(true);
+        }
       }
       setLoading(false);
     };

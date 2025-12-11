@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Webcam from "react-webcam";
 import { useRouter } from "next/navigation";
+import api from '@/utils/fetchClient';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -163,6 +164,7 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
         formData.append('photo', photo);
       }
 
+      // Use manual fetch for FormData (cannot use api client)
       const res = await fetch(`${API_URL}/api/users`, {
         method: "POST",
         headers: {
@@ -171,14 +173,15 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
         body: formData,
       });
 
-      const data = await res.json();
-
+      // Handle 401 manually
       if (res.status === 401) {
          localStorage.removeItem("token");
          localStorage.removeItem("user");
-         router.push('/login');
-         throw new Error("Sesi tidak valid. Silakan login ulang.");
+         window.location.href = '/login';
+         return;
       }
+
+      const data = await res.json();
 
       if (!res.ok) {
         if (res.status === 409 && data.code === "EMAIL_EXISTS") {

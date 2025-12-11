@@ -1,11 +1,9 @@
-// Insert Membership Plan
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaCog } from 'react-icons/fa';
+import api from '@/utils/fetchClient';
 import { PageBreadcrumb, PageContainerInsert, FormActions, FormInput, FormInputGroup } from '@/components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function InsertMembershipPlanPage() {
   const getDefaultAvailableUntil = () => {
@@ -89,31 +87,23 @@ export default function InsertMembershipPlanPage() {
       else if (availableUntilIso && availableUntilIso.length === 16) {
           availableUntilIso = availableUntilIso + ':00.000Z';
       }
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      await fetch(`${API_URL}/api/membership-plans`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({
-          name: form.name,
-          duration_value: Number(form.duration_value),
-          duration_unit: form.duration_unit,
-          price: Number(form.price),
-          category: form.category,
-          loyalty_point: Number(form.loyalty_point),
-          description: form.description,
-          access_type: form.access_type,
-          class_access_type: form.class_access_type,
-          max_session: form.max_session ? Number(form.max_session) : null,
-          allow_unlimited_session: Boolean(form.allow_unlimited_session),
-          available_from: availableFromIso || null,
-          available_until: availableUntilIso || null,
-          quota_max_sold: form.quota_max_sold ? Number(form.quota_max_sold) : null,
-          always_available: Boolean(form.always_available),
-          level: Number(form.level)
-        })
+      await api.post('/api/membership-plans', {
+        name: form.name,
+        duration_value: Number(form.duration_value),
+        duration_unit: form.duration_unit,
+        price: Number(form.price),
+        category: form.category,
+        loyalty_point: Number(form.loyalty_point),
+        description: form.description,
+        access_type: form.access_type,
+        class_access_type: form.class_access_type,
+        max_session: form.max_session ? Number(form.max_session) : null,
+        allow_unlimited_session: Boolean(form.allow_unlimited_session),
+        available_from: availableFromIso || null,
+        available_until: availableUntilIso || null,
+        quota_max_sold: form.quota_max_sold ? Number(form.quota_max_sold) : null,
+        always_available: Boolean(form.always_available),
+        level: Number(form.level)
       });
       router.push('/admin/membership/plans');
     } catch (err) {

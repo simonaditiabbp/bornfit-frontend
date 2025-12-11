@@ -12,6 +12,8 @@ import timezone from 'dayjs/plugin/timezone';
 import BackendErrorFallback from '../../../components/BackendErrorFallback';
 import { FaPlus, FaUser } from 'react-icons/fa';
 import CreateUserModal from '../../../components/CreateUserModal';
+import api from '@/utils/fetchClient';
+import { PageBreadcrumb } from '@/components/admin';
 
 const UsersDataTable = dynamic(() => import('./DataTable'), { ssr: false });
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -42,21 +44,10 @@ function RenewalActionsCell({ row, membership }) {
   const handleSendEmail = async () => {
     setEmailLoading(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      const res = await fetch(`${API_URL}/api/memberships/user/${row.id}/send-renew-email`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      if (res.ok) {
-        alert('Renewal email sent successfully!');
-      } else {
-        alert('Failed to send renewal email.');
-      }
+      await api.post(`/api/memberships/user/${row.id}/send-renew-email`);
+      alert('Renewal email sent successfully!');
     } catch (err) {
-      alert('Error sending email.');
+      alert(err.data?.message || 'Error sending email.');
     } finally {
       setEmailLoading(false);
     }
@@ -106,7 +97,6 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [qrUser, setQrUser] = useState(null);
   const [createUser, setCreateUser] = useState(false);
-  const [token, setToken] = useState('');
   const [backendError, setBackendError] = useState(false);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -133,31 +123,6 @@ export default function AdminUsersPage() {
   };
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    const tokenData = localStorage.getItem('token');
-    if (!userData || !tokenData) {
-      router.replace('/login');
-      return;
-    }
-    const userObj = JSON.parse(userData);
-    setToken(tokenData);
-    if (userObj.role !== 'admin') {
-      router.replace('/barcode');
-      return;
-    }
-    // Helper fetch with 401 handling
-    const fetchWith401 = async (url) => {
-      const res = await fetch(url, { headers: { Authorization: `Bearer ${tokenData}` } });
-      if (res.status === 401) {
-        setUsers([]);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        router.replace('/login');
-        // throw new Error('Unauthorized');
-      }
-      return res.json();
-    };
-    
     const fetchAll = async () => {
       setLoading(true);
       try {
@@ -165,7 +130,7 @@ export default function AdminUsersPage() {
           let allMatches = null;
           try {
             // Try endpoint that may support searching and return an array
-            const usersSearchRes = await fetchWith401(`${API_URL}/api/users?search=${encodeURIComponent(search)}`);
+            const usersSearchRes = await api.get(`/api/users?search=${encodeURIComponent(search)}`);
             if (Array.isArray(usersSearchRes.data.users)) {
               allMatches = usersSearchRes.data.users;
             }
@@ -175,7 +140,7 @@ export default function AdminUsersPage() {
 
           if (!allMatches) {
             // fallback: fetch all users and filter client-side
-            const allRes = await fetchWith401(`${API_URL}/api/users`);
+            const allRes = await api.get('/api/users');
             if (Array.isArray(allRes.data.users)) {
               allMatches = allRes.data.users.filter(u =>
                 (u.name || '').toLowerCase().includes(search.toLowerCase()) ||
@@ -195,17 +160,15 @@ export default function AdminUsersPage() {
           setHasPrev(page > 1);
         } else {
           const searchQuery = '';
-          const usersRes = await fetchWith401(`${API_URL}/api/users?page=${page}&limit=${limit}${searchQuery}`);
+          const usersRes = await api.get(`/api/users?page=${page}&limit=${limit}${searchQuery}`);
           setUsers(Array.isArray(usersRes.data.users) ? usersRes.data.users : []);
           setTotal(usersRes.data.total || 0);
           setHasNext(usersRes.hasNext || false);
           setHasPrev(usersRes.hasPrev || false);
         }
         // memberships and checkins can still be fetched all at once (or paginated if needed)
-        const [membershipsRes, checkinsRes] = await Promise.all([
-          fetchWith401(`${API_URL}/api/memberships`),
-          fetchWith401(`${API_URL}/api/checkins`),
-        ]);
+        const membershipsRes = await api.get('/api/memberships');
+        const checkinsRes = await api.get('/api/checkins');
         setMemberships(membershipsRes.data.memberships);
         setCheckins(checkinsRes);
       } catch (err) {
@@ -215,7 +178,7 @@ export default function AdminUsersPage() {
       setLoading(false);
     };
     fetchAll();
-  }, [router, page, limit, search]);
+  }, [page, limit, search]);
 
   // Debounce search input to avoid spamming the API
   useEffect(() => {
@@ -304,16 +267,11 @@ export default function AdminUsersPage() {
 
   return (
     <div>
-      <div className="bg-white dark:bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-200 dark:border-gray-600">
-        <nav className="flex" aria-label="Breadcrumb">
-          <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-            <li className="inline-flex items-center">
-              <FaUser className="w-3 h-3 me-2.5 text-gray-700 dark:text-amber-300" /> 
-              <span className="ms-1 text-sm font-medium text-gray-800 dark:text-amber-300 md:ms-2">User Data</span>
-            </li>
-          </ol>
-        </nav>
-      </div>
+      <PageBreadcrumb 
+        items={[
+          { icon: <FaUser className="w-3 h-3" />, label: 'User Data' }
+        ]}
+      />
       
       <div className="m-5 p-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg">
         <div className="mb-4 flex items-center justify-between">

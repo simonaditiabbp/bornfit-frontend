@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaChalkboardTeacher } from 'react-icons/fa';
+import api from '@/utils/fetchClient';
 import { PageBreadcrumb, PageContainerInsert, FormInput, FormActions } from '@/components/admin';
 
 export default function PTBookingCreatePage() {
@@ -32,13 +33,10 @@ export default function PTBookingCreatePage() {
   // Fetch members for dropdown
   useEffect(() => {
     const fetchMembers = async () => {
-      const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-      // const res = await fetch('http://localhost:3002/api/users/filter?role=member&membership=active', {
-      const res = await fetch('http://localhost:3002/api/users/?role=member&membership=active', {
-        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-      });
-      const dataUser = await res.json();
-      if (res.ok) setMembers(dataUser.data.users);
+      try {
+        const dataUser = await api.get('/api/users?role=member&membership=active');
+        setMembers(dataUser.data.users || []);
+      } catch {}
     };
     fetchMembers();
   }, []);
@@ -47,14 +45,13 @@ export default function PTBookingCreatePage() {
   useEffect(() => {
     if (!form.user_member_id) { setPTSessions([]); setForm(f => ({...f, personal_trainer_session_id: ''})); return; }
     const fetchPTSessions = async () => {
-      const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-      const res = await fetch(`http://localhost:3002/api/personaltrainersessions/member/${form.user_member_id}`, {
-        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-      });
-      const dataPTSessions = await res.json();
-      console.log("dataPTSessions: ", dataPTSessions.data.sessions);
-      if (res.ok) setPTSessions(dataPTSessions.data.sessions || []);
-      else setPTSessions([]);
+      try {
+        const dataPTSessions = await api.get(`/api/personaltrainersessions/member/${form.user_member_id}`);
+        console.log("dataPTSessions: ", dataPTSessions.data.sessions);
+        setPTSessions(dataPTSessions.data.sessions || []);
+      } catch {
+        setPTSessions([]);
+      }
     };
     fetchPTSessions();
   }, [form.user_member_id]);
@@ -68,25 +65,15 @@ export default function PTBookingCreatePage() {
       return;
     }
     setLoading(true);
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
     try {
-      const res = await fetch('http://localhost:3002/api/ptsessionbookings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          user_member_id: Number(form.user_member_id),
-          personal_trainer_session_id: Number(form.personal_trainer_session_id),
-          booking_time: formatDateToISO(form.booking_time),
-          status: form.status
-        })
+      await api.post('/api/ptsessionbookings', {
+        user_member_id: Number(form.user_member_id),
+        personal_trainer_session_id: Number(form.personal_trainer_session_id),
+        booking_time: formatDateToISO(form.booking_time),
+        status: form.status
       });
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.message || "Gagal membuat booking");
-      } else {
-        setSuccess("Booking berhasil dibuat!");
-        setTimeout(() => router.push('/admin/pt/booking'), 1200);
-      }
+      setSuccess("Booking berhasil dibuat!");
+      setTimeout(() => router.push('/admin/pt/booking'), 1200);
     } catch (err) {
       setError("Gagal membuat booking");
     }

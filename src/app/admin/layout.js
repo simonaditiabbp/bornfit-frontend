@@ -6,10 +6,12 @@ import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import ThemeToggle from '@/components/ThemeToggle';
+import LoadingSpin from '@/components/admin/LoadingSpin';
 
 export default function AdminLayout({ children }) {
   const [user, setUser] = useState(null);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   // Sidebar Dropdown
   const [membershipDropdownOpen, setMembershipDropdownOpen] = useState(false);
@@ -22,40 +24,6 @@ export default function AdminLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  // useEffect(() => {
-  //   const validateToken = async () => {
-  //     const currentPath = window.location.pathname;
-  //     console.log('Current path:', currentPath);
-  //     if (currentPath.startsWith('/barcode')) {
-  //       // Skip token validation for any path starting with /barcode
-  //       return;
-  //     }
-
-  //     const token = localStorage.getItem('token');
-  //     if (!token) {
-  //       router.replace('/login');
-  //       return;
-  //     }
-
-  //     try {
-//       const response = await fetch('/api/users', {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //         },
-
-  //       if (response.status === 401) {
-  //         localStorage.removeItem('token');
-  //         router.replace('/login');
-  //       }
-  //     } catch (error) {
-  //       console.error('Token validation failed:', error);
-  //       router.replace('/login');
-  //     }
-  //   };
-
-  //   validateToken();
-  // }, [router]);
-
   const handleLogout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
@@ -67,22 +35,45 @@ export default function AdminLayout({ children }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
-    // Ambil email user dari localStorage
+    // Role-based access control for admin layout
     if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token');
       const userStr = localStorage.getItem('user');
-      if (userStr) {
-        try {
-          const userData = JSON.parse(userStr);
-          setUser(userData);
-        } catch (error) {
-          console.error("Gagal parsing data user:", error);
+      
+      if (!token || !userStr) {
+        router.replace('/login');
+        return;
+      }
+      
+      try {
+        const userData = JSON.parse(userStr);
+        
+        // Only admin role can access admin pages
+        if (userData.role !== 'admin') {
+          if (userData.role === 'opscan') {
+            router.replace('/checkin');
+          } else {
+            router.replace('/login');
+          }
+          return;
         }
+        
+        setUser(userData);
+        setIsAuthorized(true);
+      } catch (error) {
+        console.error("Failed to parse user data:", error);
+        router.replace('/login');
       }
     }
-  }, []);
+  }, [router]);
 
   const navTextClass = isCollapsed ? "hidden" : "block";
   const dropdownArrowClass = isCollapsed ? "hidden" : "block";
+
+  // Show loading state while checking authorization
+  if (!isAuthorized) {
+    return <LoadingSpin />
+  }
 
   return (
 
@@ -145,8 +136,8 @@ export default function AdminLayout({ children }) {
                     <li>
                       <a href="" className="block px-4 py-2 text-sm text-gray-700 dark:text-amber-300 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem">Settings</a>
                     </li>
-                    <li className="block px-4 py-2 text-sm text-gray-700 dark:text-amber-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                      <button onClick={handleLogout}>Logout</button>
+                    <li>
+                      <a onClick={handleLogout} className="block px-4 py-2 text-sm text-gray-700 dark:text-amber-300 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem">Logout</a>
                     </li>
                   </ul>
                 </div>
@@ -158,7 +149,7 @@ export default function AdminLayout({ children }) {
       </nav>
     </div>
 
-    <div className="flex pt-16">
+    <div className="flex pt-12">
       <aside 
         id="logo-sidebar"
         className={`fixed top-0 left-0 z-40 h-screen pt-16 transition-all duration-300 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-600 sm:translate-x-0 

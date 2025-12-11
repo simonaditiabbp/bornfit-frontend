@@ -1,11 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import api from '@/utils/fetchClient';
 import BackendErrorFallback from "../../../../../components/BackendErrorFallback";
 import { FaCog } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import LoadingSpin from "@/components/admin/LoadingSpin";
 
 export default function PTPlanEditPage() {
   const [plan, setPlan] = useState(null);
@@ -35,19 +35,14 @@ export default function PTPlanEditPage() {
   useEffect(() => {
     const fetchPlan = async () => {
       setLoading(true);
+      setBackendError(false);
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-        const res = await fetch(`${API_URL}/api/ptsessionplans/${id}`, {
-          headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {})
-          }
-        });
-        const dataPlan = await res.json();
+        const dataPlan = await api.get(`/api/ptsessionplans/${id}`);
         const data = dataPlan.data;
         console.log("dataPlan: ", dataPlan)
         setPlan(data || null);
       } catch (err) {
-        setBackendError(true);
+        if (err.isNetworkError) setBackendError(true);
       }
       setLoading(false);
     };
@@ -69,16 +64,7 @@ export default function PTPlanEditPage() {
     setError("");
     setSuccess("");
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      const res = await fetch(`${API_URL}/api/ptsessionplans/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({ ...form }),
-      });
-      if (!res.ok) throw new Error("Gagal update plan");
+      await api.put(`/api/ptsessionplans/${id}`, { ...form });
       setSuccess("Plan updated successfully!");
       setEdit(false);
     } catch (err) {
@@ -91,13 +77,7 @@ export default function PTPlanEditPage() {
     if (!confirm('Yakin ingin menghapus plan ini?')) return;
     setFormLoading(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      await fetch(`${API_URL}/api/ptsessionplans/${id}`, {
-        method: 'DELETE',
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        }
-      });
+      await api.delete(`/api/ptsessionplans/${id}`);
       router.push('/admin/pt/plans');
     } catch (err) {
       setError("Gagal menghapus plan");
@@ -108,9 +88,8 @@ export default function PTPlanEditPage() {
   if (backendError) {
     return <BackendErrorFallback onRetry={() => { setBackendError(false); window.location.reload(); }} />;
   }
-  if (loading) {
-    return <div className="text-gray-800 dark:text-amber-300 text-center font-medium mt-20">Loading...</div>;
-  }
+  if (loading || !editForm) return <LoadingSpin />;
+
   if (!plan) {
     return <div className="text-red-400 text-center font-medium mt-20">Plan not found</div>;
   }

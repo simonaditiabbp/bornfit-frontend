@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaCog } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import api from '@/utils/fetchClient';
+import LoadingSpin from '@/components/admin/LoadingSpin';
 
 export default function EditMembershipPlanPage() {
   const [form, setForm] = useState({
@@ -42,12 +42,10 @@ export default function EditMembershipPlanPage() {
     : "";
 
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
     const fetchData = async () => {
       setLoading(true);
       try {
-        const resPlan = await fetch(`${API_URL}/api/membership-plans/${id}`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        const planData = await resPlan.json();
+        const planData = await api.get(`/api/membership-plans/${id}`);
         setForm(planData.data || null);
       } catch (err) {
         setError('Gagal fetch data');
@@ -104,31 +102,23 @@ export default function EditMembershipPlanPage() {
           availableUntilIso = availableUntilIso + ':00.000Z';
       }
       
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      await fetch(`${API_URL}/api/membership-plans/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({
-          name: form.name,
-          duration_value: Number(form.duration_value),
-          duration_unit: form.duration_unit,
-          price: Number(form.price),
-          category: form.category,
-          loyalty_point: Number(form.loyalty_point),
-          description: form.description,
-          access_type: form.access_type,
-          class_access_type: form.class_access_type,
-          max_session: form.max_session ? Number(form.max_session) : null,
-          allow_unlimited_session: Boolean(form.allow_unlimited_session),
-          available_from: availableFromIso || null,
-          available_until: availableUntilIso || null,
-          quota_max_sold: form.quota_max_sold ? Number(form.quota_max_sold) : null,
-          always_available: Boolean(form.always_available),
-          level: Number(form.level)
-        })
+      await api.put(`/api/membership-plans/${id}`, {
+        name: form.name,
+        duration_value: Number(form.duration_value),
+        duration_unit: form.duration_unit,
+        price: Number(form.price),
+        category: form.category,
+        loyalty_point: Number(form.loyalty_point),
+        description: form.description,
+        access_type: form.access_type,
+        class_access_type: form.class_access_type,
+        max_session: form.max_session ? Number(form.max_session) : null,
+        allow_unlimited_session: Boolean(form.allow_unlimited_session),
+        available_from: availableFromIso || null,
+        available_until: availableUntilIso || null,
+        quota_max_sold: form.quota_max_sold ? Number(form.quota_max_sold) : null,
+        always_available: Boolean(form.always_available),
+        level: Number(form.level)
       });
       router.push('/admin/membership/plans');
     } catch (err) {
@@ -141,8 +131,7 @@ export default function EditMembershipPlanPage() {
     if (!confirm('Yakin ingin menghapus plan ini?')) return;
     setFormLoading(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      await fetch(`${API_URL}/api/membership-plans/${id}`, { method: 'DELETE', headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+      await api.delete(`/api/membership-plans/${id}`);
       router.push('/admin/membership/plans');
     } catch (err) {
       setError('Gagal menghapus plan');
@@ -150,7 +139,7 @@ export default function EditMembershipPlanPage() {
     setFormLoading(false);
   };
 
-  if (loading || !form) return <div className="text-gray-800 dark:text-amber-300 text-center font-medium mt-20">Loading...</div>;
+  if (loading || !form) return <LoadingSpin />;
 
   return (
     <div>        
