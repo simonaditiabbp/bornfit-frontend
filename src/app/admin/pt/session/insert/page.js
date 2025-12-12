@@ -59,10 +59,10 @@ export default function PTSessionInsertPage() {
         start_date: formatDateToISO(form.start_date),
         status: form.status
       });
-      setSuccess("Session berhasil ditambahkan!");
+      setSuccess("Session successfully added!");
       setTimeout(() => router.push("/admin/pt/session"), 1200);
     } catch (err) {
-      setError("Gagal insert session");
+      setError("Failed to insert session");
     }
     setLoading(false);
   };
@@ -75,8 +75,6 @@ export default function PTSessionInsertPage() {
       ]} />
       <PageContainerInsert>
         <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-amber-300 text-center">Create PT Session</h1>
-        {success && <div className="text-green-400 font-semibold mb-2 text-center">{success}</div>}
-        {error && <div className="text-red-400 font-semibold mb-2 text-center">{error}</div>}
         <div className="space-y-4">
           <FormInput
             label="Plan"
@@ -130,14 +128,14 @@ export default function PTSessionInsertPage() {
             required
           />
         </div>
-        {success && <div className="text-green-400 font-semibold mb-2 text-center">{success}</div>}
-        {error && <div className="text-red-400 font-semibold mb-2 text-center">{error}</div>}
+        {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
+        {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}
         <FormActions
           onSubmit={handleSave}
           onReset={handleReset}
           cancelHref="/admin/pt/session"
           submitText="Create PT Session"
-          isLoading={loading}
+          isSubmitting={loading}
         />
       </PageContainerInsert>
     </div>

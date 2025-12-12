@@ -54,12 +54,12 @@ export default function InsertAttendancePage() {
         let hasMore = true;
 
         while (hasMore) {
-          const data = await api.get(`/api/classes/paginated?page=${currentPage}&limit=100&scheduleType=all`);
+          const data = await api.get(`/api/classes/paginated?page=${currentPage}&limit=1000&scheduleType=all`);
           
           if (data.data?.classes) {
             allClasses = [...allClasses, ...data.data.classes];
             // Check if there are more pages
-            hasMore = data.data.classes.length === 100;
+            hasMore = data.data.classes.length === 1000;
             currentPage++;
           } else {
             hasMore = false;
@@ -68,7 +68,7 @@ export default function InsertAttendancePage() {
         
         // Filter only non-recurring patterns and future/today classes
         const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        today.setHours(7, 0, 0, 0); // fix bug -> Set to 7 AM WIB
         const filteredClasses = allClasses.filter(cls => {
           if (cls.is_recurring && !cls.parent_class_id) return false; // Skip recurring patterns
           if (cls.class_date) {
@@ -95,7 +95,7 @@ export default function InsertAttendancePage() {
         let hasMore = true;
 
         while (hasMore) {
-          const data = await api.get(`/api/users?page=${currentPage}&limit=100&role=member`);
+          const data = await api.get(`/api/users?page=${currentPage}&limit=1000&role=member`);
           
           if (data.data?.users) {
             allMembers = [...allMembers, ...data.data.users];
@@ -107,11 +107,11 @@ export default function InsertAttendancePage() {
         }
         
         // Fetch memberships to filter out Silver plan members
-        const membershipData = await api.get('/api/memberships');
+        const membershipData = await api.get('/api/memberships?limit=1000');
         const memberships = membershipData.data?.memberships || [];
         
         // Fetch membership plans to get plan names
-        const plansData = await api.get('/api/membership-plans');
+        const plansData = await api.get('/api/membership-plans?limit=1000');
         const plans = plansData.data?.membershipPlans || [];
 
         // Filter members - exclude those with Silver plan
@@ -240,17 +240,15 @@ export default function InsertAttendancePage() {
       const selectedClass = classes.find(c => c.id == form.class_id);
       if (selectedClass) {
         // Fetch class attendance count for the specific class
-        const attendanceData = await api.get('/api/classattendances');
-        console.log("attendanceData: ", attendanceData)
+        const attendanceData = await api.get('/api/classattendances?limit=1000');
         // Filter attendance untuk class yang dipilih saja dan exclude yang Cancelled
         const currentAttendance = attendanceData.data?.attendances?.filter(
           a => a.class_id === form.class_id && a.status !== 'Cancelled'
         ).length || 0;
         
         // Fetch event plan to get max_visitor
-        const planData = await api.get(`/api/eventplans/${selectedClass.event_plan_id}`);tor || 0;
-
-        console.log("maxVisitor: ", maxVisitor, "currentAttendance:", currentAttendance);
+        const planData = await api.get(`/api/eventplans/${selectedClass.event_plan_id}`);
+        const maxVisitor = planData.data?.max_visitor || 0;
 
         if (maxVisitor > 0 && currentAttendance >= maxVisitor) {
           setError(`Class sudah penuh! Kapasitas maksimal: ${maxVisitor} orang, Saat ini: ${currentAttendance} orang`);
@@ -275,6 +273,7 @@ export default function InsertAttendancePage() {
       
       router.push("/admin/class/attendance");
     } catch (err) {
+      console.log("Error submitting attendance:", err);
       setError(err.message || "Gagal menyimpan attendance");
     }
     setLoading(false);
@@ -408,8 +407,8 @@ export default function InsertAttendancePage() {
                       className="p-3 hover:bg-gray-600 cursor-pointer border-b border-gray-600 last:border-b-0"
                       onClick={() => handleSelectMember(m)}
                     >
-                      <div className="text-gray-200 font-medium">{m.name || `Member #${m.id}`}</div>
-                      {m.email && <div className="text-sm text-gray-400">{m.email}</div>}
+                      <div className={`${theme === 'light' ? 'text-gray-800' : 'text-gray-200'} font-medium`}>{m.name || `Member #${m.id}`}</div>
+                      {m.email && <div className={`${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} text-sm`}>{m.email}</div>}
                     </div>
                   ))
                 ) : (
@@ -432,9 +431,9 @@ export default function InsertAttendancePage() {
             value={form.status}
             onChange={handleChange}
             options={[
-              { value: 'Booked', label: 'Booked' },
-              { value: 'Checked-in', label: 'Checked-in' },
-              { value: 'Cancelled', label: 'Cancelled' }
+              { value: 'booked', label: 'Booked' },
+              { value: 'checked_in', label: 'Checked-in' },
+              { value: 'cancelled', label: 'Cancelled' }
             ]}
           />
           <FormActions

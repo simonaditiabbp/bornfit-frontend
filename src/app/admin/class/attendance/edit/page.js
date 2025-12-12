@@ -3,8 +3,9 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FaDumbbell, FaTimes } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import LoadingSpin from "@/components/admin/LoadingSpin";
+import BackendErrorFallback from '@/components/BackendErrorFallback';
+import api from '@/utils/fetchClient';
 
 export default function EditAttendancePage() {
   const [form, setForm] = useState(null);
@@ -13,6 +14,7 @@ export default function EditAttendancePage() {
   const [initialForm, setInitialForm] = useState(null);
   const [loading, setLoading] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
+  const [backendError, setBackendError] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [edit, setEdit] = useState(false);
@@ -30,11 +32,9 @@ export default function EditAttendancePage() {
   useEffect(() => {
     const fetchAttendance = async () => {
       setLoading(true);
-      try {        
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-        const res = await fetch(`${API_URL}/api/classattendances/${id}`, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-        if (!res.ok) throw new Error('Gagal fetch attendance');
-        const dataClasses = await res.json();
+      setBackendError(false);
+      try {
+        const dataClasses = await api.get(`/api/classattendances/${id}`);
         const data = dataClasses.data;
         const attForm = {
           class_id: data.class_id || "",
@@ -47,25 +47,21 @@ export default function EditAttendancePage() {
         setForm(attForm);
         setInitialForm(attForm);
       } catch (err) {
-        setError("Gagal fetch attendance");
+        if (err.isNetworkError) setBackendError(true);
       }
       setLoading(false);
     };
     
     const fetchAllClasses = async () => {
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
         let allClasses = [];
         let currentPage = 1;
         let hasMore = true;
 
         while (hasMore) {
-          const res = await fetch(`${API_URL}/api/classes/paginated?page=${currentPage}&limit=100&scheduleType=all`, {
-            headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-          });
-          const data = await res.json();
+          const data = await api.get(`/api/classes/paginated?page=${currentPage}&limit=100&scheduleType=all`);
           
-          if (res.ok && data.data?.classes) {
+          if (data.data?.classes) {
             allClasses = [...allClasses, ...data.data.classes];
             hasMore = data.data.classes.length === 100;
             currentPage++;
@@ -80,31 +76,28 @@ export default function EditAttendancePage() {
           if (cls.is_recurring && !cls.parent_class_id) return false;
           if (cls.class_date) {
             const classDate = new Date(cls.class_date);
-            return classDate >= today;
+            return classDate;// >= today;
           }
           return true;
         });
         
+        console.log("Filtered Classes:", filteredClasses);
         setClasses(filteredClasses);
       } catch (err) {
-        console.error('Error fetching classes:', err);
+        // Silently fail - dropdown will be empty but form still usable
       }
     };
 
     const fetchAllMembers = async () => {
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
         let allMembers = [];
         let currentPage = 1;
         let hasMore = true;
 
         while (hasMore) {
-          const res = await fetch(`${API_URL}/api/users?page=${currentPage}&limit=100&role=member`, {
-            headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-          });
-          const data = await res.json();
+          const data = await api.get(`/api/users?page=${currentPage}&limit=100&role=member`);
           
-          if (res.ok && data.data?.users) {
+          if (data.data?.users) {
             allMembers = [...allMembers, ...data.data.users];
             hasMore = data.data.users.length === 100;
             currentPage++;
@@ -114,44 +107,26 @@ export default function EditAttendancePage() {
         }
         
         // Fetch memberships to filter out Silver plan members
-        const membershipRes = await fetch(`${API_URL}/api/memberships`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
+        const membershipData = await api.get('/api/memberships?limit=10000');
+        const memberships = membershipData.data?.memberships || [];
+        
+        // Fetch membership plans to get plan names
+        const plansData = await api.get('/api/membership-plans?limit=1000');
+        const plans = plansData.data?.membershipPlans || [];
+        
+        const filteredMembers = allMembers.filter(member => {
+          const membership = memberships.find(m => m.user_id === member.id);
+          if (!membership) return false; // Tidak pernah punya membership
+          
+          const plan = plans.find(p => p.id === membership.membership_plan_id);
+          if (!plan) return false;
+          
+          return plan.name.toLowerCase();
         });
         
-        if (membershipRes.ok) {
-          const membershipData = await membershipRes.json();
-          const memberships = membershipData.data?.memberships || [];
-          
-          // Fetch membership plans to get plan names
-          const plansRes = await fetch(`${API_URL}/api/membership-plans`, {
-            headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-          });
-          
-          if (plansRes.ok) {
-            const plansData = await plansRes.json();
-            const plans = plansData.data?.membershipPlans || [];
-            
-            // Filter members - exclude those with Silver plan
-            const filteredMembers = allMembers.filter(member => {
-              const membership = memberships.find(m => m.user_id === member.id && m.is_active);
-              if (!membership) return false; // No active membership
-              
-              const plan = plans.find(p => p.id === membership.membership_plan_id);
-              if (!plan) return false;
-              
-              // Exclude Silver plan (case insensitive)
-              return plan.name.toLowerCase() !== 'silver';
-            });
-            
-            setMembers(filteredMembers);
-          } else {
-            setMembers(allMembers);
-          }
-        } else {
-          setMembers(allMembers);
-        }
+        setMembers(filteredMembers);
       } catch (err) {
-        console.error('Error fetching members:', err);
+        // Silently fail - dropdown will be empty but form still usable
       }
     };
 
@@ -178,24 +153,32 @@ export default function EditAttendancePage() {
 
   // Update search when form data loaded and when edit mode changes
   useEffect(() => {
-    if (form && classes.length > 0) {
+    if (form && classes.length > 0 && form.class_id) {
       const selectedClass = classes.find(c => c.id == form.class_id);
       if (selectedClass) {
-        setClassSearch(formatClassDisplay(selectedClass));
+        const displayText = formatClassDisplay(selectedClass);
+        // Only update if different to avoid infinite loop
+        if (classSearch !== displayText) {
+          setClassSearch(displayText);
+        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form?.class_id, classes, edit]);
+  }, [form?.class_id, classes]);
 
   useEffect(() => {
-    if (form && members.length > 0) {
+    if (form && members.length > 0 && form.member_id) {
       const selectedMember = members.find(m => m.id == form.member_id);
       if (selectedMember) {
-        setMemberSearch(selectedMember.name || selectedMember.email || `Member #${selectedMember.id}`);
+        const displayText = selectedMember.name || selectedMember.email || `Member #${selectedMember.id}`;
+        // Only update if different to avoid infinite loop
+        if (memberSearch !== displayText) {
+          setMemberSearch(displayText);
+        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form?.member_id, members, edit]);
+  }, [form?.member_id, members]);
 
   function formatClassDisplay(cls) {
     let display = cls.name || `Class #${cls.id}`;
@@ -275,7 +258,7 @@ export default function EditAttendancePage() {
     setError("");
     setForm(initialForm);
     // Reset search to initial values
-    if (initialForm) {
+    if (initialForm && classes.length > 0 && members.length > 0) {
       const selectedClass = classes.find(c => c.id == initialForm.class_id);
       const selectedMember = members.find(m => m.id == initialForm.member_id);
       if (selectedClass) setClassSearch(formatClassDisplay(selectedClass));
@@ -288,39 +271,25 @@ export default function EditAttendancePage() {
     setError("");
     setSuccess("");
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      
       // Check class capacity before submitting (only if class_id changed)
       const selectedClass = classes.find(c => c.id == form.class_id);
       if (selectedClass && form.class_id !== initialForm.class_id) {
         // Fetch class attendance count for the specific class
-        const attendanceRes = await fetch(`${API_URL}/api/classattendances`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-        });
+        const attendanceData = await api.get('/api/classattendances');
+        // Filter attendance untuk class yang dipilih saja, exclude yang Cancelled, dan exclude current attendance
+        const currentAttendance = attendanceData.data?.attendances?.filter(
+          a => a.class_id === form.class_id && a.status !== 'Cancelled' && a.id !== parseInt(id)
+        ).length || 0;
         
-        if (attendanceRes.ok) {
-          const attendanceData = await attendanceRes.json();
-          // Filter attendance untuk class yang dipilih saja, exclude yang Cancelled, dan exclude current attendance
-          const currentAttendance = attendanceData.data?.attendances?.filter(
-            a => a.class_id === form.class_id && a.status !== 'Cancelled' && a.id !== parseInt(id)
-          ).length || 0;
-          
-          // Fetch event plan to get max_visitor
-          const planRes = await fetch(`${API_URL}/api/eventplans/${selectedClass.event_plan_id}`, {
-            headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-          });
-          
-          if (planRes.ok) {
-            const planData = await planRes.json();
-            const maxVisitor = planData.data?.max_visitor || 0;
+        // Fetch event plan to get max_visitor
+        const planData = await api.get(`/api/eventplans/${selectedClass.event_plan_id}`);
+        const maxVisitor = planData.data?.max_visitor || 0;
 
-            if (maxVisitor > 0 && currentAttendance >= maxVisitor) {
-              setError(`Class sudah penuh! Kapasitas maksimal: ${maxVisitor} orang, Saat ini: ${currentAttendance} orang`);
-              setFormLoading(false);
-              alert(`Class sudah penuh!\n\nKapasitas maksimal: ${maxVisitor} orang\nJumlah peserta saat ini: ${currentAttendance} orang\n\nSilakan pilih class lain atau hubungi admin untuk menambah kapasitas.`);
-              return;
-            }
-          }
+        if (maxVisitor > 0 && currentAttendance >= maxVisitor) {
+          setError(`Class sudah penuh! Kapasitas maksimal: ${maxVisitor} orang, Saat ini: ${currentAttendance} orang`);
+          setFormLoading(false);
+          alert(`Class sudah penuh!\n\nKapasitas maksimal: ${maxVisitor} orang\nJumlah peserta saat ini: ${currentAttendance} orang\n\nSilakan pilih class lain atau hubungi admin untuk menambah kapasitas.`);
+          return;
         }
       }
       
@@ -328,20 +297,13 @@ export default function EditAttendancePage() {
       if (checkedInAtIso && checkedInAtIso.length === 16) {
         checkedInAtIso = checkedInAtIso + ':00.000Z';
       }
-      await fetch(`${API_URL}/api/classattendances/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          class_id: Number(form.class_id),
-          member_id: Number(form.member_id),
-          checked_in_at: checkedInAtIso,
-          status: form.status,
-          created_by: form.created_by,
-          updated_by: form.updated_by
-        }),
+      await api.put(`/api/classattendances/${id}`, {
+        class_id: Number(form.class_id),
+        member_id: Number(form.member_id),
+        checked_in_at: checkedInAtIso,
+        status: form.status,
+        created_by: form.created_by,
+        updated_by: form.updated_by
       });
       setSuccess("Attendance updated");
       setEdit(false);
@@ -357,8 +319,7 @@ export default function EditAttendancePage() {
     if (!confirm('Yakin ingin menghapus attendance ini?')) return;
     setFormLoading(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      await fetch(`${API_URL}/api/classattendances/${id}`, { method: 'DELETE', headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+      await api.delete(`/api/classattendances/${id}`);
       router.push('/admin/class/attendance');
     } catch (err) {
       setError('Gagal menghapus attendance');
@@ -366,7 +327,11 @@ export default function EditAttendancePage() {
     setFormLoading(false);
   };
 
-  if (loading || !form) return <div className="text-gray-800 dark:text-amber-300 text-center font-medium mt-20">Loading...</div>;
+  if (backendError) {
+    return <BackendErrorFallback onRetry={() => { setBackendError(false); window.location.reload(); }} />;
+  }
+  
+  if (loading || !form) return <LoadingSpin />;
 
   return (
     <div>
@@ -533,9 +498,9 @@ export default function EditAttendancePage() {
             onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
             disabled={!edit}
             options={[
-              { value: 'Booked', label: 'Booked' },
-              { value: 'Checked-in', label: 'Checked-in' },
-              { value: 'Cancelled', label: 'Cancelled' }
+              { value: 'booked', label: 'Booked' },
+              { value: 'checked_in', label: 'Checked-in' },
+              { value: 'cancelled', label: 'Cancelled' }
             ]}
           />
           <div className="flex gap-3 mt-8 justify-start">

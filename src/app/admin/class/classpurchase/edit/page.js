@@ -3,8 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaDumbbell } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainerInsert, FormActions, FormInput, ActionButton } from '@/components/admin';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import api from '@/utils/fetchClient';
 
 export default function ClassPurchaseEditPage() {
   const router = useRouter();
@@ -24,16 +23,10 @@ export default function ClassPurchaseEditPage() {
   const fetchUsers = async () => {
     setFetchingData(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      const res = await fetch(`${API_URL}/api/users`, {
-        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setUsers(data.data?.users || []);
-      }
+      const data = await api.get('/api/users?limit=10000');
+      setUsers(data.data?.users || []);
     } catch (err) {
-      console.error('Error fetching users:', err);
+      // Silently fail - dropdown will be empty
     }
     setFetchingData(false);
   };
@@ -42,16 +35,10 @@ export default function ClassPurchaseEditPage() {
   const fetchClasses = async () => {
     setFetchingData(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      const res = await fetch(`${API_URL}/api/classes`, {
-        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setClasses(data.data?.classes || []);
-      }
+      const data = await api.get('/api/classes?limit=10000');
+      setClasses(data.data?.classes || []);
     } catch (err) {
-      console.error('Error fetching classes:', err);
+      // Silently fail - dropdown will be empty
     }
     setFetchingData(false);
   };
@@ -63,36 +50,23 @@ export default function ClassPurchaseEditPage() {
   }, []);
 
   useEffect(() => {
-    console.log("MASUK")
-    console.log("PARAMS: ", params)
     if (!id) return;
-    console.log("MASUK 2")
     const fetchPurchase = async () => {
-      console.log("MASUK 3")
       setLoading(true);
       setError('');
       try {
-        console.log("MASUK 4")
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-        const res = await fetch(`${API_URL}/api/classpurchases/${id}`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-        });
-        const data = await res.json();
-        if (res.ok && data.data) {
-          setUserId(data.data.user_id);
-          setClassId(data.data.class_id);
-          setPrice(data.data.price);
-          // setPurchaseDate(data.data.purchase_date ? data.data.purchase_date.slice(0, 16) : '');
-        } else {
-          setError(data.message || 'Gagal mengambil data');
+        const data = await api.get(`/api/classpurchases/${id}`);
+        if (data.data) {
+          setUserId(String(data.data.user_id));
+          setClassId(String(data.data.class_id));
+          setPrice(String(data.data.price));
         }
       } catch (err) {
-        setError('Gagal mengambil data');
+        setError(err.data?.message || 'Gagal mengambil data');
       }
       setLoading(false);
     };
     fetchPurchase();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const handleSubmit = async (e) => {
@@ -100,28 +74,14 @@ export default function ClassPurchaseEditPage() {
     setLoading(true);
     setError('');
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      const res = await fetch(`${API_URL}/api/classpurchases/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({
-          user_id: parseInt(userId, 10),
-          class_id: parseInt(classId, 10),
-          price: parseInt(price, 10),
-          // ...(purchaseDate ? { purchase_date: purchaseDate } : {})
-        })
+      await api.put(`/api/classpurchases/${id}`, {
+        user_id: parseInt(userId, 10),
+        class_id: parseInt(classId, 10),
+        price: parseInt(price, 10),
       });
-      if (res.ok) {
-        router.push('/admin/class/classpurchase');
-      } else {
-        const data = await res.json();
-        setError(data.message || 'Gagal mengedit purchase');
-      }
+      router.push('/admin/class/classpurchase');
     } catch (err) {
-      setError('Gagal mengedit purchase');
+      setError(err.data?.message || 'Gagal mengedit purchase');
     }
     setLoading(false);
   };

@@ -1,9 +1,24 @@
 import Link from 'next/link';
 import { StyledDataTable } from '@/components/admin';
 
-export default function PTSessionDataTable({ data, plans, members, trainers }) {
+export default function PTSessionDataTable({ 
+  data, 
+  plans, 
+  members, 
+  trainers,
+  pagination = false,
+  paginationServer = false,
+  paginationTotalRows = 0,
+  paginationPerPage = 10,
+  currentPage = 1,
+  onChangePage = () => {},
+  onChangeRowsPerPage = () => {},
+  paginationRowsPerPageOptions = [10, 25, 50]
+}) {
+  const startNo = (currentPage - 1) * paginationPerPage;
+  
   const columns = [
-    { name: 'No', cell: (row, i) => i + 1, width: '70px', center: "true" },
+    { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px', center: "true" },
     // { name: 'Name', selector: row => row.name, sortable: true },
     { name: 'Plan', selector: row => {
       const plan = plans.find(p => p.id === row.pt_session_plan_id);
@@ -76,7 +91,14 @@ export default function PTSessionDataTable({ data, plans, members, trainers }) {
     <StyledDataTable
       columns={columns}
       data={data}
-      pagination
+      pagination={pagination}
+      paginationServer={paginationServer}
+      paginationTotalRows={paginationTotalRows}
+      paginationPerPage={paginationPerPage}
+      paginationDefaultPage={currentPage}
+      onChangePage={onChangePage}
+      onChangeRowsPerPage={onChangeRowsPerPage}
+      paginationRowsPerPageOptions={paginationRowsPerPageOptions}
     />
   );
 }

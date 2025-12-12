@@ -4,10 +4,22 @@ import Link from "next/link";
 import { StyledDataTable } from '@/components/admin';
 import { useTheme } from '@/contexts/ThemeContext';
 
-export default function MembershipPlansDataTable({ data }) {
+export default function MembershipPlansDataTable({ 
+  data,
+  pagination = false,
+  paginationServer = false,
+  paginationTotalRows = 0,
+  paginationPerPage = 10,
+  currentPage = 1,
+  onChangePage = () => {},
+  onChangeRowsPerPage = () => {},
+  paginationRowsPerPageOptions = [10, 25, 50],
+}) {
   const { theme } = useTheme();
+  const startNo = (currentPage - 1) * paginationPerPage;
+  
   const columns = [
-    { name: 'No', cell: (row, i) => i + 1, width: '70px', center: "true" },
+    { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px', center: "true" },
     { 
       name: 'Name', 
       selector: row => row.name, 
@@ -34,7 +46,14 @@ export default function MembershipPlansDataTable({ data }) {
     <StyledDataTable
       columns={columns}
       data={data}
-      pagination
+      pagination={pagination}
+      paginationServer={paginationServer}
+      paginationTotalRows={paginationTotalRows}
+      paginationPerPage={paginationPerPage}
+      paginationDefaultPage={currentPage}
+      onChangePage={onChangePage}
+      onChangeRowsPerPage={onChangeRowsPerPage}
+      paginationRowsPerPageOptions={paginationRowsPerPageOptions}
     />
   );
 }

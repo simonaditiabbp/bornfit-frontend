@@ -18,43 +18,19 @@ export default function PTBookingPage() {
   useEffect(() => {
     const fetchAll = async () => {
       setLoading(true);
+      setBackendError(false);
       try {
+        const params = new URLSearchParams({
+          page: page.toString(),
+          limit: limit.toString(),
+        });
         if (search && search.trim() !== '') {
-          let allMatches = null;
-          try {
-            const bookingData = await api.get(`/api/ptsessionbookings?search=${encodeURIComponent(search)}`);
-            const arr = bookingData.data?.bookings || [];
-            if (Array.isArray(arr)) {
-              allMatches = arr;
-            }
-          } catch (e) {
-            // ignore and fallback
-          }
-
-          if (!allMatches) {
-            const bookingData = await api.get('/api/ptsessionbookings');
-            const arr = bookingData.data?.bookings || [];
-            if (Array.isArray(arr)) {
-              allMatches = arr.filter(b =>
-                (b.user_member?.name || '').toLowerCase().includes(search.toLowerCase()) ||
-                (b.pt_session_plan?.name || '').toLowerCase().includes(search.toLowerCase()) ||
-                (b.status || '').toLowerCase().includes(search.toLowerCase())
-              );
-            } else {
-              allMatches = [];
-            }
-          }
-
-          const start = (page - 1) * limit;
-          const pageSlice = allMatches.slice(start, start + limit);
-          setBookings(pageSlice);
-          setTotal(allMatches.length);
-        } else {
-          const bookingData = await api.get(`/api/ptsessionbookings/paginated?page=${page}&limit=${limit}`);
-          const result = bookingData.data || {};
-          setBookings(result.bookings || []);
-          setTotal(result.total || 0);
+          params.append('search', search);
         }
+        const bookingData = await api.get(`/api/ptsessionbookings/paginated?${params.toString()}`);
+        const result = bookingData.data || {};
+        setBookings(result.bookings || []);
+        setTotal(result.total || 0);
       } catch (err) {
         setBookings([]);
         if (err.isNetworkError) {
@@ -65,6 +41,19 @@ export default function PTBookingPage() {
     };
     fetchAll();
   }, [page, limit, search]);
+
+  const handleChangePage = (newPage) => {
+    const pageNum = typeof newPage === 'number' ? newPage : (Array.isArray(newPage) ? newPage[0] : Number(newPage));
+    if (!pageNum || pageNum === page) return;
+    setPage(pageNum);
+  };
+
+  const handleChangeRowsPerPage = (newPerPage, currentPageArg) => {
+    const perPageNum = typeof newPerPage === 'number' ? newPerPage : (Array.isArray(newPerPage) ? newPerPage[0] : Number(newPerPage));
+    if (!perPageNum || perPageNum === limit) return;
+    setLimit(perPageNum);
+    if (page !== 1) setPage(1);
+  };
 
   // Debounce search input to avoid spamming the API
   useEffect(() => {
@@ -95,7 +84,15 @@ export default function PTBookingPage() {
           <LoadingText />
         ) : (
           <PTBookingDataTable
-            data={bookings}            
+            data={bookings}
+            pagination
+            paginationServer
+            paginationTotalRows={total}
+            paginationPerPage={limit}
+            currentPage={page}
+            onChangePage={handleChangePage}
+            onChangeRowsPerPage={handleChangeRowsPerPage}
+            paginationRowsPerPageOptions={[10, 25, 50]}
           />
         )}
       </PageContainer>

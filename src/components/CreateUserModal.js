@@ -200,10 +200,22 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
       setSuccess(successMessage);
       if (onRefresh) onRefresh(); // Refresh data di parent
       
-      // Delay sedikit sebelum menutup modal
-      setTimeout(() => {
-        handleCloseInternal();
-      }, 2000);
+      // Redirect based on role
+      if (form.role === "member" && data.data.id) {
+        console.log("Masukk ke member redirect");
+        // Member: redirect to membership insert
+        setTimeout(() => {
+          handleCloseInternal();
+          router.push(`/admin/membership/session/insert?member_id=${data.data.id}`);
+        }, 1200);
+      } else {
+        // Non-member: redirect to users list
+        setTimeout(() => {
+          handleCloseInternal();
+          router.push("/admin/users");
+          window.location.reload();
+        }, 1200);
+      }
 
     } catch (err) {
       if (err.message === "Email is already registered") {
@@ -313,7 +325,7 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
                 <option value="member">Member</option>
                 <option value="opscan">Opscan</option>
                 <option value="admin">Admin</option>
-                <option value="trainner">Trainner</option>
+                <option value="trainer">Trainer</option>
                 <option value="instructor">Instructor</option>
               </select>
             </div>

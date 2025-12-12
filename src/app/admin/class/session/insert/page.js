@@ -187,9 +187,9 @@ export default function ClassSessionInsertPage() {
               id="is_recurring"
               checked={form.is_recurring}
               onChange={e => setForm({ ...form, is_recurring: e.target.checked })}
-              className="w-5 h-5 accent-amber-400"
+              className="w-5 h-5 accent-gray-500 dark:accent-amber-400"
             />
-            <label htmlFor="is_recurring" className="text-gray-200 font-semibold">
+            <label htmlFor="is_recurring" className="text-gray-560 dark:text-gray-200 font-semibold">
               Recurring Schedule (Repeat Weekly)
             </label>
           </div>
@@ -237,7 +237,7 @@ export default function ClassSessionInsertPage() {
               </div>
 
               <div>
-                <label className="block mb-2 text-gray-200">Repeat On (Days) *</label>
+                <label className="block mb-2 text-gray-600 dark:text-gray-200">Repeat On (Days) *</label>
                 <div className="grid grid-cols-4 gap-2">
                   {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => (
                     <button
@@ -251,8 +251,8 @@ export default function ClassSessionInsertPage() {
                       }}
                       className={`px-3 py-2 rounded font-semibold transition ${
                         form.recurrence_days.includes(day)
-                          ? 'bg-amber-600 text-white'
-                          : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                          ? 'bg-gray-600 text-white dark:bg-amber-600 dark:text-white'
+                          : 'bg-gray-200 text-gray-800 hover:bg-gray-500 hover:text-white dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500'
                       }`}
                     >
                       {day.slice(0, 3).toUpperCase()}
@@ -277,11 +277,11 @@ export default function ClassSessionInsertPage() {
                     onChange={e => setForm({ ...form, recurrence_end_time: e.target.value })}
                     required
                   />
-                  <p className="text-xs text-gray-400 mt-1">Based on Event Plan duration</p>
+                  <p className="text-gray-800 dark:text-gray-400 text-xs mt-1">Based on Event Plan duration</p>
                 </div>
               </div>
 
-              <div className="bg-amber-900/30 border border-amber-700 rounded p-3 text-sm text-amber-200">
+              <div className="text-white bg-gray-900/70 border-gray-700 dark:text-amber-200 dark:bg-amber-900/30 dark:border-amber-700 border rounded p-3 text-sm">
                 <strong>Preview:</strong> Class akan dibuat otomatis setiap{' '}
                 {form.recurrence_days.length > 0 ? form.recurrence_days.join(', ') : '(pilih hari)'}{' '}
                 pada jam {form.recurrence_start_time || '(pilih waktu)'} - {form.recurrence_end_time || '(pilih waktu)'}{' '}

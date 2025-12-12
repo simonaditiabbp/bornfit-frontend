@@ -16,14 +16,43 @@ export default function ClassPurchaseListPage() {
   const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const router = useRouter();
+
+  const handleChangePage = (newPage) => {
+    const pageNum = typeof newPage === 'number' ? newPage : (Array.isArray(newPage) ? newPage[0] : Number(newPage));
+    if (!pageNum || pageNum === page) return;
+    setPage(pageNum);
+  };
+
+  const handleChangeRowsPerPage = (newPerPage, currentPageArg) => {
+    const perPageNum = typeof newPerPage === 'number' ? newPerPage : (Array.isArray(newPerPage) ? newPerPage[0] : Number(newPerPage));
+    if (!perPageNum || perPageNum === limit) return;
+    setLimit(perPageNum);
+    if (page !== 1) setPage(1);
+  };
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearch(searchInput);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchInput]);
 
   useEffect(() => {
     const fetchPurchases = async () => {
       setLoading(true);
       setError('');
       try {
-        const data = await api.get(`/api/classpurchases?limit=${limit}&page=${page}&search=${encodeURIComponent(search)}`);
+        const params = new URLSearchParams({
+          page: page.toString(),
+          limit: limit.toString(),
+        });
+        if (search && search.trim() !== '') {
+          params.append('search', search);
+        }
+        const data = await api.get(`/api/classpurchases?${params.toString()}`);
         if (Array.isArray(data.data?.purchases)) {
           setPurchases(data.data.purchases);
           setTotal(data.data.total || 0);
@@ -53,8 +82,8 @@ export default function ClassPurchaseListPage() {
       <PageContainer>
         <PageHeader
           searchPlaceholder="Search class/user..."
-          searchValue={search}
-          onSearchChange={(e) => setSearch(e.target.value)}
+          searchValue={searchInput}
+          onSearchChange={(e) => setSearchInput(e.target.value)}
           actionHref="/admin/class/classpurchase/insert"
           actionIcon={<FaPlus />}
           actionText="Add Purchase"
@@ -64,6 +93,14 @@ export default function ClassPurchaseListPage() {
         ) : (
           <ClassPurchaseDataTable
             data={purchases}
+            pagination
+            paginationServer
+            paginationTotalRows={total}
+            paginationPerPage={limit}
+            currentPage={page}
+            onChangePage={handleChangePage}
+            onChangeRowsPerPage={handleChangeRowsPerPage}
+            paginationRowsPerPageOptions={[10, 25, 50]}
           />
         )}
       </PageContainer>

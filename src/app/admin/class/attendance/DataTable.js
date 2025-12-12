@@ -1,9 +1,21 @@
 import Link from 'next/link';
 import { StyledDataTable } from '@/components/admin';
 
-export default function ClassAttendanceDataTable({ data }) {
+export default function ClassAttendanceDataTable({ 
+  data,
+  pagination = false,
+  paginationServer = false,
+  paginationTotalRows = 0,
+  paginationPerPage = 10,
+  currentPage = 1,
+  onChangePage = () => {},
+  onChangeRowsPerPage = () => {},
+  paginationRowsPerPageOptions = [10, 25, 50]
+}) {
+  const startNo = (currentPage - 1) * paginationPerPage;
+
   const columns = [
-    { name: 'No', cell: (row, i) => i + 1, width: '70px', center: "true" },
+    { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px', center: "true" },
     { name: 'Member', selector: row => row.member?.name || '', sortable: true },
     { name: 'Class', selector: row => `${row.class.event_plan.name} - ${row.class.instructor.name}` || '', sortable: true },
     { name: 'Checked-in Time', selector: row => row.checked_in_at ? new Date(new Date(row.checked_in_at).getTime() - 7 * 60 * 60 * 1000).toLocaleString('en-GB', { hour12: false }) : '', sortable: true },
@@ -19,7 +31,14 @@ export default function ClassAttendanceDataTable({ data }) {
     <StyledDataTable
       columns={columns}
       data={data}
-      pagination
+      pagination={pagination}
+      paginationServer={paginationServer}
+      paginationTotalRows={paginationTotalRows}
+      paginationPerPage={paginationPerPage}
+      paginationDefaultPage={currentPage}
+      onChangePage={onChangePage}
+      onChangeRowsPerPage={onChangeRowsPerPage}
+      paginationRowsPerPageOptions={paginationRowsPerPageOptions}
     />
   );
 }

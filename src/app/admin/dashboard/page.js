@@ -47,31 +47,34 @@ export default function AdminDashboardPage() {
       setLoading(true);
       try {
         // Use FetchClient with automatic token injection & 401 redirect
+        // Fetch ALL data for dashboard (limit set to 9999)
         const [usersRes, membershipsRes, checkinsRes, ptsessionsRes, classesRes, ptBookingsRes] = await Promise.all([
-          api.get('/api/users'),
-          api.get('/api/memberships'),
-          api.get('/api/checkins'),
-          api.get('/api/personaltrainersessions'),
-          api.get('/api/classes/paginated?page=1&limit=10'),
-          api.get('/api/ptsessionbookings'),
+          api.get('/api/users?limit=9999'),
+          api.get('/api/memberships?limit=9999'),
+          api.get('/api/checkins?limit=9999'),
+          api.get('/api/personaltrainersessions?limit=9999'),
+          api.get('/api/classes/paginated?page=1&limit=9999'),
+          api.get('/api/ptsessionbookings?limit=9999'),
         ]);
-        // console.log("usersRes:", usersRes);
-        // const totalUsers = usersRes.length;
-        const totalUsers = usersRes.data.total || 0;
-        // Total member = user yang punya membership (user_id unik di memberships)
-        const memberUserIds = new Set(membershipsRes.data.memberships.map(m => m.user_id));
-        const totalMember = memberUserIds.size;
-        const activeMembership = membershipsRes.data.memberships.filter(m => m.is_active && m.status.toLowerCase() == "active").length;
-        const freezeMembership = membershipsRes.data.memberships.filter(m => m.is_active && m.status.toLowerCase() == "frozen").length;
-        const inactiveMembership = membershipsRes.data.memberships.filter(m => !m.is_active).length;
-        const totalPTSessions = ptsessionsRes.data?.sessions?.length || 0;
-        const totalClasses = classesRes.data.total || 0;
-        const ptBookings = ptBookingsRes.data?.bookings;
-        const ptSessions = ptsessionsRes.data?.sessions
+        // Extract data arrays from responses
+        const users = usersRes.data?.users || [];
+        const memberships = membershipsRes.data?.memberships || [];
+        const checkins = checkinsRes.data?.checkins || [];
+        const ptSessions = ptsessionsRes.data?.sessions || [];
+        const ptBookings = ptBookingsRes.data?.bookings || [];
         
+        const totalUsers = usersRes.data?.total || users.length;
+        // Total member = user yang punya membership (user_id unik di memberships)
+        const memberUserIds = new Set(memberships.map(m => m.user_id));
+        const totalMember = memberUserIds.size;
+        const activeMembership = memberships.filter(m => m.is_active && m.status.toLowerCase() == "active").length;
+        const freezeMembership = memberships.filter(m => m.is_active && m.status.toLowerCase() == "frozen").length;
+        const inactiveMembership = memberships.filter(m => !m.is_active).length;
+        const totalPTSessions = ptSessions.length;
+        const totalClasses = classesRes.data?.total || 0;
         // PT Metrics
         const todayStr = dayjs().tz('Asia/Jakarta').format('YYYY-MM-DD');
-        const conductPTToday = (ptBookings || []).filter(b => {
+        const conductPTToday = ptBookings.filter(b => {
           if (!b.booking_time || b.status === 'cancelled') return false;
           const bookingDate = dayjs(b.booking_time).utc().format('YYYY-MM-DD');
           // console.log("bookingDate: ", bookingDate, " | todayStr:", todayStr)
@@ -80,7 +83,7 @@ export default function AdminDashboardPage() {
 
         // Active PT Client: user_member_id unik yang punya booking status != cancelled
         const activePTClientIds = new Set(
-          (ptSessions || [])
+          ptSessions
             .filter(b => b.status !== 'cancelled' && b.user_member?.id)
             .map(b => b.user_member?.id)
         );
@@ -88,7 +91,7 @@ export default function AdminDashboardPage() {
 
         // Inactive PT Client: user yang punya PT session tapi tidak punya booking aktif
         const allPTClientIds = new Set(
-          (ptSessions || [])
+          ptSessions
             .filter(s => s.user_member_id)
             .map(s => s.user_member_id)
         );
@@ -105,7 +108,7 @@ export default function AdminDashboardPage() {
           categories.push(label);
           // Hitung jumlah user unik yang checkin di tanggal ini
           const count = new Set(
-            checkinsRes.filter(c => {
+            checkins.filter(c => {
               if (!c.checkin_time) return false;
               // const checkinWIB = dayjs.utc(c.checkin_time).tz('Asia/Jakarta').format('YYYY-MM-DD');
               // return checkinWIB === dateStr;
@@ -117,10 +120,9 @@ export default function AdminDashboardPage() {
         }
         // Actionable Lists for Sales
         const now = dayjs().tz('Asia/Jakarta');
-        const membershipsData = membershipsRes.data.memberships;
         
         // 1. Expiring Soon (7-14 days)
-        const expiringSoon = membershipsData
+        const expiringSoon = memberships
           .filter(m => {
             if (!m.is_active || m.status.toLowerCase() !== 'active' || !m.end_date) return false;
             const daysUntilExpiry = dayjs(m.end_date).diff(now, 'day');
@@ -132,17 +134,18 @@ export default function AdminDashboardPage() {
             userPhone: m.user?.phone || 'N/A',
             endDate: m.end_date,
             daysLeft: dayjs(m.end_date).diff(now, 'day'),
-            planName: m.membership_plan?.name || 'N/A'
+            planName: m.membershipPlan?.name || 'N/A'
           }))
           .sort((a, b) => a.daysLeft - b.daysLeft)
           .slice(0, 10);
 
         // 2. Recently Expired (1-7 days ago)
-        const recentlyExpired = membershipsData
+        const recentlyExpired = memberships
           .filter(m => {
             if (!m.end_date) return false;
-            const daysSinceExpiry = now.diff(dayjs(m.end_date), 'day');
-            return daysSinceExpiry >= 1 && daysSinceExpiry <= 7;
+            const daysUntilExpiry = dayjs(m.end_date).diff(now, 'day');
+            console.log("m.end_date:", m.end_date, "daysUntilExpiry:", daysUntilExpiry);
+            return daysUntilExpiry >= 0 && daysUntilExpiry <= 7;
           })
           .map(m => ({
             userId: m.user_id,
@@ -150,7 +153,7 @@ export default function AdminDashboardPage() {
             userPhone: m.user?.phone || 'N/A',
             endDate: m.end_date,
             daysAgo: now.diff(dayjs(m.end_date), 'day'),
-            planName: m.membership_plan?.name || 'N/A'
+            planName: m.membershipPlan?.name || 'N/A'
           }))
           .sort((a, b) => a.daysAgo - b.daysAgo)
           .slice(0, 10);
@@ -158,11 +161,11 @@ export default function AdminDashboardPage() {
         // 3. Inactive Members (tidak checkin 30 hari, membership aktif)
         const thirtyDaysAgo = now.subtract(30, 'day');
         const recentCheckins = new Set(
-          checkinsRes
+          checkins
             .filter(c => dayjs(c.checkin_time).isAfter(thirtyDaysAgo))
             .map(c => c.user_id)
         );
-        const inactiveMembers = membershipsData
+        const inactiveMembers = memberships
           .filter(m => {
             return m.is_active && 
                    m.status.toLowerCase() === 'active' && 
@@ -172,14 +175,14 @@ export default function AdminDashboardPage() {
             userId: m.user_id,
             userName: m.user?.name || 'N/A',
             userPhone: m.user?.phone || 'N/A',
-            planName: m.membership_plan?.name || 'N/A',
+            planName: m.membershipPlan?.name || 'N/A',
             startDate: m.start_date
           }))
           .slice(0, 10);
 
         // 4. New Members This Month
         const startOfMonth = now.startOf('month');
-        const newMembers = membershipsData
+        const newMembers = memberships
           .filter(m => {
             return m.start_date && dayjs(m.start_date).isAfter(startOfMonth);
           })
@@ -187,7 +190,7 @@ export default function AdminDashboardPage() {
             userId: m.user_id,
             userName: m.user?.name || 'N/A',
             userPhone: m.user?.phone || 'N/A',
-            planName: m.membership_plan?.name || 'N/A',
+            planName: m.membershipPlan?.name || 'N/A',
             startDate: m.start_date
           }))
           .sort((a, b) => dayjs(b.startDate).diff(dayjs(a.startDate)))
@@ -401,7 +404,7 @@ export default function AdminDashboardPage() {
                       <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">{member.planName}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold text-red-600 dark:text-red-400">{member.daysAgo} days ago</p>
+                      <p className="text-lg font-bold text-red-600 dark:text-red-400">{member.daysAgo * -1} days</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">{dayjs(member.endDate).format('DD MMM YYYY')}</p>
                     </div>
                   </div>

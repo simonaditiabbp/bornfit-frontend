@@ -1,10 +1,21 @@
 import Link from "next/link";
 import { StyledDataTable } from '@/components/admin';
 
-export default function PTBookingDataTable({ data }) {  
+export default function PTBookingDataTable({ 
+  data,
+  pagination = false,
+  paginationServer = false,
+  paginationTotalRows = 0,
+  paginationPerPage = 10,
+  currentPage = 1,
+  onChangePage = () => {},
+  onChangeRowsPerPage = () => {},
+  paginationRowsPerPageOptions = [10, 25, 50]
+}) {
+  const startNo = (currentPage - 1) * paginationPerPage;
 
   const columns = [
-    { name: 'No', cell: (row, i) => i + 1, width: '70px', center: "true" },
+    { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px', center: "true" },
     // { name: 'ID', selector: row => row.id, sortable: true },
     { name: 'Member', selector: row => row.user_member?.name || row.user_member_id, sortable: true },
     { name: 'PT Session', selector: row => `${row.pt_session_plan?.name} - ${row.personal_trainer_session.user_pt.name}` || '', sortable: true },
@@ -52,7 +63,14 @@ export default function PTBookingDataTable({ data }) {
     <StyledDataTable
       columns={columns}
       data={data}
-      pagination
+      pagination={pagination}
+      paginationServer={paginationServer}
+      paginationTotalRows={paginationTotalRows}
+      paginationPerPage={paginationPerPage}
+      paginationDefaultPage={currentPage}
+      onChangePage={onChangePage}
+      onChangeRowsPerPage={onChangeRowsPerPage}
+      paginationRowsPerPageOptions={paginationRowsPerPageOptions}
     />
   );
 }

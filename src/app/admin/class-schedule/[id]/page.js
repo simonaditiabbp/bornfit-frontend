@@ -73,11 +73,11 @@ export default function ClassDetailPage() {
 
   const getStatusBadge = (status) => {
     const badges = {
-      'Booked': { color: 'bg-yellow-600', icon: FaPending, text: 'Booked' },
-      'Checked-in': { color: 'bg-green-600', icon: FaCheckCircle, text: 'Checked In' },
-      'Cancelled': { color: 'bg-red-600', icon: FaBan, text: 'Cancelled' },
+      'booked': { color: 'bg-yellow-600', icon: FaPending, text: 'Booked' },
+      'checked_in': { color: 'bg-green-600', icon: FaCheckCircle, text: 'Checked In' },
+      'cancelled': { color: 'bg-red-600', icon: FaBan, text: 'Cancelled' },
     };
-    const badge = badges[status] || badges['Booked'];
+    const badge = badges[status] || badges['booked'];
     const Icon = badge.icon;
     return (
       <span className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${badge.color} text-white`}>
@@ -200,6 +200,7 @@ export default function ClassDetailPage() {
                   </span>
                 </div>
 
+                {console.log("classData:", classData)}
                 <div className="pt-3 border-t border-gray-200 dark:border-gray-600">
                   <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">By Status</div>
                   <div className="space-y-2">

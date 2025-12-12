@@ -4,10 +4,13 @@ import Link from "next/link";
 import { StyledDataTable } from '@/components/admin';
 import { useTheme } from '@/contexts/ThemeContext';
 
-export default function MembershipSessionDataTable({ data }) {
-  const { theme } = useTheme();
+export default function MembershipSessionDataTable({ data, pagination = false, paginationServer = false, paginationTotalRows = 0, paginationPerPage = 10, currentPage, paginationDefaultPage, onChangePage = () => {}, onChangeRowsPerPage = () => {}, paginationRowsPerPageOptions = [10, 25, 50] }) {
+
+  const pageNo = paginationDefaultPage || currentPage || 1;
+  const startNo = (pageNo - 1) * paginationPerPage;
+
   const columns = [
-    { name: 'No', cell: (row, i) => i + 1, width: '70px', center: "true" },
+    { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px', center: "true" },
     { 
       name: 'Member', 
       selector: row => row.user?.name || '-', 
@@ -28,7 +31,6 @@ export default function MembershipSessionDataTable({ data }) {
           pending:  "bg-yellow-100 text-yellow-700",
           frozen:  "bg-blue-100 text-blue-700",
         };
-        console.log('row.status', row.status);
         const label = status
           ? status.charAt(0).toUpperCase() + status.slice(1)
           : "";
@@ -64,6 +66,14 @@ export default function MembershipSessionDataTable({ data }) {
       columns={columns}
       data={data}
       pagination
+      paginationServer={paginationServer}
+      paginationTotalRows={paginationTotalRows}
+      paginationPerPage={paginationPerPage}
+      paginationDefaultPage={pageNo}
+      currentPage={currentPage}
+      onChangePage={onChangePage}
+      onChangeRowsPerPage={onChangeRowsPerPage}
+      paginationRowsPerPageOptions={paginationRowsPerPageOptions}
     />
   );
 }

@@ -43,40 +43,17 @@ export default function PTSessionListPage() {
       setLoading(true);
       setBackendError(false);
       try {
+        const params = new URLSearchParams({
+          page: page.toString(),
+          limit: perPage.toString(),
+        });
         if (search && search.trim() !== '') {
-          let allMatches = null;
-          try {
-            const sessionData = await api.get(`/api/personaltrainersessions?search=${encodeURIComponent(search)}`);
-            const arr = sessionData.data?.sessions || [];
-            if (Array.isArray(arr)) {
-              allMatches = arr;
-            }
-          } catch (e) {
-            // ignore and fallback
-          }
-          if (!allMatches) {
-            const sessionData = await api.get('/api/personaltrainersessions');
-            const arr = sessionData.data?.sessions || [];
-            if (Array.isArray(arr)) {
-              allMatches = arr.filter(s =>
-                (s.user_member?.name || '').toLowerCase().includes(search.toLowerCase()) ||
-                (s.pt_session_plan?.name || '').toLowerCase().includes(search.toLowerCase()) ||
-                (s.status || '').toLowerCase().includes(search.toLowerCase())
-              );
-            } else {
-              allMatches = [];
-            }
-          }
-          const start = (page - 1) * perPage;
-          const pageSlice = allMatches.slice(start, start + perPage);
-          setSessions(pageSlice);
-          setTotalRows(allMatches.length);
-        } else {
-          const sessionData = await api.get(`/api/personaltrainersessions/paginated?page=${page}&limit=${perPage}`);
-          const arr = sessionData.data?.sessions || [];
-          setSessions(arr);
-          setTotalRows(sessionData.data?.total || 0);
+          params.append('search', search);
         }
+        const sessionData = await api.get(`/api/personaltrainersessions/paginated?${params.toString()}`);
+        const arr = sessionData.data?.sessions || [];
+        setSessions(arr);
+        setTotalRows(sessionData.data?.total || 0);
       } catch (err) {
         setSessions([]);
         if (err.isNetworkError) {
@@ -88,11 +65,23 @@ export default function PTSessionListPage() {
     fetchSessions();
   }, [page, perPage, search]);
 
+  const handleChangePage = (newPage) => {
+    const pageNum = typeof newPage === 'number' ? newPage : (Array.isArray(newPage) ? newPage[0] : Number(newPage));
+    if (!pageNum || pageNum === page) return;
+    setPage(pageNum);
+  };
+
+  const handleChangeRowsPerPage = (newPerPage, currentPageArg) => {
+    const perPageNum = typeof newPerPage === 'number' ? newPerPage : (Array.isArray(newPerPage) ? newPerPage[0] : Number(newPerPage));
+    if (!perPageNum || perPageNum === perPage) return;
+    setPerPage(perPageNum);
+    if (page !== 1) setPage(1);
+  };
+
   // Debounce search input to avoid spamming the API
   useEffect(() => {
     const handler = setTimeout(() => {
       setSearch(searchInput);
-      setPage(1); 
       setPage(1);
     }, 300); // 300ms debounce
     return () => clearTimeout(handler);
@@ -123,11 +112,19 @@ export default function PTSessionListPage() {
           <LoadingText />
         ) : (
           <PTSessionDataTable
-          data={sessions}
-          plans={plans}
-          members={members}
-          trainers={trainers}
-        />
+            data={sessions}
+            plans={plans}
+            members={members}
+            trainers={trainers}
+            pagination
+            paginationServer
+            paginationTotalRows={totalRows}
+            paginationPerPage={perPage}
+            currentPage={page}
+            onChangePage={handleChangePage}
+            onChangeRowsPerPage={handleChangeRowsPerPage}
+            paginationRowsPerPageOptions={[10, 25, 50]}
+          />
         )}
       </PageContainer>
       {/* Modal QR Code */}

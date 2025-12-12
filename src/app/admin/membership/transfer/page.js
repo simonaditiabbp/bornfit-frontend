@@ -18,49 +18,37 @@ export default function TransferMembershipPage() {
   const [perPage, setPerPage] = useState(10);
   const router = useRouter();
 
+  const handleChangePage = (newPage) => {
+    const pageNum = typeof newPage === 'number' ? newPage : (Array.isArray(newPage) ? newPage[0] : Number(newPage));
+    if (!pageNum || pageNum === page) return;
+    setPage(pageNum);
+  };
+
+  const handleChangeRowsPerPage = (newPerPage, currentPageArg) => {
+    const perPageNum = typeof newPerPage === 'number' ? newPerPage : (Array.isArray(newPerPage) ? newPerPage[0] : Number(newPerPage));
+    if (!perPageNum || perPageNum === perPage) return;
+    setPerPage(perPageNum);
+    if (page !== 1) setPage(1);
+  };
+
   useEffect(() => {
     const fetchTransfers = async () => {
       setLoading(true);
       setBackendError(false);
+      
       try {
+        const params = new URLSearchParams({
+          page: page.toString(),
+          limit: perPage.toString(),
+        });
+        
         if (search && search.trim() !== '') {
-          // Search mode - client-side filtering for now
-          let allMatches = null;
-          try {
-            const data = await api.get(`/api/membership-transfers?search=${encodeURIComponent(search)}`);
-            const arr = data.data?.transfers || [];
-            if (Array.isArray(arr)) {
-              allMatches = arr;
-            }
-          } catch (e) {
-            // Fallback to all data and filter locally
-          }
-
-          if (!allMatches) {
-            const allData = await api.get('/api/membership-transfers');
-            const arr = allData.data?.transfers || [];
-            if (Array.isArray(arr)) {
-              allMatches = arr.filter(t =>
-                (t.fromUser?.name || '').toLowerCase().includes(search.toLowerCase()) ||
-                (t.toUser?.name || '').toLowerCase().includes(search.toLowerCase()) ||
-                (t.fromMembership?.membershipPlan?.name || '').toLowerCase().includes(search.toLowerCase())
-              );
-            } else {
-              allMatches = [];
-            }
-          }
-
-          const start = (page - 1) * perPage;
-          const pageSlice = allMatches.slice(start, start + perPage);
-          setTransfers(pageSlice);
-          setTotalRows(allMatches.length);
-        } else {
-          // Pagination mode
-          const data = await api.get(`/api/membership-transfers?page=${page}&limit=${perPage}`);
-          const result = data.data || {};
-          setTransfers(result.transfers || []);
-          setTotalRows(result.total || 0);
+          params.append('search', search);
         }
+        
+        const data = await api.get(`/api/membership-transfers?${params.toString()}`);
+        setTransfers(data.data?.transfers || []);
+        setTotalRows(data.data?.total || 0);
       } catch (err) {
         setTransfers([]);
         if (err.isNetworkError) {
@@ -96,8 +84,8 @@ export default function TransferMembershipPage() {
       <PageContainer>
         <PageHeader
           searchPlaceholder="Search from member/to member/plan..."
-          searchValue={searchInput}
-          onSearchChange={e => setSearchInput(e.target.value)}
+          searchValue={search}
+          onSearchChange={e => setSearch(e.target.value)}
           actionHref="/admin/membership/transfer/insert"
           actionIcon={<FaPlus />}
           actionText="Transfer Membership"
@@ -112,8 +100,8 @@ export default function TransferMembershipPage() {
             paginationTotalRows={totalRows}
             paginationPerPage={perPage}
             currentPage={page}
-            onChangePage={setPage}
-            onChangeRowsPerPage={newLimit => { setPerPage(newLimit); setPage(1); }}
+            onChangePage={handleChangePage}
+            onChangeRowsPerPage={handleChangeRowsPerPage}
             paginationRowsPerPageOptions={[10, 25, 50]}
           />
         )}

@@ -157,7 +157,7 @@ export default function BarcodePage() {
     try {
       const params = new URLSearchParams({ page, limit });
       if (search) params.append('search', search);
-      const res = await fetch(`${API_URL}/api/classes?${params.toString()}`, {
+      const res = await fetch(`${API_URL}/api/classes?today=true&${params.toString()}`, {
         headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
       });
       const data = await res.json();
@@ -239,7 +239,7 @@ export default function BarcodePage() {
         body: JSON.stringify({
           class_id: classId,
           member_id: user.id,
-          status: "Booked",
+          status: "Checked-in",
           checked_in_at: checkedInAt
         })
       });

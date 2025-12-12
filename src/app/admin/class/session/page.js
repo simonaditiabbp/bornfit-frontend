@@ -74,8 +74,6 @@ export default function ClassSessionListPage() {
           params.append('search', search);
         }
         
-        console.log('[Fetch] API call:', params.toString());
-        
         const classData = await api.get(`/api/classes/paginated?${params.toString()}`);
         const result = classData.data || {};
         setSessions(result.classes || []);

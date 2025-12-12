@@ -21,40 +21,19 @@ export default function ClassPlansPage() {
     setLoading(true);
     setBackendError(false);
     try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+      });
       if (search && search.trim() !== '') {
-        let allMatches = null;
-        try {
-          const dataEvent = await api.get(`/api/eventplans?search=${encodeURIComponent(search)}`);
-          const arr = dataEvent.data?.plans || [];
-          if (Array.isArray(arr)) {
-            allMatches = arr;
-          }
-        } catch (e) {
-          // ignore and fallback
-        }
-        if (!allMatches) {
-          const dataEvent = await api.get('/api/eventplans');
-          const arr = dataEvent.data?.plans || [];
-          if (Array.isArray(arr)) {
-            allMatches = arr.filter(p =>
-              (p.name || '').toLowerCase().includes(search.toLowerCase()) ||
-              (p.description || '').toLowerCase().includes(search.toLowerCase())
-            );
-          } else {
-            allMatches = [];
-          }
-        }
-        const start = (page - 1) * limit;
-        const pageSlice = allMatches.slice(start, start + limit);
-        setPlans(pageSlice);
-        setTotal(allMatches.length);
-      } else {
-        const dataEvent = await api.get(`/api/eventplans?page=${page}&limit=${limit}`);
-        const arr = dataEvent.data?.plans || [];
-        setPlans(Array.isArray(arr) ? arr : []);
-        setTotal(dataEvent?.data?.total ?? 0);
+        params.append('search', search);
       }
+      const dataEvent = await api.get(`/api/eventplans?${params.toString()}`);
+      const arr = dataEvent.data?.plans || [];
+      setPlans(Array.isArray(arr) ? arr : []);
+      setTotal(dataEvent?.data?.total ?? 0);
     } catch (err) {
+      setPlans([]);
       if (err.isNetworkError) setBackendError(true);
     }
     setLoading(false);
@@ -73,12 +52,16 @@ export default function ClassPlansPage() {
   }, [searchInput]);
 
   const handleChangePage = (newPage) => {
-    setPage(newPage);
+    const pageNum = typeof newPage === 'number' ? newPage : (Array.isArray(newPage) ? newPage[0] : Number(newPage));
+    if (!pageNum || pageNum === page) return;
+    setPage(pageNum);
   };
 
-  const handleChangeRowsPerPage = (newPerPage) => {
-    setLimit(newPerPage);
-    setPage(1);
+  const handleChangeRowsPerPage = (newPerPage, currentPageArg) => {
+    const perPageNum = typeof newPerPage === 'number' ? newPerPage : (Array.isArray(newPerPage) ? newPerPage[0] : Number(newPerPage));
+    if (!perPageNum || perPageNum === limit) return;
+    setLimit(perPageNum);
+    if (page !== 1) setPage(1);
   };
 
   const handleDelete = async (id) => {
@@ -119,6 +102,14 @@ export default function ClassPlansPage() {
         ) : (
           <ClassPlansDataTable
             data={plans}
+            pagination
+            paginationServer
+            paginationTotalRows={total}
+            paginationPerPage={limit}
+            currentPage={page}
+            onChangePage={handleChangePage}
+            onChangeRowsPerPage={handleChangeRowsPerPage}
+            paginationRowsPerPageOptions={[10, 25, 50]}
           />
         )}
       </PageContainer>

@@ -275,14 +275,14 @@ export default function ClassSessionEditPage() {
         </div>     
         {/* Recurring Warning */}
         {isRecurring && (
-          <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-4 mb-6">
+          <div className="text-white bg-gray-900/70 border-gray-700 dark:text-amber-200 dark:bg-amber-900/30 dark:border-amber-700 border rounded-lg p-4 mb-6">
             <div className="flex items-start gap-3">
               <div className="text-amber-400 text-xl">⚠️</div>
-              <div className="text-amber-200 text-sm">
+              <div className="text-sm">
                 <strong className="block mb-1">Recurring Class Pattern</strong>
                 <p className="mb-2">Editing this recurring pattern will <strong>delete all existing class instances</strong> and regenerate them with the new pattern. All attendance data will be preserved for classes that have already occurred.</p>
                 {session?.generated_instances !== undefined && (
-                  <p className="bg-amber-800/40 px-3 py-2 rounded mt-2">
+                  <p className="bg-gray-900/50 dark:bg-amber-800/40 px-3 py-2 rounded mt-2">
                     📊 <strong>Currently generated:</strong> {session.generated_instances} class instances
                   </p>
                 )}
@@ -359,7 +359,7 @@ export default function ClassSessionEditPage() {
             <>
               <div className="grid grid-cols-2 gap-4">
                 <FormInput
-                  label="Valid From *"
+                  label="Valid From"
                   type="date"
                   value={form.valid_from}
                   onChange={e => setForm(f => ({ ...f, valid_from: e.target.value }))}
@@ -367,7 +367,7 @@ export default function ClassSessionEditPage() {
                   required
                 />
                 <FormInput
-                  label="Valid Until *"
+                  label="Valid Until"
                   type="date"
                   value={form.valid_until}
                   onChange={e => setForm(f => ({ ...f, valid_until: e.target.value }))}
@@ -377,7 +377,7 @@ export default function ClassSessionEditPage() {
               </div>
 
               <div>
-                <label className="block mb-2 text-gray-200">Repeat On (Days) *</label>
+                <label className="block mb-2 text-gray-600 dark:text-gray-200">Repeat On (Days) *</label>
                 <div className="grid grid-cols-4 gap-2">
                   {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => (
                     <button
@@ -392,10 +392,10 @@ export default function ClassSessionEditPage() {
                       }}
                       className={`px-3 py-2 rounded font-semibold transition ${
                         form.recurrence_days.includes(day)
-                          ? 'bg-amber-600 text-white'
+                          ? 'bg-gray-600 text-white dark:bg-amber-600 dark:text-white'
                           : edit 
-                            ? 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                            : 'bg-gray-900 text-gray-500 cursor-not-allowed'
+                            ? 'bg-gray-300 text-white hover:bg-gray-500 dark:bg-amber-600 dark:text-white'
+                            : 'bg-gray-200 text-gray-800 hover:bg-gray-400 hover:text-white dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500 cursor-not-allowed'
                       }`}
                       disabled={!edit}
                     >
@@ -407,7 +407,7 @@ export default function ClassSessionEditPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <FormInput
-                  label="Time Start *"
+                  label="Time Start"
                   type="time"
                   value={form.recurrence_start_time}
                   onChange={e => setForm(f => ({ ...f, recurrence_start_time: e.target.value }))}
@@ -416,14 +416,14 @@ export default function ClassSessionEditPage() {
                 />
                 <div>
                   <FormInput
-                    label="Time End * (Auto-calculated)"
+                    label="Time End (Auto-calculated)"
                     type="time"
                     value={form.recurrence_end_time}
                     onChange={e => setForm(f => ({ ...f, recurrence_end_time: e.target.value }))}
                     disabled={!edit}
                     required
                   />
-                  <p className="text-xs text-gray-400 mt-1">Based on Event Plan duration</p>
+                  <p className="text-gray-800 dark:text-gray-400 text-xs mt-1">Based on Event Plan duration</p>
                 </div>
               </div>
 

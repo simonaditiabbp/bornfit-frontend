@@ -21,33 +21,16 @@ export default function ClassAttendancePage() {
       setLoading(true);
       setBackendError(false);
       try {
+        const params = new URLSearchParams({
+          page: page.toString(),
+          limit: limit.toString(),
+        });
         if (search && search.trim() !== '') {
-          let allMatches = null;
-          try {
-            const dataAttendances = await api.get(`/api/classattendances?search=${encodeURIComponent(search)}`);
-            if (Array.isArray(dataAttendances.data.attendances)) allMatches = dataAttendances.data.attendances;
-          } catch (e) {}
-
-          if (!allMatches) {
-            const dataAttendances = await api.get('/api/classattendances');
-            if (Array.isArray(dataAttendances.data.attendances)) {
-              allMatches = dataAttendances.data.attendances.filter(b =>
-                (b.user_member?.name || '').toLowerCase().includes(search.toLowerCase()) ||
-                (b.class_plan?.name || '').toLowerCase().includes(search.toLowerCase()) ||
-                (b.status || '').toLowerCase().includes(search.toLowerCase())
-              );
-            } else allMatches = [];
-          }
-
-          const start = (page - 1) * limit;
-          const pageSlice = allMatches.slice(start, start + limit);
-          setAttendances(pageSlice);
-          setTotal(allMatches.length);
-        } else {
-          const dataAttendances = await api.get(`/api/classattendances?page=${page}&limit=${limit}`);
-          setAttendances(dataAttendances.data.attendances || []);
-          setTotal(dataAttendances.data.total || 0);
+          params.append('search', search);
         }
+        const dataAttendances = await api.get(`/api/classattendances?${params.toString()}`);
+        setAttendances(dataAttendances.data.attendances || []);
+        setTotal(dataAttendances.data.total || 0);
       } catch (err) {
         setAttendances([]);
         if (err.isNetworkError) setBackendError(true);
@@ -56,6 +39,19 @@ export default function ClassAttendancePage() {
     };
     fetchAll();
   }, [page, limit, search]);
+
+  const handleChangePage = (newPage) => {
+    const pageNum = typeof newPage === 'number' ? newPage : (Array.isArray(newPage) ? newPage[0] : Number(newPage));
+    if (!pageNum || pageNum === page) return;
+    setPage(pageNum);
+  };
+
+  const handleChangeRowsPerPage = (newPerPage, currentPageArg) => {
+    const perPageNum = typeof newPerPage === 'number' ? newPerPage : (Array.isArray(newPerPage) ? newPerPage[0] : Number(newPerPage));
+    if (!perPageNum || perPageNum === limit) return;
+    setLimit(perPageNum);
+    if (page !== 1) setPage(1);
+  };
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -78,8 +74,8 @@ export default function ClassAttendancePage() {
       <PageContainer>
         <PageHeader
           searchPlaceholder="Search member/class/plan/status..."
-          searchValue={search}
-          onSearchChange={(e) => setSearch(e.target.value)}
+          searchValue={searchInput}
+          onSearchChange={(e) => setSearchInput(e.target.value)}
           actionHref="/admin/class/attendance/insert"
           actionIcon={<FaPlus />}
           actionText="Add Attendance"
@@ -89,6 +85,14 @@ export default function ClassAttendancePage() {
         ) : (
           <ClassAttendanceDataTable
             data={attendances}
+            pagination
+            paginationServer
+            paginationTotalRows={total}
+            paginationPerPage={limit}
+            currentPage={page}
+            onChangePage={handleChangePage}
+            onChangeRowsPerPage={handleChangeRowsPerPage}
+            paginationRowsPerPageOptions={[10, 25, 50]}
           />
         )}
       </PageContainer>

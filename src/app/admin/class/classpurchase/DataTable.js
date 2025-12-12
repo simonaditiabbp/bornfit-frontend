@@ -1,9 +1,21 @@
 import Link from 'next/link';
 import { StyledDataTable } from '@/components/admin';
 
-export default function ClassPurchaseDataTable({ data }) {
+export default function ClassPurchaseDataTable({ 
+  data,
+  pagination = false,
+  paginationServer = false,
+  paginationTotalRows = 0,
+  paginationPerPage = 10,
+  currentPage = 1,
+  onChangePage = () => {},
+  onChangeRowsPerPage = () => {},
+  paginationRowsPerPageOptions = [10, 25, 50]
+}) {
+  const startNo = (currentPage - 1) * paginationPerPage;
+
   const columns = [
-    { name: 'No', cell: (row, i) => i + 1, width: '70px', center: "true" },
+    { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px', center: "true" },
     { name: 'User', selector: row => row.user?.name || '-', sortable: true, cell: row => <span className="font-semibold">{row.user?.name || '-'}</span> },
     { name: 'Class', selector: row => row.class?.name || '-', sortable: true },
     { name: 'Price', selector: row => row.price, sortable: true },
@@ -17,7 +29,14 @@ export default function ClassPurchaseDataTable({ data }) {
     <StyledDataTable
       columns={columns}
       data={data}
-      pagination
+      pagination={pagination}
+      paginationServer={paginationServer}
+      paginationTotalRows={paginationTotalRows}
+      paginationPerPage={paginationPerPage}
+      paginationDefaultPage={currentPage}
+      onChangePage={onChangePage}
+      onChangeRowsPerPage={onChangeRowsPerPage}
+      paginationRowsPerPageOptions={paginationRowsPerPageOptions}
     />
   );
 }

@@ -26,7 +26,8 @@ export default function FormActions({
         disabled={isSubmitting}
         onClick={onSubmit}
       >
-        {isEdit ? 'Edit' : 'Submit'}
+        {/* {isEdit ? 'Edit' : 'Submit'} */}
+        {isSubmitting ? (isEdit ? 'Editing...' : 'Submitting...') : (isEdit ? 'Edit' : 'Submit')}
       </ActionButton>
       
       {onReset && (

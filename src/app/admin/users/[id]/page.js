@@ -165,11 +165,8 @@ export default function UserDetailPage() {
 
   const handleDelete = async () => {
     if (confirm('Yakin ingin menghapus member ini?')) {
-      await fetch(`${API_URL}/api/users/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      router.replace('/admin/users');
+      await api.delete(`/api/users/${id}`);
+      router.replace('/admin/users');      
     }
   };
 
