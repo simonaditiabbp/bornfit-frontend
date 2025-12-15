@@ -59,9 +59,9 @@ export default function ClassSessionEditPage() {
     const fetchDropdownData = async () => {
       try {
         const [dataPlans, dataMember, dataInstructor] = await Promise.all([
-          api.get('/api/eventplans'),
-          api.get('/api/users?role=member&membership=active'),
-          api.get('/api/users?role=instructor')
+          api.get('/api/eventplans?limit=10000'),
+          api.get('/api/users?role=member&membership=active&limit=10000'),
+          api.get('/api/users?role=instructor&limit=10000')
         ]);
         setPlans(dataPlans.data.plans || []);
         setMembers(dataMember.data.users || []);
@@ -192,7 +192,7 @@ export default function ClassSessionEditPage() {
         };
       } else {
         // Single class update
-        const class_date_iso = form.class_date ? `${form.class_date}T00:00:00.000Z` : "";
+        const class_date_iso = form.class_date ? `${form.class_date}T${form.start_time}:00.000Z` : "";
         const start_time_iso = form.class_date && form.start_time ? `${form.class_date}T${form.start_time}:00.000Z` : "";
         const end_time_iso = form.class_date && form.end_time ? `${form.class_date}T${form.end_time}:00.000Z` : "";
         

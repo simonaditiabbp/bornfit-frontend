@@ -67,14 +67,14 @@ export default function ClassSessionDataTable({ data, plans = [], members = [], 
       width: '150px',
     },
     // { name: 'Class Date', selector: row => row.class_date ? row.class_date.slice(0,10) : '', sortable: true },
-    { name: 'Class Date', selector: row => {
-        if (row.class_date) {
-          const classDate = new Date(row.class_date);
-          classDate.setHours(classDate.getHours() + 7);
-          return classDate.toISOString().slice(0, 10);
-        }
-      return ''}
-    , sortable: true },
+    // { name: 'Class Date', selector: row => {
+    //     if (row.class_date) {
+    //       const classDate = new Date(row.class_date);
+    //       classDate.setHours(classDate.getHours() + 7);
+    //       return classDate.toISOString().slice(0, 10);
+    //     }
+    //   return ''}
+    { name: 'Class Date', selector: row => row.start_time ? row.start_time.slice(0,10) : '', sortable: true },
     { name: 'Start Time', selector: row => {
       if (row.is_recurring) {
         return row.recurrence_start_time || '-';

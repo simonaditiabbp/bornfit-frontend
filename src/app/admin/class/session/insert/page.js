@@ -124,7 +124,12 @@ export default function ClassSessionInsertPage() {
       setSuccess("Berhasil simpan");
       router.push("/admin/class/session");
     } catch (err) {
-      setError("Gagal simpan");
+      if (err.status >= 400 && err.status <= 499) {
+        setError("Please make sure all required fields are filled in correctly");
+        console.log("Bad Request: ", err.data.message ? err.data.message : "Bad Request");
+      } else {
+        setError("Server error occurred. Please try again later.");
+      }
     }
     setLoading(false);
   };
@@ -139,10 +144,8 @@ export default function ClassSessionInsertPage() {
       />
 
       <PageContainerInsert>
-        <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-amber-300 text-center">Create Detail Class</h1>
-        {success && <div className="text-green-400 font-semibold mb-2 text-center">{success}</div>}
-        {error && <div className="text-red-400 font-semibold mb-2 text-center">{error}</div>}
-        <form className="space-y-4" onSubmit={handleSave}>
+        <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-amber-300 text-center">Create Detail Class</h1>        
+        <form className="space-y-4">
           <FormInput
             label="Event Plan"
             name="event_plan_id"
@@ -298,6 +301,8 @@ export default function ClassSessionInsertPage() {
             <label className="block mb-1 text-gray-800 dark:text-gray-200">Notes</label>
             <textarea name="notes" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className="w-full border border-gray-300 dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200" />
           </div>
+          {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
+          {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}
           <FormActions
             onSubmit={handleSave}
             onReset={handleReset}
