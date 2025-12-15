@@ -2,6 +2,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import LoadingSpin from "@/components/admin/LoadingSpin";
 
 export default function Home() {
   const router = useRouter();
@@ -19,7 +20,7 @@ export default function Home() {
         if (user.role === "admin") {
           router.replace("/admin/dashboard");
         } else if (user.role === "opscan") {
-          router.replace("/barcode");
+          router.replace("/checkin");
         } else {
           router.replace("/login");
         }
@@ -31,7 +32,7 @@ export default function Home() {
   if (!mounted) return null;
   return (
     <main className="flex min-h-screen flex-col items-center justify-center">
-      <div className="text-blue-600 text-lg font-semibold">Loading...</div>
+      <LoadingSpin />
     </main>
   );
 }

@@ -1,45 +1,28 @@
 'use client';
 import Link from 'next/link';
+import { FaTachometerAlt, FaUsers, FaDumbbell, FaClipboardList, FaCalendarCheck, FaBarcode, FaCheckCircle, FaSignOutAlt, FaBars, FaAngleRight, FaAngleDoubleLeft, FaMoon, FaAngleDoubleRight, FaUps, FaAngleUp, FaAngleDown, FaCalendar, FaUserCheck, FaChalkboardTeacher, FaShoppingBag, FaExchangeAlt, FaSnowflake, FaIdCard, FaChartLine, FaFileAlt, FaCalendarAlt, FaCog, FaUserTie, FaUserTag } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
-// import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+import Image from 'next/image';
+import { useState, useEffect } from 'react';
+import ThemeToggle from '@/components/ThemeToggle';
+import LoadingSpin from '@/components/admin/LoadingSpin';
 
 export default function AdminLayout({ children }) {
+  const [user, setUser] = useState(null);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  // Sidebar Dropdown
+  const [membershipDropdownOpen, setMembershipDropdownOpen] = useState(false);
+  const [ptDropdownOpen, setPtDropdownOpen] = useState(false);
+  const [classDropdownOpen, setClassDropdownOpen] = useState(false);
+  const [reportDropdownOpen, setReportDropdownOpen] = useState(false);
+  const [scheduleDropdownOpen, setScheduleDropdownOpen] = useState(false);
+  const [settingsDropdownOpen, setSettingsDropdownOpen] = useState(false);
+
   const router = useRouter();
-
-  // useEffect(() => {
-  //   const validateToken = async () => {
-  //     const currentPath = window.location.pathname;
-  //     console.log('Current path:', currentPath);
-  //     if (currentPath.startsWith('/barcode')) {
-  //       // Skip token validation for any path starting with /barcode
-  //       return;
-  //     }
-
-  //     const token = localStorage.getItem('token');
-  //     if (!token) {
-  //       router.replace('/login');
-  //       return;
-  //     }
-
-  //     try {
-//       const response = await fetch('/api/users', {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       });
-
-  //       if (response.status === 401) {
-  //         localStorage.removeItem('token');
-  //         router.replace('/login');
-  //       }
-  //     } catch (error) {
-  //       console.error('Token validation failed:', error);
-  //       router.replace('/login');
-  //     }
-  //   };
-
-  //   validateToken();
-  // }, [router]);
+  const pathname = usePathname();
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -47,35 +30,556 @@ export default function AdminLayout({ children }) {
     localStorage.removeItem('location_alerted');
     router.replace('/login');
   };
+  // Sidebar toggle state
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  useEffect(() => {
+    // Role-based access control for admin layout
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token');
+      const userStr = localStorage.getItem('user');
+      
+      if (!token || !userStr) {
+        router.replace('/login');
+        return;
+      }
+      
+      try {
+        const userData = JSON.parse(userStr);
+        
+        // Only admin role can access admin pages
+        if (userData.role !== 'admin') {
+          if (userData.role === 'opscan') {
+            router.replace('/checkin');
+          } else {
+            router.replace('/login');
+          }
+          return;
+        }
+        
+        setUser(userData);
+        setIsAuthorized(true);
+      } catch (error) {
+        console.error("Failed to parse user data:", error);
+        router.replace('/login');
+      }
+    }
+  }, [router]);
+
+  const navTextClass = isCollapsed ? "hidden" : "block";
+  const dropdownArrowClass = isCollapsed ? "hidden" : "block";
+
+  // Show loading state while checking authorization
+  if (!isAuthorized) {
+    return <LoadingSpin />
+  }
+
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <aside className="w-64 bg-blue-700 text-white flex flex-col py-8 px-4 shadow-lg">
-        <div className="mb-8 text-2xl font-extrabold tracking-wide text-center">BornFit Admin</div>
-        <nav className="flex-1">
-          <ul className="space-y-2">
-            <li>
-              <Link href="/admin/dashboard" className="block py-2 px-4 rounded hover:bg-blue-600 font-semibold">Dashboard</Link>
-            </li>
-            <li>
-              <Link href="/admin/users" className="block py-2 px-4 rounded hover:bg-blue-600 font-semibold">User Data</Link>
-            </li>
-            <li>
-              <Link href="/admin/users/create" className="block py-2 px-4 rounded hover:bg-blue-600 font-semibold">Create New User</Link>
-            </li>
-            <li>
-              <Link href="/barcode" className="block py-2 px-4 rounded hover:bg-blue-600 font-semibold">Scan Barcode</Link>
-            </li>
-            {/* Add more menu items here */}
-          </ul>
-        </nav>
-        <button
-          className="mt-8 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded font-bold shadow"
-          onClick={handleLogout}
-        >
-          Logout
-        </button>
-      </aside>
-      <main className="flex-1 p-8">{children}</main>
+
+  <div className="bg-gray-100 dark:bg-gray-800">
+    <div>
+      <nav className="fixed top-0 z-50 w-full bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-600">
+        <div className="px-3 py-1 lg:px-5 lg:pl-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center justify-start rtl:justify-end">
+              <button 
+                type="button" 
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="inline-flex items-center p-2 text-sm text-gray-700 dark:text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-700">
+                  <span className="sr-only">Open sidebar</span>
+                  <FaBars className="inline-block" />
+              </button>
+              <div className="hidden sm:flex">
+                <a href="" className="flex ms-2 md:me-24">
+                  <Image
+                    src={"/logo.svg"}
+                    alt="BornFit Logo"
+                    width={128}
+                    height={128}
+                    className="h-13 w-auto me-3"
+                  />
+                </a>                
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              <div className="flex items-center ms-3 gap-2.5">
+              {/* Theme Toggle */}
+              <ThemeToggle />
+
+              {/* Dropdown User */}
+              <div className="relative">
+                <button type="button" className="flex items-center justify-center w-10 h-10 text-sm font-semibold text-white bg-gradient-to-br from-amber-400 to-amber-600 dark:from-yellow-400 dark:to-amber-500 rounded-full focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600" 
+                  aria-expanded={userDropdownOpen}
+                  aria-controls="user-dropdown"
+                  onClick={() => setUserDropdownOpen((open) => !open)}
+                  data-collapse-toggle="user-dropdown"
+                >
+                  <span className="sr-only">Open user menu</span>
+                  <span className="text-base font-bold text-gray-800 dark:text-gray-800">
+                    {user?.name ? user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'U'}
+                  </span>
+                </button>
+              </div>
+              {userDropdownOpen && (
+                <div id="user-dropdown" className="absolute right-0 top-full z-50 mt-2 w-48 text-base list-none bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 divide-y divide-gray-200 dark:divide-gray-600 rounded-md shadow-lg">
+                  <div className="px-4 py-3" role="none">
+                    <p className="text-sm text-gray-800 dark:text-amber-300" role="none">
+                      {user?.name}
+                    </p>
+                    <p className="text-sm font-medium text-gray-800 dark:text-amber-300 truncate" role="none">
+                      {user?.email}
+                    </p>
+                  </div>
+                  <ul className="py-1" role="none">
+                    <li>
+                      <a href="" className="block px-4 py-2 text-sm text-gray-700 dark:text-amber-300 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem">Settings</a>
+                    </li>
+                    <li>
+                      <a onClick={handleLogout} className="block px-4 py-2 text-sm text-gray-700 dark:text-amber-300 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem">Logout</a>
+                    </li>
+                  </ul>
+                </div>
+              )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
     </div>
+
+    <div className="flex pt-12">
+      <aside 
+        id="logo-sidebar"
+        className={`fixed top-0 left-0 z-40 h-screen pt-16 transition-all duration-300 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-600 sm:translate-x-0 
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+          ${isCollapsed ? "w-20" : "w-64"}
+        }`}
+        aria-label="Sidebar"
+      >
+        <div className="justify-between h-full px-3 pb-4 overflow-y-auto bg-white dark:bg-gray-800 flex flex-col">
+          <ul className="space-y-1 font-medium flex-grow">
+
+            <li className="sm:hidden mb-4 border-b-2 p-1 justify-center flex">
+              <a href="" className="flex ms-2">
+                <Image
+                  src="/logo.svg"
+                  alt="BornFit Logo"
+                  width={128}
+                  height={128}
+                  className="h-15 w-auto me-3"
+                />
+              </a>
+            </li>
+
+            <li>
+              <Link
+                href="/admin/dashboard"
+                className={`flex items-center py-2 px-4 gap-2 rounded-lg font-semibold ${pathname.startsWith("/admin/dashboard") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"}`}>
+                <FaTachometerAlt className="inline-block transition duration-75"/> 
+                <span className={navTextClass}>Dashboard</span>
+              </Link>
+            </li>
+
+            <li>
+              <Link
+                href="/admin/users"
+                className={`flex items-center py-2 px-4 gap-2 rounded-lg font-semibold ${pathname.startsWith("/admin/users") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"}`}>
+                <FaUsers className="inline-block transition duration-75" /> 
+                <span className={navTextClass}>User Data</span>
+              </Link>
+            </li>
+            {/* Membership Dropdown */}
+            <li>
+              <button
+                className={`flex items-center w-full py-2 px-4 text-base transition duration-75 rounded-lg font-bold ${membershipDropdownOpen ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"}`}
+                type="button"
+                aria-expanded={membershipDropdownOpen}
+                aria-controls="membership-dropdown"
+                onClick={() => setMembershipDropdownOpen((open) => !open)}
+                data-collapse-toggle="membership-dropdown"
+              >
+                <FaIdCard className="inline-block transition duration-75" /> 
+                <span className={`${navTextClass} flex-1 ms-3 text-left rtl:text-right whitespace-nowrap`}>Membership</span>
+                <span className={`${membershipDropdownOpen} w-3 h-3 transition-transform duration-300`}>
+                  {membershipDropdownOpen ? (
+                    <FaAngleUp />
+                  ) : (
+                    <FaAngleDown />
+                  )}
+                </span>
+              </button>
+              {membershipDropdownOpen && (
+                <ul id="pt-session-dropdown" className={`py-2 space-y-2 ${isCollapsed ? 'pl-0 text-center' : 'pl-6 border-l-2 border-gray-300 dark:border-gray-600'}`}>
+                  <li>
+                    <Link
+                      href="/admin/membership/session"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/membership/session") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaCalendarCheck className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Details</span>
+                    </Link>
+                  </li>
+                  {/* <li>
+                    <Link
+                      href="/admin/membership/plans"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/membership/plans") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaClipboardList className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Plans</span>
+                    </Link>
+                  </li> */}
+                  {/* <li>
+                    <Link
+                      href="/admin/membership/schedules"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/membership/schedules") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaCalendar className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Schedule</span>
+                    </Link>
+                  </li> */}
+                  <li>
+                    <Link
+                      href="/admin/membership/transfer"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/membership/transfer") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaExchangeAlt className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Transfer</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/membership/freeze"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/membership/freeze") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaSnowflake  className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Freeze</span>
+                    </Link>
+                  </li>
+                </ul>
+              )}
+            </li>
+            {/* PT Session Dropdown */}
+            <li>
+              <button
+                type="button"
+                className={`flex items-center w-full py-2 px-4 text-base transition duration-75 rounded-lg font-bold ${ptDropdownOpen ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"}`}
+                aria-expanded={ptDropdownOpen}
+                aria-controls="pt-session-dropdown"
+                onClick={() => setPtDropdownOpen((open) => !open)}
+                data-collapse-toggle="pt-session-dropdown"
+              >
+                <FaChalkboardTeacher className="inline-block transition duration-75" />
+                <span className={`${navTextClass} flex-1 ms-3 text-left rtl:text-right whitespace-nowrap`}>PT Session</span>
+                <span className={`${dropdownArrowClass} w-3 h-3 transition-transform duration-300`}>
+                  {ptDropdownOpen ? (
+                    <FaAngleUp />
+                  ) : (
+                    <FaAngleDown />
+                  )}
+                </span>
+              </button>
+              {ptDropdownOpen && (
+                <ul id="pt-session-dropdown" className={`py-2 space-y-2 ${isCollapsed ? 'pl-0 text-center' : 'pl-6 border-l-2 border-gray-300 dark:border-gray-600'}`}>
+                  <li>
+                    <Link 
+                      href="/admin/pt/session" 
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/pt/session") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}>
+                      <FaCalendarCheck className="inline-block transition duration-75 mr-2" />
+                      <span className={navTextClass}>Details</span>
+                    </Link>
+                  </li>
+                  {/* <li>
+                    <Link 
+                      href="/admin/pt/plans" 
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/pt/plans") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}>
+                      <FaClipboardList className="inline-block transition duration-75 mr-2" />
+                      <span className={navTextClass}>Plans</span>
+                    </Link>
+                  </li> */}
+                  <li>
+                    <Link 
+                      href="/admin/pt/booking" 
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/pt/booking") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}>
+                      <FaCheckCircle className="inline-block transition duration-75 mr-2" />
+                      <span className={navTextClass}>Booking</span>
+                    </Link>
+                  </li>
+                </ul>
+              )}
+            </li>
+
+            {/* Class Session Dropdown */}
+            <li>
+              <button
+                type="button"
+                className={`flex items-center w-full py-2 px-4 text-base transition duration-75 rounded-lg font-bold ${classDropdownOpen ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"}`}
+                aria-expanded={classDropdownOpen}
+                aria-controls="class-session-dropdown"
+                onClick={() => setClassDropdownOpen((open) => !open)}
+                data-collapse-toggle="class-session-dropdown"
+              >
+                <FaDumbbell className="inline-block transition duration-75" />
+                <span className={`${navTextClass} flex-1 ms-3 text-left rtl:text-right whitespace-nowrap`}>Class Session</span>
+                <span className={`${dropdownArrowClass} w-3 h-3 transition-transform duration-300`}>
+                  {classDropdownOpen ? (
+                    <FaAngleUp />
+                  ) : (
+                    <FaAngleDown />
+                  )}
+                </span>
+              </button>
+              {classDropdownOpen && (
+                <ul id="class-session-dropdown" className={`py-2 space-y-2 ${isCollapsed ? 'pl-0 text-center' : 'pl-6 border-l-2 border-gray-300 dark:border-gray-600'}`}>
+                  <li>
+                    <Link
+                      href="/admin/class/session"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/class/session") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"}`}
+                    >
+                    <FaCalendarCheck className="inline-block transition duration-75 mr-2" /> 
+                    <span className={navTextClass}>Details</span>
+                    </Link>
+                  </li>
+                  {/* <li>
+                    <Link
+                      href="/admin/class/plans"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/class/plans") ? "bg-amber-300 text-gray-600" : "hover:bg-gray-700 text-amber-300"}`}
+                    >
+                      <FaClipboardList className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Plans</span>
+                    </Link>
+                  </li> */}
+                  <li>
+                    <Link
+                      href="/admin/class/attendance"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/class/attendance") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"}`}
+                    >
+                      <FaCheckCircle className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Attendance</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/class/classpurchase"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/class/classpurchase") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"}`}
+                    >
+                      <FaShoppingBag className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Class Purchase</span>
+                    </Link>
+                  </li>
+                </ul>
+              )}
+            </li>
+
+            {/* Report Dropdown */}
+            <li>
+              <button
+                type="button"
+                className={`flex items-center w-full py-2 px-4 text-base transition duration-75 rounded-lg font-bold ${reportDropdownOpen ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"}`}
+                aria-expanded={reportDropdownOpen}
+                aria-controls="report-dropdown"
+                onClick={() => setReportDropdownOpen((open) => !open)}
+                data-collapse-toggle="report-dropdown"
+              >
+                <FaChartLine className="inline-block transition duration-75" />
+                <span className={`${navTextClass} flex-1 ms-3 text-left rtl:text-right whitespace-nowrap`}>Reports</span>
+                <span className={`${dropdownArrowClass} w-3 h-3 transition-transform duration-300`}>
+                  {reportDropdownOpen ? (
+                    <FaAngleUp />
+                  ) : (
+                    <FaAngleDown />
+                  )}
+                </span>
+              </button>
+              {reportDropdownOpen && (
+                <ul id="report-dropdown" className={`py-2 space-y-2 ${isCollapsed ? 'pl-0 text-center' : 'pl-6 border-l-2 border-gray-300 dark:border-gray-600'}`}>
+                  <li>
+                    <Link
+                      href="/admin/report/revenue"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/report/revenue") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaChartLine className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Revenue</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/report/checkin"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/report/checkin") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaUserCheck className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Check-in</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/report/membership"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/report/membership") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaIdCard className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Membership</span>
+                    </Link>
+                  </li>                                   
+                  <li>
+                    <Link
+                      href="/admin/report/pt-session"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/report/pt-session") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaChalkboardTeacher className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>PT Session</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/report/class"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/report/class") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaDumbbell className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Class</span>
+                    </Link>
+                  </li>
+                </ul>
+              )}
+            </li>
+
+            {/* Schedule Dropdown */}
+            <li>
+              <button
+                type="button"
+                className={`flex items-center w-full py-2 px-4 text-base transition duration-75 rounded-lg font-bold ${scheduleDropdownOpen ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"}`}
+                aria-expanded={scheduleDropdownOpen}
+                aria-controls="schedule-dropdown"
+                onClick={() => setScheduleDropdownOpen((open) => !open)}
+                data-collapse-toggle="schedule-dropdown"
+              >
+                <FaCalendarAlt className="inline-block transition duration-75" />
+                <span className={`${navTextClass} flex-1 ms-3 text-left rtl:text-right whitespace-nowrap`}>Schedule</span>
+                <span className={`${dropdownArrowClass} w-3 h-3 transition-transform duration-300`}>
+                  {scheduleDropdownOpen ? (
+                    <FaAngleUp />
+                  ) : (
+                    <FaAngleDown />
+                  )}
+                </span>
+              </button>
+              {scheduleDropdownOpen && (
+                <ul id="schedule-dropdown" className={`py-2 space-y-2 ${isCollapsed ? 'pl-0 text-center' : 'pl-6 border-l-2 border-gray-300 dark:border-gray-600'}`}>
+                  <li>
+                    <Link
+                      href="/admin/staff-schedule"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/staff-schedule") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaUserCheck className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Staff Schedule</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/class-schedule"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/class-schedule") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaDumbbell className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Class Schedule</span>
+                    </Link>
+                  </li>
+                </ul>
+              )}
+            </li>
+
+            {/* Settings Dropdown */}
+            <li>
+              <button
+                type="button"
+                className={`flex items-center w-full py-2 px-4 text-base transition duration-75 rounded-lg font-bold ${settingsDropdownOpen ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"}`}
+                aria-expanded={settingsDropdownOpen}
+                aria-controls="settings-dropdown"
+                onClick={() => setSettingsDropdownOpen((open) => !open)}
+                data-collapse-toggle="settings-dropdown"
+              >
+                <FaCog className="inline-block transition duration-75" />
+                <span className={`${navTextClass} flex-1 ms-3 text-left rtl:text-right whitespace-nowrap`}>Settings</span>
+                <span className={`${dropdownArrowClass} w-3 h-3 transition-transform duration-300`}>
+                  {settingsDropdownOpen ? (
+                    <FaAngleUp />
+                  ) : (
+                    <FaAngleDown />
+                  )}
+                </span>
+              </button>
+              {settingsDropdownOpen && (
+                <ul id="settings-dropdown" className={`py-2 space-y-2 ${isCollapsed ? 'pl-0 text-center' : 'pl-6 border-l-2 border-gray-300 dark:border-gray-600'}`}>
+                  <li>
+                    <Link
+                      href="/admin/membership/plans"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/membership/plans") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaIdCard  className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Membership Plans</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/pt/plans"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/pt/plans") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaChalkboardTeacher className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>PT Plans</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/class/plans"
+                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/class/plans") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <FaDumbbell className="inline-block transition duration-75 mr-2" /> 
+                      <span className={navTextClass}>Class Plans</span>
+                    </Link>
+                  </li>
+                </ul>
+              )}
+            </li>
+
+            {/* <li>
+              <Link 
+                href="/barcode" 
+                className="flex items-center py-2 px-4 gap-2 rounded-lg font-semibold hover:bg-gray-700 text-amber-300"
+              >
+                <FaBarcode className="inline-block transition duration-75" /> 
+                <span className={navTextClass}>Scan Barcode</span>
+              </Link>
+            </li> */}
+
+            <li>
+              <Link 
+                href="/checkin" 
+                className="flex items-center py-2 px-4 gap-2 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"
+              >
+                <FaBarcode className="inline-block transition duration-75" /> 
+                <span className={navTextClass}>Checkin</span>
+              </Link>
+            </li>
+
+          </ul>
+
+          <div className="mt-auto hidden sm:block">
+            <button 
+                id="sidebar-toggle" 
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                className="w-full flex items-center justify-center p-4 text-gray-700 dark:text-amber-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 group"
+              >
+                {isCollapsed ? (
+                    <FaAngleDoubleRight className="w-6 h-6 transition-transform duration-300" />
+                ) : (
+                    <FaAngleDoubleLeft className="w-6 h-6 transition-transform duration-300" />
+                )}
+              </button>
+          </div>
+        </div>
+      </aside>        
+        
+      <main className={`flex-1 overflow-x-hidden bg-gray-50 dark:bg-gray-900 min-h-screen transition-all duration-300 ease-in-out ${isCollapsed ? 'sm:ml-20' : 'sm:ml-64'}`}>{children}</main>
+    </div>
+  </div>
   );
 }
