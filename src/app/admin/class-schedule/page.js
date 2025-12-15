@@ -27,7 +27,7 @@ export default function ClassSchedulePage() {
 
   const fetchEventPlans = async () => {
     try {
-      const data = await api.get('/api/eventplans');
+      const data = await api.get('/api/eventplans?limit=10000');
       if (data.success) {
         setEventPlans(data.data?.plans || []);
       }
@@ -38,7 +38,7 @@ export default function ClassSchedulePage() {
 
   const fetchInstructors = async () => {
     try {
-      const data = await api.get('/api/users?exclude_role=member');
+      const data = await api.get('/api/users?exclude_role=member&limit=10000');
       if (data.success) {
         setInstructors(data.data?.users || []);
       }
@@ -166,7 +166,6 @@ export default function ClassSchedulePage() {
     const dayStr = `${year}-${month}-${dayOfMonth}`;
     
     const [hour] = timeSlot.split(':');
-    
     return classes.filter(cls => {
       // Parse start_time date without timezone conversion
       const classDate = cls.start_time.split('T')[0];
@@ -174,7 +173,14 @@ export default function ClassSchedulePage() {
       const startHour = new Date(cls.start_time).getUTCHours();
       const endHour = new Date(cls.end_time).getUTCHours();
 
-      return classDate === dayStr && startHour <= parseInt(hour) && endHour > parseInt(hour);
+      // if (cls.id === 15 && classDate === dayStr && startHour <= parseInt(hour) && endHour >= parseInt(hour)) {
+      //   console.log(`Class ${cls.id}, classDate ${classDate}, dayStr ${dayStr}, startHour ${startHour}, endHour ${endHour}, hour ${hour}, parseInt(hour) ${parseInt(hour)}`);
+      //   return classDate === dayStr && startHour <= parseInt(hour) && endHour >= parseInt(hour);
+      // } else {
+      //   return false
+      // }
+
+      return classDate === dayStr && startHour <= parseInt(hour) && endHour >= parseInt(hour);
     });
   };
 
@@ -235,7 +241,34 @@ export default function ClassSchedulePage() {
 
   const displayDays = getDisplayDays();
   const weekDays = getWeekDays();
-  const timeSlots = getTimeSlots();
+  // Compute only the time slots (hours) that have at least one class for any displayed day
+  const getActiveTimeSlots = () => {
+    const slotsSet = new Set();
+    displayDays.forEach((day) => {
+      // Format day as YYYY-MM-DD
+      const year = day.getFullYear();
+      const month = String(day.getMonth() + 1).padStart(2, '0');
+      const dayOfMonth = String(day.getDate()).padStart(2, '0');
+      const dayStr = `${year}-${month}-${dayOfMonth}`;
+      classes.forEach((cls) => {
+        // Only consider classes for this day
+        const classDate = cls.start_time.split('T')[0];
+        if (classDate !== dayStr) return;
+        // Get start and end hour (UTC, as in getClassesForDayAndTime)
+        const startHour = new Date(cls.start_time).getUTCHours();
+        const endHour = new Date(cls.end_time).getUTCHours();
+        for (let hour = startHour; hour <= endHour; hour++) {
+          slotsSet.add(hour);
+        }
+      });
+    });
+    // Sort and format as HH:00
+    return Array.from(slotsSet)
+      .sort((a, b) => a - b)
+      .map((hour) => `${hour.toString().padStart(2, '0')}:00`);
+  };
+
+  const timeSlots = getActiveTimeSlots();
   const { start, end } = getDateRange();
 
   return (
@@ -388,58 +421,62 @@ export default function ClassSchedulePage() {
               ))}
             </div>
 
-            {/* Time Slots */}
-            {timeSlots.map((timeSlot) => (
-              <div 
-                key={timeSlot} 
-                className="gap-2 mb-2"
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: `100px repeat(${displayDays.length}, ${viewMode === 'month' ? '60px' : '1fr'})`
-                }}
-              >
-                <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded text-center font-semibold border border-gray-300 dark:border-gray-600 flex items-center justify-center">
-                  {timeSlot}
-                </div>
+            {/* Time Slots (only those with classes) */}
+            {timeSlots.length === 0 ? (
+              <div className="text-center text-gray-400 py-8">No classes found for this period.</div>
+            ) : (
+              timeSlots.map((timeSlot) => (
+                <div 
+                  key={timeSlot} 
+                  className="gap-2 mb-2"
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: `100px repeat(${displayDays.length}, ${viewMode === 'month' ? '60px' : '1fr'})`
+                  }}
+                >
+                  <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded text-center font-semibold border border-gray-300 dark:border-gray-600 flex items-center justify-center">
+                    {timeSlot}
+                  </div>
 
-                {displayDays.map((day) => {
-                  const dayClasses = getClassesForDayAndTime(day, timeSlot);
-                  
-                  return (
-                    <div
-                      key={`${day}-${timeSlot}`}
-                      className={`bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 ${
-                        viewMode === 'month' ? 'p-0.5 min-h-[50px]' : 'p-1 min-h-[80px]'
-                      }`}
-                    >
-                      {dayClasses.map((cls) => (
-                        <Link
-                          key={cls.id}
-                          href={`/admin/class-schedule/${cls.id}`}
-                          className={`block mb-1 rounded cursor-pointer hover:opacity-80 transition ${
-                            viewMode === 'month' ? 'p-1 text-[10px]' : 'p-2 text-xs'
-                          }`}
-                          style={{ backgroundColor: getSlotBadgeColor(cls) }}
-                          title={`${cls.event_plan.name}\n${cls.instructor.name}\n${formatTime(cls.start_time)} - ${formatTime(cls.end_time)}\n${cls.total_attendances}/${cls.event_plan.max_visitor} attendees`}
-                        >
-                          <div className="font-bold text-white truncate">{cls.event_plan.name}</div>
-                          {viewMode !== 'month' && (
-                            <>
-                              <div className="text-white/90 text-xs truncate">{cls.instructor.name}</div>
-                              <div className="text-white/70 text-xs">{formatTime(cls.start_time)}</div>
-                              <div className="flex items-center gap-1 text-white/90 text-xs mt-1">
-                                <FaUsers className="text-xs" />
-                                <span>{cls.total_attendances}/{cls.event_plan.max_visitor}</span>
-                              </div>
-                            </>
-                          )}
-                        </Link>
-                      ))}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
+                  {displayDays.map((day) => {
+                    const dayClasses = getClassesForDayAndTime(day, timeSlot);
+                    
+                    return (
+                      <div
+                        key={`${day}-${timeSlot}`}
+                        className={`bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 ${
+                          viewMode === 'month' ? 'p-0.5 min-h-[50px]' : 'p-1 min-h-[80px]'
+                        }`}
+                      >
+                        {dayClasses.map((cls) => (
+                          <Link
+                            key={cls.id}
+                            href={`/admin/class-schedule/${cls.id}`}
+                            className={`block mb-1 rounded cursor-pointer hover:opacity-80 transition ${
+                              viewMode === 'month' ? 'p-1 text-[10px]' : 'p-2 text-xs'
+                            }`}
+                            style={{ backgroundColor: getSlotBadgeColor(cls) }}
+                            title={`${cls.event_plan.name}\n${cls.instructor.name}\n${formatTime(cls.start_time)} - ${formatTime(cls.end_time)}\n${cls.total_attendances}/${cls.event_plan.max_visitor} attendees`}
+                          >
+                            <div className="font-bold text-white truncate">{cls.event_plan.name}</div>
+                            {viewMode !== 'month' && (
+                              <>
+                                <div className="text-white/90 text-xs truncate">{cls.instructor.name}</div>
+                                <div className="text-white/70 text-xs">{formatTime(cls.start_time)}</div>
+                                <div className="flex items-center gap-1 text-white/90 text-xs mt-1">
+                                  <FaUsers className="text-xs" />
+                                  <span>{cls.total_attendances}/{cls.event_plan.max_visitor}</span>
+                                </div>
+                              </>
+                            )}
+                          </Link>
+                        ))}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))
+            )}
           </div>
         )}
       </div>

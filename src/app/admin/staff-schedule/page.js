@@ -167,7 +167,7 @@ export default function StaffScheduleCalendarPage() {
       const startHour = new Date(schedule.start_time).getUTCHours();
       const endHour = new Date(schedule.end_time).getUTCHours();
       
-      return scheduleDate === dayStr && startHour <= parseInt(hour) && endHour > parseInt(hour);
+      return scheduleDate === dayStr && startHour <= parseInt(hour) && endHour >= parseInt(hour);
     });
   };
 
@@ -277,7 +277,34 @@ export default function StaffScheduleCalendarPage() {
 
   const displayDays = getDisplayDays();
   const weekDays = getWeekDays();
-  const timeSlots = getTimeSlots();
+  // Compute only the time slots (hours) that have at least one schedule for any displayed day
+  const getActiveTimeSlots = () => {
+    const slotsSet = new Set();
+    displayDays.forEach((day) => {
+      // Format day as YYYY-MM-DD
+      const year = day.getFullYear();
+      const month = String(day.getMonth() + 1).padStart(2, '0');
+      const dayOfMonth = String(day.getDate()).padStart(2, '0');
+      const dayStr = `${year}-${month}-${dayOfMonth}`;
+      schedules.forEach((schedule) => {
+        // Only consider schedules for this day
+        const scheduleDate = schedule.start_time.split('T')[0];
+        if (scheduleDate !== dayStr) return;
+        // Get start and end hour (UTC, as in getSchedulesForDayAndTime)
+        const startHour = new Date(schedule.start_time).getUTCHours();
+        const endHour = new Date(schedule.end_time).getUTCHours();
+        for (let hour = startHour; hour <= endHour; hour++) {
+          slotsSet.add(hour);
+        }
+      });
+    });
+    // Sort and format as HH:00
+    return Array.from(slotsSet)
+      .sort((a, b) => a - b)
+      .map((hour) => `${hour.toString().padStart(2, '0')}:00`);
+  };
+
+  const timeSlots = getActiveTimeSlots();
   const { start, end } = getDateRange();
 
   return (
@@ -427,67 +454,71 @@ export default function StaffScheduleCalendarPage() {
               ))}
             </div>
 
-            {/* Time Slots */}
-            {timeSlots.map((timeSlot) => (
-              <div 
-                key={timeSlot} 
-                className="gap-2 mb-2"
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: `100px repeat(${displayDays.length}, ${viewMode === 'month' ? '60px' : '1fr'})`
-                }}
-              >
-                <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded text-center font-semibold border border-gray-300 dark:border-gray-600 flex items-center justify-center">
-                  {timeSlot}
-                </div>
+            {/* Time Slots (only those with schedules) */}
+            {timeSlots.length === 0 ? (
+              <div className="text-center text-gray-400 py-8">No schedules found for this period.</div>
+            ) : (
+              timeSlots.map((timeSlot) => (
+                <div 
+                  key={timeSlot} 
+                  className="gap-2 mb-2"
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: `100px repeat(${displayDays.length}, ${viewMode === 'month' ? '60px' : '1fr'})`
+                  }}
+                >
+                  <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded text-center font-semibold border border-gray-300 dark:border-gray-600 flex items-center justify-center">
+                    {timeSlot}
+                  </div>
 
-                {displayDays.map((day) => {
-                  const daySchedules = getSchedulesForDayAndTime(day, timeSlot);
-                  
-                  return (
-                    <div
-                      key={`${day}-${timeSlot}`}
-                      className={`bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 ${
-                        viewMode === 'month' ? 'p-0.5 min-h-[50px]' : 'p-1 min-h-[80px]'
-                      }`}
-                    >
-                      {daySchedules.map((schedule) => (
-                        <div
-                          key={schedule.id}
-                          className={`mb-1 rounded cursor-pointer hover:opacity-80 transition relative group ${
-                            viewMode === 'month' ? 'p-1 text-[10px]' : 'p-2 text-xs'
-                          }`}
-                          style={{ backgroundColor: schedule.color }}
-                          title={`${schedule.staff_name}\n${schedule.title}\n${formatTime(schedule.start_time)} - ${formatTime(schedule.end_time)}\n${schedule.description || ''}`}
-                        >
-                          <div className="font-bold text-white truncate">{schedule.staff_name}</div>
-                          {viewMode !== 'month' && (
-                            <>
-                              <div className="text-white/90 truncate">{schedule.title}</div>
-                              <div className="text-white/70 text-xs">{formatTime(schedule.start_time)}</div>
-                            </>
-                          )}
-                          
-                          {schedule.source === 'manual' && viewMode !== 'month' && (
-                            <div className="absolute top-1 right-1 hidden group-hover:flex gap-1">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDelete(schedule.source_id);
-                                }}
-                                className="bg-red-600 hover:bg-red-700 text-white p-1 rounded text-xs"
-                              >
-                                <FaTrash />
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
+                  {displayDays.map((day) => {
+                    const daySchedules = getSchedulesForDayAndTime(day, timeSlot);
+                    
+                    return (
+                      <div
+                        key={`${day}-${timeSlot}`}
+                        className={`bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 ${
+                          viewMode === 'month' ? 'p-0.5 min-h-[50px]' : 'p-1 min-h-[80px]'
+                        }`}
+                      >
+                        {daySchedules.map((schedule) => (
+                          <div
+                            key={schedule.id}
+                            className={`mb-1 rounded cursor-pointer hover:opacity-80 transition relative group ${
+                              viewMode === 'month' ? 'p-1 text-[10px]' : 'p-2 text-xs'
+                            }`}
+                            style={{ backgroundColor: schedule.color }}
+                            title={`${schedule.staff_name}\n${schedule.title}\n${formatTime(schedule.start_time)} - ${formatTime(schedule.end_time)}\n${schedule.description || ''}`}
+                          >
+                            <div className="font-bold text-white truncate">{schedule.staff_name}</div>
+                            {viewMode !== 'month' && (
+                              <>
+                                <div className="text-white/90 truncate">{schedule.title}</div>
+                                <div className="text-white/70 text-xs">{formatTime(schedule.start_time)}</div>
+                              </>
+                            )}
+                            
+                            {schedule.source === 'manual' && viewMode !== 'month' && (
+                              <div className="absolute top-1 right-1 hidden group-hover:flex gap-1">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDelete(schedule.source_id);
+                                  }}
+                                  className="bg-red-600 hover:bg-red-700 text-white p-1 rounded text-xs"
+                                >
+                                  <FaTrash />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))
+            )}
           </div>
         )}
       </div>
