@@ -168,11 +168,8 @@ export default function CreateUserPage() {
         setTimeout(() => router.push("/admin/users"), 1200);
       }
     } catch (err) {
-      if (err.message === "Email is already registered") {
-        setError(err.message);
-      } else {
-        setBackendError(true);
-      }
+      setError(err.data?.message || "Failed to create user");
+      console.log("error: ", err);
     } finally {
       setLoading(false);
     }

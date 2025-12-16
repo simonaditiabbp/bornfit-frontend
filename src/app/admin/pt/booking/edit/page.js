@@ -108,7 +108,8 @@ export default function PTBookingEditPage() {
       setSuccess("Booking berhasil diupdate!");
       setEdit(false);
     } catch (err) {
-      setError(err.data?.message || "Gagal update booking");
+      setError(err.data?.message || 'Failed to update booking');
+      console.log("error: ", err);
     }
     setFormLoading(false);
   };
@@ -120,7 +121,8 @@ export default function PTBookingEditPage() {
       await api.delete(`/api/ptsessionbookings/${id}`);
       router.push('/admin/pt/booking');
     } catch (err) {
-      setError("Gagal menghapus booking");
+      setError(err.data?.message || "Failed to delete booking");
+      console.log("error: ", err);
     }
     setFormLoading(false);
   };

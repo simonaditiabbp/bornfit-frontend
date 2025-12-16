@@ -99,7 +99,8 @@ export default function PTSessionEditPage() {
       setEdit(false);
       setTimeout(() => window.location.reload(), 500);
     } catch (err) {
-      setError("Gagal update session");
+      setError(err.data?.message || 'Failed to update session');
+      console.log("error: ", err);
     }
     setFormLoading(false);
   };
@@ -111,7 +112,8 @@ export default function PTSessionEditPage() {
       await api.delete(`/api/personaltrainersessions/${id}`);
       router.push('/admin/pt/session');
     } catch (err) {
-      setError("Gagal menghapus session");
+      setError(err.data?.message || "Failed to delete session");
+      console.log("error: ", err);
     }
     setFormLoading(false);
   };

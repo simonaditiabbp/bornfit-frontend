@@ -76,19 +76,21 @@ export default function ClassPlanEditPage() {
       setSuccess('Plan updated');
       setEdit(false);
     } catch (err) {
-      setError('Gagal update plan');
+      setError(err.data?.message || 'Failed to update plan');
+      console.log("error: ", err);
     }
     setFormLoading(false);
   };
 
   const handleDelete = async () => {
-    if (!confirm('Yakin ingin menghapus plan ini?')) return;
+    if (!confirm('Are you sure you want to delete this plan?')) return;
     setFormLoading(true);
     try {
       await api.delete(`/api/eventplans/${id}`);
       router.push('/admin/class/plans');
     } catch (err) {
-      setError('Gagal menghapus plan');
+      setError(err.data?.message || 'Failed to delete plan');
+      console.log("error: ", err);
     }
     setFormLoading(false);
   };

@@ -40,7 +40,8 @@ export default function PTPlanInsertPage() {
       await api.post('/api/ptsessionplans', form);
       router.push("/admin/pt/plans");
     } catch (err) {
-      alert("Gagal menyimpan plan");
+      setError(err.data?.message || 'Failed to create plan');
+      console.log("error: ", err);
     }
     setLoading(false);
   };

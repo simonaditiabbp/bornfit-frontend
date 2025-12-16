@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {QRCodeCanvas, QRCodeSVG } from 'qrcode.react';
-import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { jsPDF } from "jspdf";
@@ -10,13 +9,12 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import BackendErrorFallback from '../../../components/BackendErrorFallback';
-import { FaPlus, FaUser } from 'react-icons/fa';
+import { FaPlus, FaSyncAlt, FaUser } from 'react-icons/fa';
 import CreateUserModal from '../../../components/CreateUserModal';
 import api from '@/utils/fetchClient';
-import { PageBreadcrumb } from '@/components/admin';
+import { PageBreadcrumb, PageContainer, PageHeader, LoadingText } from '@/components/admin';
 
 const UsersDataTable = dynamic(() => import('./DataTable'), { ssr: false });
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -273,26 +271,24 @@ export default function AdminUsersPage() {
         ]}
       />
       
-      <div className="m-5 p-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg">
-        <div className="mb-4 flex items-center justify-between">
-          <input
-            type="text"
-            placeholder="Search name/email..."
-            className="w-full max-w-xs p-2 border text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 border-gray-300 dark:border-amber-200 rounded focus:outline-none text-base"
-            value={searchInput}
-            onChange={e => { setSearchInput(e.target.value); setPage(1); }}
-          />
-
+        <PageContainer>
+          <div className="flex items-center justify-between mb-6">
+            <input
+              type="text"
+              placeholder="Search name/email..."
+              value={searchInput}
+              onChange={e => setSearchInput(e.target.value)}
+              className="w-full max-w-xs p-2 border text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 border-gray-300 dark:border-amber-200 rounded focus:outline-none text-base"
+            />
           <button 
             onClick={() => setCreateUser(true)}
-            className="flex items-center gap-2 bg-gray-600 dark:bg-amber-400 text-white dark:text-gray-900 px-4 py-2 rounded-lg font-semibold hover:bg-gray-700 dark:hover:bg-amber-500"
-          >
+            className="flex items-center gap-2 bg-gray-600 dark:bg-amber-400 text-white dark:text-gray-900 px-4 py-2 rounded-lg font-semibold hover:bg-gray-700 dark:hover:bg-amber-500">
             <FaPlus className="inline-block" />
             Create
-          </button>
+          </button>          
         </div>
         {loading ? (
-          <div className="text-center text-gray-800 dark:text-amber-300">Loading...</div>
+          <LoadingText />
         ) : (
           <>
             <UsersDataTable
@@ -310,7 +306,9 @@ export default function AdminUsersPage() {
             />
           </>
         )}
-        {/* Modal QR Code */}
+      </PageContainer>
+      
+      {/* Modal QR Code */}
         {qrUser && (
           <div 
             className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
@@ -570,12 +568,11 @@ export default function AdminUsersPage() {
           </div>
         )}
 
-        <CreateUserModal 
-          isOpen={createUser} 
-          onClose={() => setCreateUser(false)} 
-          // onRefresh={() => fetchAll()}
-        />
-      </div>
+      <CreateUserModal 
+        isOpen={createUser} 
+        onClose={() => setCreateUser(false)} 
+        onRefresh={() => window.location.reload()}
+      />
     </div>
   );
 }

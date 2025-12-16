@@ -9,7 +9,7 @@ import Link from 'next/link';
 import Webcam from 'react-webcam';
 import SendQRCodeModal from '../../../../components/SendQRCodeModal';
 import api from '@/utils/fetchClient';
-import { PageBreadcrumb } from '@/components/admin';
+import { PageBreadcrumb, FormInput, FormInputGroup, PageContainer, PageHeader, LoadingText } from '@/components/admin';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -92,17 +92,15 @@ export default function UserDetailPage() {
       if (dobIso && dobIso.length === 10) {
         dobIso = dobIso + "T00:00:00.000Z";
       }
-      // Get token only when needed for FormData upload
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      
       if (photo) {
         const formData = new FormData();
         formData.append('name', form.name);
-        // formData.append('email', form.email);
         formData.append('role', form.role);
-        // formData.append('date_of_birth', dobIso);
         if (form.email && form.email.trim() !== "") {
           formData.append('email', form.email);
+        }
+        if (form.phone && form.phone.trim() !== "") {
+          formData.append('phone', form.phone);
         }
         if (form.date_of_birth && form.date_of_birth.trim() !== "") {
           let dobIso = form.date_of_birth;
@@ -112,16 +110,15 @@ export default function UserDetailPage() {
         if (form.nik_passport && form.nik_passport.trim() !== "") {
           formData.append('nik_passport', form.nik_passport);
         }
-
-        // formData.append('latitude', form.latitude && !isNaN(Number(form.latitude)) ? Number(form.latitude) : null);
-        // formData.append('longitude', form.longitude && !isNaN(Number(form.longitude)) ? Number(form.longitude) : null);
+        if (form.emergency_contact_name && form.emergency_contact_name.trim() !== "") {
+          formData.append('emergency_contact_name', form.emergency_contact_name);
+        }
+        if (form.emergency_contact_phone && form.emergency_contact_phone.trim() !== "") {
+          formData.append('emergency_contact_phone', form.emergency_contact_phone);
+        }
         formData.append('photo', photo);
-        res = await fetch(`${API_URL}/api/users/${id}`, {
-          method: 'PUT',
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData,
-        });
-        data = await res.json();
+        data = await api.put(`/api/users/${id}`, formData);
+        res = { ok: true };
       } else {
         // Use api client for non-FormData requests
         const cleanForm = {
@@ -148,25 +145,26 @@ export default function UserDetailPage() {
       setPhotoPreview(null);
       if (userUpdateSuccess) {
         // Ambil ulang data user terbaru agar preview langsung update
-        const tokenData = localStorage.getItem('token');
-        const res = await fetch(`${API_URL}/api/users/${id}`, { headers: { Authorization: `Bearer ${tokenData}` } });
-        const userRes = await res.json();
+        const userRes = await api.get(`/api/users/${id}`);
         setUser(userRes.data);
         setSuccess("User updated successfully!");
       }
     } catch (err) {
-      if (err.message === "Email is already registered!") {
-        setError(err.message);
-      } else {
-        setBackendError(true);
-      }
+      setError(err.data?.message || "Failed to update user");
+      console.log("error: ", err);
     }
   };
 
   const handleDelete = async () => {
-    if (confirm('Yakin ingin menghapus member ini?')) {
+    if (!confirm('Are you sure you want to delete this user?')) return;
+    try {
       await api.delete(`/api/users/${id}`);
-      router.replace('/admin/users');      
+      setSuccess("User deleted successfully!");
+      router.replace('/admin/users');
+    } catch (err) {
+      setError(err.data?.message || 'Failed to delete user');
+      console.log("error: ", err);
+      alert('Failed to delete user. Please try again.');
     }
   };
 
@@ -186,7 +184,7 @@ export default function UserDetailPage() {
       <div className="p-5">
         <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-10 border border-gray-200 dark:border-gray-600">
           {loading ? (
-            <div className="text-blue-600 text-center font-medium">Loading...</div>
+            <LoadingText />
           ) : (
           <>            
             <div className="flex justify-between items-center mb-8 border-b pb-3">
@@ -208,7 +206,7 @@ export default function UserDetailPage() {
               <div className="flex flex-col items-center mb-8">
 
                 {(photoPreview || user?.photo) ? (
-                  <Image
+                  <img
                     src={
                       photoPreview ||
                       (user.photo.startsWith("http")
@@ -216,8 +214,6 @@ export default function UserDetailPage() {
                         : `${API_URL?.replace(/\/$/, "")}${user.photo}`)
                     }
                     alt="User Photo"
-                    width={128}
-                    height={128}
                     className="w-32 h-32 object-cover rounded-full border border-gray-300 shadow mb-3"
                   />
                 ) : (
@@ -310,47 +306,65 @@ export default function UserDetailPage() {
               </div>
 
             {/* INFO SECTION */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* USER FIELDS */}
-              <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-800 dark:text-gray-200">Name</label>
-                <input type="text" className={`w-full p-3 text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 border rounded-lg ${edit ? 'border-gray-300 dark:border-gray-200' : 'border-gray-200 dark:border-gray-600'}`} value={form.name} disabled={!edit} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-800 dark:text-gray-200">Email</label>
-                <input type="email" className={`w-full p-3 text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 border rounded-lg ${edit ? 'border-gray-300 dark:border-gray-200' : 'border-gray-200 dark:border-gray-600'}`} value={form.email} disabled={!edit} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-800 dark:text-gray-200">Phone</label>
-                <input type="text" className={`w-full p-3 text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 border rounded-lg ${edit ? 'border-gray-300 dark:border-gray-200' : 'border-gray-200 dark:border-gray-600'}`} value={form.phone} disabled={!edit} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-800 dark:text-gray-200">Date of Birth</label>
-                <input type="date" className={`w-full p-3 text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 border rounded-lg ${edit ? 'border-gray-300 dark:border-gray-200' : 'border-gray-200 dark:border-gray-600'}`} value={form.date_of_birth} disabled={!edit} onChange={e => setForm(f => ({ ...f, date_of_birth: e.target.value }))} />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-800 dark:text-gray-200">NIK/Passport</label>
-                <input type="text" className={`w-full p-3 text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 border rounded-lg ${edit ? 'border-gray-300 dark:border-gray-200' : 'border-gray-200 dark:border-gray-600'}`} value={form.nik_passport} disabled={!edit} onChange={e => setForm(f => ({ ...f, nik_passport: e.target.value }))} />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-800 dark:text-gray-200">Role</label>
-                <select className={`w-full p-3 text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 border rounded-lg ${edit ? 'border-gray-300 dark:border-gray-200' : 'border-gray-200 dark:border-gray-600'}`} value={form.role} disabled={!edit} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}>
-                  <option value="member">Member</option>
-                  <option value="admin">Admin</option>
-                  <option value="opscan">Opscan</option>
-                  <option value="trainer">Trainer</option>
-                  <option value="instructor">Instructor</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-800 dark:text-gray-200">Emergency Contact Name</label>
-                <input type="text" className={`w-full p-3 text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 border rounded-lg ${edit ? 'border-gray-300 dark:border-gray-200' : 'border-gray-200 dark:border-gray-600'}`} value={form.emergency_contact_name} disabled={!edit} onChange={e => setForm(f => ({ ...f, emergency_contact_name: e.target.value }))} />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-800 dark:text-gray-200">Emergency Contact Phone</label>
-                <input type="text" className={`w-full p-3 text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 border rounded-lg ${edit ? 'border-gray-300 dark:border-gray-200' : 'border-gray-200 dark:border-gray-600'}`} value={form.emergency_contact_phone} disabled={!edit} onChange={e => setForm(f => ({ ...f, emergency_contact_phone: e.target.value }))} />
-              </div>
-            </div>
+            <FormInputGroup className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormInput
+                label="Name"
+                value={form.name}
+                disabled={!edit}
+                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+              />
+              <FormInput
+                label="Email"
+                type="email"
+                value={form.email}
+                disabled={!edit}
+                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+              />
+              <FormInput
+                label="Phone"
+                value={form.phone}
+                disabled={!edit}
+                onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+              />
+              <FormInput
+                label="Date of Birth"
+                type="date"
+                value={form.date_of_birth}
+                disabled={!edit}
+                onChange={e => setForm(f => ({ ...f, date_of_birth: e.target.value }))}
+              />
+              <FormInput
+                label="NIK/Passport"
+                value={form.nik_passport}
+                disabled={!edit}
+                onChange={e => setForm(f => ({ ...f, nik_passport: e.target.value }))}
+              />
+              <FormInput
+                label="Role"
+                type="select"
+                value={form.role}
+                disabled={!edit}
+                onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
+              >
+                <option value="member">Member</option>
+                <option value="admin">Admin</option>
+                <option value="opscan">Opscan</option>
+                <option value="trainer">Trainer</option>
+                <option value="instructor">Instructor</option>
+              </FormInput>
+              <FormInput
+                label="Emergency Contact Name"
+                value={form.emergency_contact_name}
+                disabled={!edit}
+                onChange={e => setForm(f => ({ ...f, emergency_contact_name: e.target.value }))}
+              />
+              <FormInput
+                label="Emergency Contact Phone"
+                value={form.emergency_contact_phone}
+                disabled={!edit}
+                onChange={e => setForm(f => ({ ...f, emergency_contact_phone: e.target.value }))}
+              />
+            </FormInputGroup>
 
             {/* CHECKIN HISTORY */}
             <div className="mt-8">

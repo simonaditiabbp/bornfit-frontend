@@ -1,17 +1,20 @@
 'use client';
 import Link from 'next/link';
-import { FaTachometerAlt, FaUsers, FaDumbbell, FaClipboardList, FaCalendarCheck, FaBarcode, FaCheckCircle, FaSignOutAlt, FaBars, FaAngleRight, FaAngleDoubleLeft, FaMoon, FaAngleDoubleRight, FaUps, FaAngleUp, FaAngleDown, FaCalendar, FaUserCheck, FaChalkboardTeacher, FaShoppingBag, FaExchangeAlt, FaSnowflake, FaIdCard, FaChartLine, FaFileAlt, FaCalendarAlt, FaCog, FaUserTie, FaUserTag } from 'react-icons/fa';
+import { FaTachometerAlt, FaUsers, FaDumbbell, FaClipboardList, FaCalendarCheck, FaBarcode, FaCheckCircle, FaSignOutAlt, FaBars, FaAngleRight, FaAngleDoubleLeft, FaMoon, FaAngleDoubleRight, FaUps, FaAngleUp, FaAngleDown, FaCalendar, FaUserCheck, FaChalkboardTeacher, FaShoppingBag, FaExchangeAlt, FaSnowflake, FaIdCard, FaChartLine, FaFileAlt, FaCalendarAlt, FaCog, FaUserTie, FaUserTag, FaHistory } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
+import { useTheme } from '@/contexts/ThemeContext';
 import ThemeToggle from '@/components/ThemeToggle';
 import LoadingSpin from '@/components/admin/LoadingSpin';
+import logoDark from '@/assets/logodark.png';
 
 export default function AdminLayout({ children }) {
   const [user, setUser] = useState(null);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const { theme } = useTheme();
 
   // Sidebar Dropdown
   const [membershipDropdownOpen, setMembershipDropdownOpen] = useState(false);
@@ -93,7 +96,7 @@ export default function AdminLayout({ children }) {
               <div className="hidden sm:flex">
                 <a href="" className="flex ms-2 md:me-24">
                   <Image
-                    src={"/logo.svg"}
+                    src={theme === 'dark' ? "/logo.svg" : logoDark}
                     alt="BornFit Logo"
                     width={128}
                     height={128}
@@ -164,7 +167,7 @@ export default function AdminLayout({ children }) {
             <li className="sm:hidden mb-4 border-b-2 p-1 justify-center flex">
               <a href="" className="flex ms-2">
                 <Image
-                  src="/logo.svg"
+                  src={theme === 'dark' ? "/logo.svg" : logoDark}
                   alt="BornFit Logo"
                   width={128}
                   height={128}
@@ -557,6 +560,16 @@ export default function AdminLayout({ children }) {
               >
                 <FaBarcode className="inline-block transition duration-75" /> 
                 <span className={navTextClass}>Checkin</span>
+              </Link>
+            </li>
+
+            <li>
+              <Link 
+                href="/admin/history" 
+                className={`flex items-center py-2 px-4 gap-2 rounded-lg font-semibold ${pathname.startsWith("/admin/history") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"}`}
+              >
+                <FaHistory className="inline-block transition duration-75" /> 
+                <span className={navTextClass}>History</span>
               </Link>
             </li>
 

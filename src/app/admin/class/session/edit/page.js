@@ -224,7 +224,8 @@ export default function ClassSessionEditPage() {
         window.location.reload();
       }, 1500);
     } catch (err) {
-      setError("Gagal update class");
+      setError(err.data?.message || 'Failed to update class');
+      console.log("error: ", err);
     }
     setFormLoading(false);
   };
@@ -243,7 +244,8 @@ export default function ClassSessionEditPage() {
       await api.delete(`/api/classes/${id}`);
       router.push('/admin/class/session');
     } catch (err) {
-      setError("Gagal menghapus class");
+      setError(err.data?.message || 'Failed to delete class');
+      console.log("error: ", err);
     }
     setFormLoading(false);
   };

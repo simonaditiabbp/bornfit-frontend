@@ -79,19 +79,21 @@ export default function EditMembershipSessionPage() {
       setEdit(false);
       // setTimeout(() => window.location.reload(), 500);
     } catch (err) {
-      setError('Gagal update session');
+      setError(err.data?.message || 'Failed to update membership session');
+      console.log("error: ", err);
     }
     setFormLoading(false);
   };
 
   const handleDelete = async () => {
-    if (!confirm('Yakin ingin menghapus session ini?')) return;
+    if (!confirm('Are you sure you want to delete this session?')) return;
     setFormLoading(true);
     try {
       await api.delete(`/api/memberships/${id}`);
       router.push('/admin/membership/session');
     } catch (err) {
-      setError('Gagal menghapus session');
+      setError(err.data?.message || 'Failed to delete membership session');
+      console.log("error: ", err);
     }
     setFormLoading(false);
   };

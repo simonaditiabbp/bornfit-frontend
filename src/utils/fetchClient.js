@@ -27,17 +27,22 @@ class FetchClient {
   }
 
   async request(method, url, body, extraConfig = {}, retryCount = 0) {
+    // Check if body is FormData
+    const isFormData = body instanceof FormData;
+    
     let config = {
       method,
       headers: {
-        "Content-Type": "application/json",
+        // Don't set Content-Type for FormData (browser will auto-set with boundary)
+        ...(isFormData ? {} : { "Content-Type": "application/json" }),
         ...extraConfig.headers,
       },
       ...extraConfig,
     };
 
     if (body && method !== "GET") {
-      config.body = JSON.stringify(body);
+      // Don't stringify FormData
+      config.body = isFormData ? body : JSON.stringify(body);
     }
 
     // Run request interceptors

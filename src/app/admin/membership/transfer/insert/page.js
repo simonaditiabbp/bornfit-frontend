@@ -90,7 +90,8 @@ export default function TransferMembershipInsertPage() {
         router.push("/admin/membership/transfer");
       }, 1500);
     } catch (err) {
-      setError("Gagal transfer membership");
+      setError(err.data?.message || 'Failed to create membership transfer');
+      console.log("error: ", err);
     }
     setLoading(false);
   };

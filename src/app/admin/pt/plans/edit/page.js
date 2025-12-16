@@ -68,7 +68,8 @@ export default function PTPlanEditPage() {
       setSuccess("Plan updated successfully!");
       setEdit(false);
     } catch (err) {
-      setError("Gagal update plan");
+      setError(err.data?.message || 'Failed to update plan');
+      console.log("error: ", err);
     }
     setFormLoading(false);
   };
@@ -80,7 +81,8 @@ export default function PTPlanEditPage() {
       await api.delete(`/api/ptsessionplans/${id}`);
       router.push('/admin/pt/plans');
     } catch (err) {
-      setError("Gagal menghapus plan");
+      setError(err.data?.message || "Failed to delete plan");
+      console.log("error: ", err);
     }
     setFormLoading(false);
   };

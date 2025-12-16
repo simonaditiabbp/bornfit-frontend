@@ -1,11 +1,10 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import Webcam from "react-webcam";
 import { useRouter } from "next/navigation";
 import api from '@/utils/fetchClient';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { FormInput, FormInputGroup } from '@/components/admin';
 
 export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
   const router = useRouter();
@@ -164,32 +163,7 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
         formData.append('photo', photo);
       }
 
-      // Use manual fetch for FormData (cannot use api client)
-      const res = await fetch(`${API_URL}/api/users`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      // Handle 401 manually
-      if (res.status === 401) {
-         localStorage.removeItem("token");
-         localStorage.removeItem("user");
-         window.location.href = '/login';
-         return;
-      }
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        if (res.status === 409 && data.code === "EMAIL_EXISTS") {
-          setError("Email is already registered");
-          return;
-        }
-        throw new Error(data.message || "Failed to create user");
-      }
+      const data = await api.post('/api/users', formData);
 
       // Check if user has email for QR code notification
       const hasValidEmail = form.email && form.email.trim() !== '';
@@ -202,7 +176,6 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
       
       // Redirect based on role
       if (form.role === "member" && data.data.id) {
-        console.log("Masukk ke member redirect");
         // Member: redirect to membership insert
         setTimeout(() => {
           handleCloseInternal();
@@ -218,12 +191,8 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
       }
 
     } catch (err) {
-      if (err.message === "Email is already registered") {
-        setError(err.message);
-      } else {
-        console.log("err: ", err);
-        setError("Something went wrong");
-      }
+      setError(err.data?.message || 'Failed to create user');
+      console.log("error: ", err);
     } finally {
       setLoading(false);
     }
@@ -247,94 +216,90 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
         <div className="p-6 md:p-10 space-y-6">
           <form onSubmit={handleSubmit} className="space-y-6">
 
-            <div>
-              <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">Name <span className="text-red-600">*</span></label>
-              <input type="text" name="name" value={form.name} onChange={handleChange} required className="w-full text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-600 border border-gray-300 dark:border-gray-400 p-2 rounded focus:ring-0 outline-none" autoFocus />
-            </div>
+            <FormInput
+              label="Name"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              required
+              autoFocus
+            />
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">Email</label>
-                    <input type="email" name="email" value={form.email} onChange={handleChange} className="w-full text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-600 border border-gray-300 dark:border-gray-400 p-2 rounded focus:ring-0 outline-none" />
-                </div>
-                <div>
-                    <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">Phone <span className="text-red-600">*</span></label>
-                    <input type="text" name="phone" value={form.phone} onChange={handleChange} required className="w-full text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-600 border border-gray-300 dark:border-gray-400 p-2 rounded focus:ring-0 outline-none" />
-                </div>
-            </div>
+            <FormInputGroup className="grid grid-cols-2 gap-4">
+              <FormInput
+                label="Email"
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={handleChange}
+              />
+              <FormInput
+                label="Phone"
+                name="phone"
+                value={form.phone}
+                onChange={handleChange}
+                required
+              />
+            </FormInputGroup>
 
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">
-                  NIK/Passport
-                </label>
-                <input
-                  type="text"
-                  name="nik_passport"
-                  value={form.nik_passport}
-                  onChange={handleChange}
-                  className="w-full text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-600 border border-gray-300 dark:border-gray-400 p-2 rounded focus:ring-0 outline-none"
-                />
-              </div>
-              <div className="flex-1">
-                <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">
-                  Date of Birth
-                </label>
-                <input
-                  type="date"
-                  name="date_of_birth"
-                  value={form.date_of_birth}
-                  onChange={handleChange}
-                  className="w-full text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-600 border border-gray-300 dark:border-gray-400 p-2 rounded focus:ring-0 outline-none"
-                />
-              </div>          
-            </div>
+            <FormInputGroup className="grid grid-cols-2 gap-4">
+              <FormInput
+                label="NIK/Passport"
+                name="nik_passport"
+                value={form.nik_passport}
+                onChange={handleChange}
+              />
+              <FormInput
+                label="Date of Birth"
+                name="date_of_birth"
+                type="date"
+                value={form.date_of_birth}
+                onChange={handleChange}
+              />
+            </FormInputGroup>
 
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">
-                  Emergency Contact Name <span className="text-red-600">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="emergency_contact_name"
-                  value={form.emergency_contact_name}
-                  onChange={handleChange}
-                  required
-                  className="w-full text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-600 border border-gray-300 dark:border-gray-400 p-2 rounded focus:ring-0 outline-none"
-                />
-              </div>
-              <div className="flex-1">
-                <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">
-                  Emergency Contact Phone <span className="text-red-600">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="emergency_contact_phone"
-                  value={form.emergency_contact_phone}
-                  onChange={handleChange}
-                  required
-                  className="w-full text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-600 border border-gray-300 dark:border-gray-400 p-2 rounded focus:ring-0 outline-none"
-                />
-              </div>
-            </div>
+            <FormInputGroup className="grid grid-cols-2 gap-4">
+              <FormInput
+                label="Emergency Contact Name"
+                name="emergency_contact_name"
+                value={form.emergency_contact_name}
+                onChange={handleChange}
+                required
+              />
+              <FormInput
+                label="Emergency Contact Phone"
+                name="emergency_contact_phone"
+                value={form.emergency_contact_phone}
+                onChange={handleChange}
+                required
+              />
+            </FormInputGroup>
 
-            <div>
-              <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">Role <span className="text-red-600">*</span></label>
-              <select name="role" value={form.role} onChange={handleRoleChange} className="w-full text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-600 border border-gray-300 dark:border-gray-400 p-2 rounded focus:ring-0 outline-none" required>
-                <option value="member">Member</option>
-                <option value="opscan">Opscan</option>
-                <option value="admin">Admin</option>
-                <option value="trainer">Trainer</option>
-                <option value="instructor">Instructor</option>
-              </select>
-            </div>
+            <FormInput
+              label="Role"
+              name="role"
+              type="select"
+              value={form.role}
+              onChange={handleRoleChange}
+              options={[
+                { value: 'member', label: 'Member' },
+                { value: 'opscan', label: 'Opscan' },
+                { value: 'admin', label: 'Admin' },
+                { value: 'trainer', label: 'Trainer' },
+                { value: 'instructor', label: 'Instructor' }
+              ]}
+              required
+            />
 
             {(form.role === "admin" || form.role === "opscan") && (
-              <div>
-                <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">Password <span className="text-red-600">*</span></label>
-                <input type="password" name="password" value={form.password} onChange={handleChange} required className="w-full text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-600 border border-gray-300 dark:border-gray-400 p-2 rounded focus:ring-0 outline-none" />
-              </div>
+              <FormInput
+                label="Password"
+                name="password"
+                type="password"
+                value={form.password}
+                onChange={handleChange}
+                required
+              />
             )}
 
             <div>

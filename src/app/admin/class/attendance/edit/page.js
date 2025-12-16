@@ -286,9 +286,14 @@ export default function EditAttendancePage() {
         const maxVisitor = planData.data?.max_visitor || 0;
 
         if (maxVisitor > 0 && currentAttendance >= maxVisitor) {
-          setError(`Class sudah penuh! Kapasitas maksimal: ${maxVisitor} orang, Saat ini: ${currentAttendance} orang`);
+          setError(`Class is full! Maximum capacity: ${maxVisitor} people, Current: ${currentAttendance} people`);
           setFormLoading(false);
-          alert(`Class sudah penuh!\n\nKapasitas maksimal: ${maxVisitor} orang\nJumlah peserta saat ini: ${currentAttendance} orang\n\nSilakan pilih class lain atau hubungi admin untuk menambah kapasitas.`);
+          alert(
+            `Class is full!\n\n` +
+            `Maximum capacity: ${maxVisitor} people\n` +
+            `Current number of participants: ${currentAttendance} people\n\n` +
+            `Please choose another class or contact the admin to increase the capacity.`
+          );
           return;
         }
       }
@@ -309,20 +314,22 @@ export default function EditAttendancePage() {
       setEdit(false);
       // Update initial form with new values
       setInitialForm(form);
-    } catch (err) {
-      setError("Gagal update attendance");
+    } catch (err) {      
+      setError(err.data?.message || 'Failed to update attendance');
+      console.log("error: ", err);
     }
     setFormLoading(false);
   };
 
   const handleDelete = async () => {
-    if (!confirm('Yakin ingin menghapus attendance ini?')) return;
+    if (!confirm('Are you sure you want to delete this attendance?')) return;
     setFormLoading(true);
     try {
       await api.delete(`/api/classattendances/${id}`);
       router.push('/admin/class/attendance');
     } catch (err) {
-      setError('Gagal menghapus attendance');
+      setError(err.data?.message || 'Failed to delete attendance');
+      console.log("error: ", err);
     }
     setFormLoading(false);
   };

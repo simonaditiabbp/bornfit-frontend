@@ -107,7 +107,8 @@ export default function InsertMembershipPlanPage() {
       });
       router.push('/admin/membership/plans');
     } catch (err) {
-      setError('Gagal menyimpan plan');
+      setError(err.data?.message || 'Failed to create plan');
+      console.log("error: ", err);
     }
     setLoading(false);
   };

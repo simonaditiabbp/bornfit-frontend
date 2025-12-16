@@ -75,7 +75,8 @@ export default function PTBookingCreatePage() {
       setSuccess("Booking berhasil dibuat!");
       setTimeout(() => router.push('/admin/pt/booking'), 1200);
     } catch (err) {
-      setError("Gagal membuat booking");
+      setError(err.data?.message || 'Failed to create PT booking');
+      console.log("error: ", err);
     }
     setLoading(false);
   };

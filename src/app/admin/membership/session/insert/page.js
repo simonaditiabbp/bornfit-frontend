@@ -82,7 +82,8 @@ export default function InsertMembershipSessionPage() {
       });
       router.push('/admin/membership/session');
     } catch (err) {
-      setError('Gagal menyimpan session');
+      setError(err.data?.message || 'Failed to add membership session');
+      console.log("error: ", err);
     }
     setLoading(false);
   };
