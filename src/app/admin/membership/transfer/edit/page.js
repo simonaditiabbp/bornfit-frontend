@@ -118,7 +118,8 @@ export default function TransferMembershipEditPage() {
       setSuccess("Transfer berhasil diupdate!");
       setEdit(false);
     } catch (err) {
-      setError("Gagal update transfer");
+      setError(err.data?.message || 'Failed to update membership transfer');
+      console.log("error: ", err);
     }
     setFormLoading(false);
   };
@@ -130,7 +131,8 @@ export default function TransferMembershipEditPage() {
       await api.delete(`/api/membership-transfers/${id}`);
       router.push('/admin/membership/transfer');
     } catch (err) {
-      setError("Gagal menghapus transfer");
+      setError(err.data?.message || 'Failed to delete membership transfer');
+      console.log("error: ", err);
     }
     setFormLoading(false);
   };

@@ -82,7 +82,8 @@ export default function ClassPurchaseInsertPage() {
       });
       router.push('/admin/class/classpurchase');
     } catch (err) {
-      setError(err.data?.message || 'Gagal menambah purchase');
+      setError(err.data?.message || 'Failed to add class purchase');
+      console.log("error: ", err);
     }
     setLoading(false);
   };
@@ -132,10 +133,9 @@ export default function ClassPurchaseInsertPage() {
             required
           />
           <FormActions
-            onSubmit={handleSubmit}
             onReset={handleReset}
             cancelHref="/admin/class/classpurchase"
-            loading={loading || fetchingData}
+            isSubmitting={loading}
           />
         </form>
       </PageContainerInsert>

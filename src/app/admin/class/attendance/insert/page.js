@@ -273,8 +273,8 @@ export default function InsertAttendancePage() {
       
       router.push("/admin/class/attendance");
     } catch (err) {
-      console.log("Error submitting attendance:", err);
-      setError(err.message || "Gagal menyimpan attendance");
+      setError(err.data?.message || 'Failed to add attendance');
+      console.log("error: ", err);
     }
     setLoading(false);
   }

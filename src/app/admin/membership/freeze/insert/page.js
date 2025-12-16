@@ -107,7 +107,8 @@ export default function FreezeMembershipInsertPage() {
         router.push("/admin/membership/freeze");
       }, 1500);
     } catch (err) {
-      setError("Gagal freeze membership");
+      setError(err.data?.message || 'Failed to freeze membership');
+      console.log("error: ", err);
     }
     setLoading(false);
   };

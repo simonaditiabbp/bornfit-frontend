@@ -135,6 +135,7 @@ export default function BarcodePage() {
           setBookingPTError(data.message || "Gagal booking PT session");
         }
       } catch (err) {
+        console.log("error: ", err);
         setBookingPTError("Gagal booking PT session");
       }
       setBookingPTLoading(false);
@@ -292,6 +293,7 @@ export default function BarcodePage() {
         setMessageType('error');
       }
     } catch (err) {
+      console.log("error: ", err);
       setUser(null);
       setMessage('Terjadi kesalahan saat check-in');
       setMessageType('error');
@@ -537,7 +539,7 @@ export default function BarcodePage() {
                   setScanMode(false);
                 } catch (err) {
                   setUser(null);
-              setMessage('An error occurred during check-in');
+                  setMessage('An error occurred during check-in');
                   setMessageType('error');
                   try { await html5QrCode.stop(); } catch (e) { console.error('Error stopping scanner after error:', e); }
                   setScanner(null);

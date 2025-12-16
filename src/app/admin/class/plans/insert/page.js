@@ -68,7 +68,8 @@ export default function ClassPlanInsertPage() {
       await api.post('/api/eventplans', payload);
       router.push("/admin/class/plans");
     } catch (err) {
-      setError("Gagal menyimpan plan");
+      setError(err.data?.message || 'Failed to add plan');
+      console.log("error: ", err);
     }
     setLoading(false);
   }

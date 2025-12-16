@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import BackendErrorFallback from '../../components/BackendErrorFallback';
+import { useTheme } from '@/contexts/ThemeContext';
+import logoDark from '@/assets/logodark.png';
+
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -15,6 +18,7 @@ export default function LoginPage() {
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
   const [backendError, setBackendError] = useState(false);
+  const { theme } = useTheme();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -99,14 +103,13 @@ export default function LoginPage() {
         />
     </div>
 
-    <div className="relative z-10 flex flex-col items-center justify-center w-full px-4 gap-8">
-      <div className="animate-fade-in-down">
+    <div className="relative z-10 flex flex-col items-center justify-center w-full px-4 gap-1">
+      <div className="animate-fade-in-down relative w-64 h-64">
         <Image
-          src={"./logo.svg"}
+          src={theme === 'dark' ? "/logo.svg" : logoDark}
           alt="BornFit Logo"
-          width={128}
-          height={128}
-          className="w-34 h-34"
+          fill
+          className="object-contain"
         />
       </div>
 

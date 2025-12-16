@@ -122,7 +122,8 @@ export default function EditMembershipPlanPage() {
       });
       router.push('/admin/membership/plans');
     } catch (err) {
-      setError('Gagal menyimpan plan');
+      setError(err.data?.message || 'Failed to update plan');
+      console.log("error: ", err);
     }
     setLoading(false);
   };
@@ -134,7 +135,8 @@ export default function EditMembershipPlanPage() {
       await api.delete(`/api/membership-plans/${id}`);
       router.push('/admin/membership/plans');
     } catch (err) {
-      setError('Gagal menghapus plan');
+      setError(err.data?.message || 'Failed to delete plan');
+      console.log("error: ", err);
     }
     setFormLoading(false);
   };

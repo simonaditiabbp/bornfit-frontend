@@ -62,7 +62,8 @@ export default function PTSessionInsertPage() {
       setSuccess("Session successfully added!");
       setTimeout(() => router.push("/admin/pt/session"), 1200);
     } catch (err) {
-      setError("Failed to insert session");
+      setError(err.data?.message || 'Failed to insert session');
+      console.log("error: ", err);
     }
     setLoading(false);
   };

@@ -104,47 +104,60 @@ export default function FreezeMembershipEditPage() {
     setError("");
     setSuccess("");
     try {
+      // Convert date format to ISO-8601
+      let freezeAtIso = form.freeze_at;
+      if (freezeAtIso && freezeAtIso.length === 10) {
+        freezeAtIso = freezeAtIso + "T00:00:00.000Z";
+      }
+
+      let unfreezeAtIso = form.unfreeze_at;
+      if (unfreezeAtIso && unfreezeAtIso.length === 10) {
+        unfreezeAtIso = unfreezeAtIso + "T00:00:00.000Z";
+      }
+
       await api.put(`/api/membership-freezes/${id}`, {
         membership_id: Number(form.membership_id),
-        freeze_at: form.freeze_at,
-        unfreeze_at: form.unfreeze_at || null,
+        freeze_at: freezeAtIso,
+        unfreeze_at: unfreezeAtIso || null,
         fee: Number(form.fee) || 0,
         status: form.status,
         reason: form.reason || null
       });
-      setSuccess("Freeze berhasil diupdate!");
+      setSuccess("Freeze successfully updated!");
       setEdit(false);
     } catch (err) {
-      setError("Gagal update freeze");
+      setError(err.data?.message || 'Failed to update freeze');
+      console.log("error: ", err);
     }
     setFormLoading(false);
   };
 
   const handleDelete = async () => {
-    if (!confirm('Yakin ingin menghapus freeze ini?')) return;
+    if (!confirm('Are you sure you want to delete this freeze?')) return;
     setFormLoading(true);
     try {
       await api.delete(`/api/membership-freezes/${id}`);
       router.push('/admin/membership/freeze');
     } catch (err) {
-      setError("Gagal menghapus freeze");
+      setError(err.data?.message || 'Failed to delete freeze');
+      console.log("error: ", err);
     }
     setFormLoading(false);
   };
 
   const handleUnfreeze = async () => {
-    if (!confirm('Unfreeze membership ini?')) return;
+    if (!confirm('Are you sure you want to unfreeze this membership?')) return;
     setFormLoading(true);
     setError("");
     setSuccess("");
     try {
       await api.post(`/api/membership-freezes/${id}/unfreeze`);
-      setSuccess("Membership berhasil di-unfreeze!");
+      setSuccess("Membership successfully unfrozen!");
       setTimeout(() => {
         window.location.reload();
       }, 1500);
     } catch (err) {
-      setError("Gagal unfreeze membership");
+      setError("Failed to unfreeze membership");
     }
     setFormLoading(false);
   };
