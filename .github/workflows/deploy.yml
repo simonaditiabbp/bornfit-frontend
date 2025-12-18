@@ -45,7 +45,12 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
+            set -e
             cd ${{ secrets.APP_PATH }}
-            npm ci
-            npm run build
+      
+            /home/simon/.nvm/versions/node/v22.21.1/bin/npm ci
+            /home/simon/.nvm/versions/node/v22.21.1/bin/npm run build
+      
+            ls -ld .next
+      
             sudo systemctl restart bornfitfrontend
