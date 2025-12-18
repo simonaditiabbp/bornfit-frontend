@@ -123,7 +123,7 @@ export default function MembershipSchedulesDataTable({ data }) {
       }
       noDataComponent={
         <div className="p-4 text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 w-full text-center">
-          Tidak ada data yang ditemukan.
+          No data found.
         </div>
       }
       />
