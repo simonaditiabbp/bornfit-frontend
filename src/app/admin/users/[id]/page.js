@@ -345,13 +345,14 @@ export default function UserDetailPage() {
                 value={form.role}
                 disabled={!edit}
                 onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
-              >
-                <option value="member">Member</option>
-                <option value="admin">Admin</option>
-                <option value="opscan">Opscan</option>
-                <option value="trainer">Trainer</option>
-                <option value="instructor">Instructor</option>
-              </FormInput>
+                options={[
+                  { value: 'member', label: 'Member' },
+                  { value: 'admin', label: 'Admin' },
+                  { value: 'opscan', label: 'Opscan' },
+                  { value: 'trainer', label: 'Trainer' },
+                  { value: 'instructor', label: 'Instructor' },
+                ]}
+              />
               <FormInput
                 label="Emergency Contact Name"
                 value={form.emergency_contact_name}
