@@ -46,10 +46,18 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             set -e
+      
+            export PATH=/home/simon/.nvm/versions/node/v22.21.1/bin:$PATH
+      
+            echo "NODE:"
+            node -v
+            echo "NPM:"
+            npm -v
+      
             cd ${{ secrets.APP_PATH }}
       
-            /home/simon/.nvm/versions/node/v22.21.1/bin/npm ci
-            /home/simon/.nvm/versions/node/v22.21.1/bin/npm run build
+            npm ci
+            npm run build
       
             ls -ld .next
       
