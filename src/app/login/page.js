@@ -115,7 +115,7 @@ export default function LoginPage() {
 
       <div className="bg-white/30 dark:bg-white/15 backdrop-blur-lg border border-gray-200 dark:border-white/30 p-8 rounded-xl shadow-lg w-full max-w-sm">
         <h1 className="text-center text-2xl font-bold text-amber-600 dark:text-amber-300 mb-6">
-          Sign in Bornfit
+          Sign in
         </h1>
 
         {error && (
