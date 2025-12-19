@@ -125,7 +125,7 @@ export default function TransferMembershipEditPage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Yakin ingin menghapus transfer ini?')) return;
+    if (!confirm('Are you sure you want to delete this transfer?')) return;
     setFormLoading(true);
     try {
       await api.delete(`/api/membership-transfers/${id}`);

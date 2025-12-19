@@ -122,6 +122,9 @@ export default function ClassPurchaseEditPage() {
   if (backendError) return <BackendErrorFallback onRetry={() => window.location.reload()} />;
   if (loading || !form) return <LoadingSpin />;
 
+  const selectedUser = users.length > 0 && form.user_id ? users.find(u => u.id === Number(form.user_id)) ?? null : null;
+  const selectedClass = classes.length > 0 && form.class_id ? classes.find(u => u.id === Number(form.class_id)) ?? null : null;
+
   return (
     <div>
       <PageBreadcrumb
@@ -141,36 +144,43 @@ export default function ClassPurchaseEditPage() {
           >
             Back
           </ActionButton>
-        </div>
-        
-        {success && <div className="text-green-400 mb-2">{success}</div>}
-        {error && <div className="text-red-400 mb-2">{error}</div>}
+        </div>                
         
         <div className="space-y-4 mb-4">
           <FormInput
             label="Member Name"
-            type="select"
-            value={form.user_id}
-            onChange={e => setForm(f => ({ ...f, user_id: e.target.value }))}
+            name="user_id"
+            type="searchable-select"
+            placeholder='Search Member'
             disabled={!edit}
+            value={ selectedUser ? { value: selectedUser.id, label: `${selectedUser.name} (${selectedUser.email || 'No email'})` }
+                  : null }
+            onChange={(opt) =>
+              setForm(prev => ({ ...prev, user_id: opt?.value || '' }))
+            }
+            options={users.map(u => ({
+              value: u.id,
+              label: `${u.name} (${u.email})`
+            }))}
             required
-            options={[
-              { value: '', label: '-- Select Member --' },
-              ...users.map(user => ({ value: user.id, label: `${user.name} (${user.email || 'No email'})` }))
-            ]}
           />
-          
+
           <FormInput
             label="Class Name"
-            type="select"
-            value={form.class_id}
-            onChange={e => setForm(f => ({ ...f, class_id: e.target.value }))}
+            name="class_id"
+            type="searchable-select"
+            placeholder='Search Member'
             disabled={!edit}
+            value={ selectedClass ? { value: selectedClass.id, label: `${selectedClass.name} - ${selectedClass.class_date?.slice(0, 10)} ${selectedClass.start_time?.slice(0, 5)}` }
+                  : null }
+            onChange={(opt) =>
+              setForm(prev => ({ ...prev, class_id: opt?.value || '' }))
+            }
+            options={classes.map(u => ({
+              value: u.id,
+              label: `${u.name} - ${u.class_date?.slice(0, 10)} ${u.start_time?.slice(0, 5)}`
+            }))}
             required
-            options={[
-              { value: '', label: '-- Select Class --' },
-              ...classes.map(cls => ({ value: cls.id, label: `${cls.name} - ${cls.class_date?.slice(0, 10)} ${cls.start_time?.slice(0, 5)}` }))
-            ]}
           />
           
           <FormInput
@@ -182,6 +192,9 @@ export default function ClassPurchaseEditPage() {
             required
             min="0"
           />
+
+          {success && <div className="text-green-400 mb-2">{success}</div>}
+          {error && <div className="text-red-400 mb-2">{error}</div>}
           
           <div className="flex gap-3 mt-8 justify-start">
             {!edit ? (

@@ -59,9 +59,9 @@ export default function FreezeMembershipEditPage() {
 
   // Fetch active memberships when in edit mode
   useEffect(() => {
-    if (!freeze?.membership?.user_id || !edit) {
-      return;
-    }
+    // if (!freeze?.membership?.user_id || !edit) {
+    //   return;
+    // }
 
     const fetchMemberships = async () => {
       try {
@@ -191,30 +191,23 @@ export default function FreezeMembershipEditPage() {
               disabled
             />
 
-            {edit ? (
-              <FormInput
-                label="Membership"
-                name="membership_id"
-                type="select"
-                value={form.membership_id}
-                onChange={e => setForm(f => ({ ...f, membership_id: e.target.value }))}
-                options={[
-                  { value: '', label: 'Select Membership' },
-                  ...memberships.map(membership => ({
-                    value: membership.id,
-                    label: `${membership.membershipPlan?.name || 'Unknown Plan'} - Expires: ${membership.end_date ? new Date(membership.end_date).toLocaleDateString('id-ID') : 'N/A'}`
-                  }))
-                ]}
-                required
-              />
-            ) : (
-              <FormInput
-                label="Membership"
-                value={freeze?.membership?.membershipPlan?.name || 'N/A'}
-                disabled
-              />
-            )}
-
+            <FormInput
+              label="Membership"
+              name="membership_id"
+              type="select"
+              disabled={!edit}
+              value={form.membership_id}
+              onChange={e => setForm(f => ({ ...f, membership_id: e.target.value }))}
+              options={[
+                { value: '', label: 'Select Membership' },
+                ...memberships.map(membership => ({
+                  value: membership.id,
+                  label: `${membership.membershipPlan?.name || 'Unknown Plan'} - Expires: ${membership.end_date ? new Date(membership.end_date).toLocaleDateString('id-ID') : 'N/A'}`
+                }))
+              ]}
+              required
+            />
+            
             <FormInputGroup className="grid grid-cols-2 gap-4">
               <FormInput
                 label="Freeze At"

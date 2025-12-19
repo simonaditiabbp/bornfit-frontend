@@ -35,7 +35,7 @@ export default function ClassPurchaseInsertPage() {
   const fetchUsers = async () => {
     setFetchingData(true);
     try {
-      const data = await api.get('/api/users');
+      const data = await api.get('/api/users?role=member&limit=10000');
       setUsers(data.data?.users || []);
     } catch (err) {
       // Silently fail - dropdown will be empty
@@ -47,7 +47,7 @@ export default function ClassPurchaseInsertPage() {
   const fetchClasses = async () => {
     setFetchingData(true);
     try {
-      const data = await api.get('/api/classes');
+      const data = await api.get('/api/classes?limit=10000');
       setClasses(data.data?.classes || []);
     } catch (err) {
       // Silently fail - dropdown will be empty
@@ -88,6 +88,9 @@ export default function ClassPurchaseInsertPage() {
     setLoading(false);
   };
 
+  const selectedUser = users.length > 0 && userId ? users.find(u => u.id === Number(userId)) ?? null : null;
+  const selectedClass = classes.length > 0 && classId ? classes.find(u => u.id === Number(classId)) ?? null : null;
+
   return (
     <div>
       <PageBreadcrumb
@@ -105,25 +108,47 @@ export default function ClassPurchaseInsertPage() {
         <form onSubmit={handleSubmit}>
           <FormInput
             label="Member Name"
-            type="select"
-            value={userId}
-            onChange={e => setUserId(e.target.value)}
+            name="user_id"
+            type="searchable-select"
+            placeholder="Search Member"
+            value={
+              selectedUser
+                ? {
+                    value: selectedUser.id,
+                    label: `${selectedUser.name} (${selectedUser.email})`
+                  }
+                : null
+            }
+            onChange={(opt) => {
+              setUserId(opt?.value ?? '');
+            }}
+            options={users.map(user => ({
+              value: user.id,
+              label: `${user.name} (${user.email})`
+            }))}
             required
-            options={[
-              { value: '', label: '-- Select Member --' },
-              ...users.map(user => ({ value: user.id, label: `${user.name} (${user.email})` }))
-            ]}
           />
           <FormInput
             label="Class Name"
-            type="select"
-            value={classId}
-            onChange={e => setClassId(e.target.value)}
+            name="class_id"
+            type="searchable-select"
+            placeholder="Search Class"
+            value={
+              selectedClass
+                ? {
+                    value: selectedClass.id,
+                    label: `${selectedClass.name} - ${selectedClass.class_date?.slice(0, 10)} ${selectedClass.start_time?.slice(0, 5)}`
+                  }
+                : null
+            }
+            onChange={(opt) => {
+              setClassId(opt?.value ?? '');
+            }}
+            options={classes.map(cls => ({
+              value: cls.id,
+              label: `${cls.name} - ${cls.class_date?.slice(0, 10)} ${cls.start_time?.slice(0, 5)}`
+            }))}
             required
-            options={[
-              { value: '', label: '-- Select Class --' },
-              ...classes.map(cls => ({ value: cls.id, label: `${cls.name} - ${cls.class_date?.slice(0, 10)} ${cls.start_time?.slice(0, 5)}` }))
-            ]}
           />
           <FormInput
             label="Price"

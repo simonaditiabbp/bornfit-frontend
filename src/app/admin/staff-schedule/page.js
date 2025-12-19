@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { FaCalendar, FaPlus, FaTrash, FaChevronLeft, FaChevronRight, FaFilter } from 'react-icons/fa';
 import api from '@/utils/fetchClient';
 import LoadingSpin from '@/components/admin/LoadingSpin';
+import { FormInput } from '@/components/admin';
 
 export default function StaffScheduleCalendarPage() {
   const [schedules, setSchedules] = useState([]);
@@ -33,7 +34,7 @@ export default function StaffScheduleCalendarPage() {
 
   const fetchStaffMembers = async () => {
     try {
-      const data = await api.get('/api/staff-schedules/staff-members');
+      const data = await api.get('/api/staff-schedules/staff-members?limit=10000');
       if (data.success) {
         setStaffMembers(data.data);
       }
@@ -47,7 +48,7 @@ export default function StaffScheduleCalendarPage() {
     try {
       const { startDate, endDate } = getDateRange();
       
-      let url = `/api/staff-schedules/combined?start_date=${startDate}&end_date=${endDate}`;
+      let url = `/api/staff-schedules/combined?start_date=${startDate}&end_date=${endDate}&limit=10000`;
       if (selectedStaff.length > 0) {
         url += `&staff_ids=${selectedStaff.join(',')}`;
       }
@@ -307,6 +308,8 @@ export default function StaffScheduleCalendarPage() {
   const timeSlots = getActiveTimeSlots();
   const { start, end } = getDateRange();
 
+  const selectedStaffOption = staffMembers.length > 0 && formData.staff_id ? staffMembers.find(u => u.id === formData.staff_id) ?? null : null;
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
       {/* Header */}
@@ -556,7 +559,7 @@ export default function StaffScheduleCalendarPage() {
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-bold mb-4 text-amber-600 dark:text-amber-400">Add Manual Schedule</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
+              {/* <div>
                 <label className="block text-gray-700 dark:text-gray-200 mb-2 font-semibold">Staff *</label>
                 <select
                   value={formData.staff_id}
@@ -568,8 +571,25 @@ export default function StaffScheduleCalendarPage() {
                   {staffMembers.map(staff => (
                     <option key={staff.id} value={staff.id}>{staff.name} ({staff.role})</option>
                   ))}
-                </select>
-              </div>
+                </select>                
+              </div> */}
+
+              <FormInput
+                  label="Staff"
+                  name="staff_id"
+                  type="searchable-select"
+                  placeholder='Search Member'
+                  value={ selectedStaffOption ? { value: selectedStaffOption.id, label: `${selectedStaffOption.name} - ${selectedStaffOption.role}` }
+                        : null }
+                  onChange={(opt) =>
+                    setFormData(prev => ({ ...prev, staff_id: opt?.value || '' }))
+                  }
+                  options={staffMembers.map(u => ({
+                    value: u.id,
+                    label: `${u.name} - ${u.role}`
+                  }))}
+                  required
+                />
 
               <div className="grid grid-cols-2 gap-4">
                 <div>

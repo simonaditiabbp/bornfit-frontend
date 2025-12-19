@@ -95,7 +95,7 @@ export default function PTSessionEditPage() {
         status: form.status,
         id: Number(id)
       });
-      setSuccess("Session berhasil diupdate!");
+      setSuccess("Session successfully updated!");
       setEdit(false);
       setTimeout(() => window.location.reload(), 500);
     } catch (err) {
@@ -106,7 +106,7 @@ export default function PTSessionEditPage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Yakin ingin menghapus session ini?')) return;
+    if (!confirm('Are you sure you want to delete this session?')) return;
     setFormLoading(true);
     try {
       await api.delete(`/api/personaltrainersessions/${id}`);
@@ -123,6 +123,10 @@ export default function PTSessionEditPage() {
   }
   
   if (loading || !form) return <LoadingSpin />;
+
+  const selectedMember = members.length > 0 && form.user_member_id ? members.find(u => u.id === form.user_member_id) ?? null : null;
+  const selectedPlan = plans.length > 0 && form.pt_session_plan_id ? plans.find(p => p.id === form.pt_session_plan_id) ?? null : null;
+  const selectedTrainer = trainers.length > 0 && form.user_pt_id ? trainers.find(u => u.id === form.user_pt_id) ?? null : null;
 
   return (
     <div>
@@ -144,39 +148,54 @@ export default function PTSessionEditPage() {
           <div className="space-y-4 mb-4">
           <FormInput
             label="Plan"
-            type="select"
-            value={form.pt_session_plan_id}
-            onChange={e => setForm(f => ({ ...f, pt_session_plan_id: e.target.value }))}
-            options={[
-              { value: '', label: 'Pilih Plan' },
-              ...plans.map(p => ({ value: p.id, label: p.name || `Plan #${p.id}` }))
-            ]}
-            required
+            name="pt_session_plan_id"
+            type="searchable-select"
+            placeholder='Search Plan'
             disabled={!edit}
+            value={ selectedPlan ? { value: selectedPlan.id, label: selectedPlan.name }
+                  : null }
+            onChange={(opt) =>
+              setForm(prev => ({ ...prev, pt_session_plan_id: opt?.value || '' }))
+            }
+            options={plans.map(u => ({
+              value: u.id,
+              label: u.name
+            }))}
+            required
           />
           <FormInput
             label="Member"
-            type="select"
-            value={form.user_member_id}
-            onChange={e => setForm(f => ({ ...f, user_member_id: e.target.value }))}
-            options={[
-              { value: '', label: 'Pilih Member' },
-              ...members.map(u => ({ value: u.id, label: u.name }))
-            ]}
-            required
+            name="user_member_id"
+            type="searchable-select"
+            placeholder='Search Member'
             disabled={!edit}
+            value={ selectedMember ? { value: selectedMember.id, label: selectedMember.name }
+                  : null }
+            onChange={(opt) =>
+              setForm(prev => ({ ...prev, user_member_id: opt?.value || '' }))
+            }
+            options={members.map(u => ({
+              value: u.id,
+              label: u.name
+            }))}
+            required
           />
           <FormInput
             label="Personal Trainer"
-            type="select"
-            value={form.user_pt_id}
-            onChange={e => setForm(f => ({ ...f, user_pt_id: e.target.value }))}
-            options={[
-              { value: '', label: 'Pilih PT' },
-              ...trainers.map(u => ({ value: u.id, label: u.name }))
-            ]}
-            required
+            name="user_pt_id"
+            type="searchable-select"
+            placeholder='Search Member'
             disabled={!edit}
+            value={ selectedTrainer ? { value: selectedTrainer.id, label: selectedTrainer.name }
+                  : null }
+            onChange={(opt) =>
+              setForm(prev => ({ ...prev, user_pt_id: opt?.value || '' }))
+            }
+            options={trainers.map(u => ({
+              value: u.id,
+              label: u.name
+            }))}
+            required
           />
           <FormInput
             label="Start Date"
