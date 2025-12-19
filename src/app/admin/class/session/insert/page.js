@@ -33,9 +33,9 @@ export default function ClassSessionInsertPage() {
     const fetchData = async () => {
       try {
         const [dataPlans, dataMember, dataInstructor] = await Promise.all([
-          api.get('/api/eventplans?is_active=true'),
-          api.get('/api/users/?role=member&membership=active'),
-          api.get('/api/users/?role=instructor')
+          api.get('/api/eventplans?is_active=true&limit=10000'),
+          api.get('/api/users/?role=member&membership=active&limit=10000'),
+          api.get('/api/users/?role=instructor&limit=10000')
         ]);
         setPlans(dataPlans.data.plans || []);
         setMembers(dataMember.data.users || []);
@@ -121,7 +121,7 @@ export default function ClassSessionInsertPage() {
       }
       
       await api.post('/api/classes', payload);
-      setSuccess("Berhasil simpan");
+      setSuccess("Successfully saved!");
       router.push("/admin/class/session");
     } catch (err) {
       if (err.status >= 400 && err.status <= 499) {
@@ -133,6 +133,9 @@ export default function ClassSessionInsertPage() {
     }
     setLoading(false);
   };
+  
+  const selectedPlan = plans.length > 0 && form.event_plan_id ? plans.find(p => p.id === form.event_plan_id) ?? null : null;
+  const selectedInstructor = instructors.length > 0 && form.instructor_id ? instructors.find(u => u.id === form.instructor_id) ?? null : null;
 
   return (
     <div>
@@ -147,27 +150,37 @@ export default function ClassSessionInsertPage() {
         <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-amber-300 text-center">Create Detail Class</h1>        
         <form className="space-y-4">
           <FormInput
-            label="Event Plan"
+            label="Plan"
             name="event_plan_id"
-            type="select"
-            value={form.event_plan_id}
-            onChange={e => setForm({ ...form, event_plan_id: e.target.value })}
-            options={[
-              { value: '', label: 'Pilih Event Plan' },
-              ...plans.map(plan => ({ value: plan.id, label: plan.name }))
-            ]}
+            type="searchable-select"
+            placeholder='Search Plan'
+            value={ selectedPlan ? { value: selectedPlan.id, label: selectedPlan.name }
+                  : null }
+            onChange={(opt) =>
+              setForm(prev => ({ ...prev, event_plan_id: opt?.value || '' }))
+            }
+            options={plans.map(u => ({
+              value: u.id,
+              label: u.name
+            }))}
+            required
           />
-          
+
           <FormInput
             label="Instructor"
             name="instructor_id"
-            type="select"
-            value={form.instructor_id}
-            onChange={e => setForm({ ...form, instructor_id: e.target.value })}
-            options={[
-              { value: '', label: 'Pilih Instructor' },
-              ...instructors.map(i => ({ value: i.id, label: i.name }))
-            ]}
+            type="searchable-select"
+            placeholder='Search Member'
+            value={ selectedInstructor ? { value: selectedInstructor.id, label: selectedInstructor.name }
+                  : null }
+            onChange={(opt) =>
+              setForm(prev => ({ ...prev, instructor_id: opt?.value || '' }))
+            }
+            options={instructors.map(u => ({
+              value: u.id,
+              label: u.name
+            }))}
+            required
           />
           
           <FormInput

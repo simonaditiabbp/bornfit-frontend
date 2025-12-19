@@ -105,7 +105,7 @@ export default function PTBookingEditPage() {
         booking_time: formatDateToISO(form.booking_time),
         status: form.status
       });
-      setSuccess("Booking berhasil diupdate!");
+      setSuccess("Booking successfully updated!");
       setEdit(false);
     } catch (err) {
       setError(err.data?.message || 'Failed to update booking');
@@ -115,7 +115,7 @@ export default function PTBookingEditPage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Yakin ingin menghapus booking ini?')) return;
+    if (!confirm('Are you sure you want to delete this booking?')) return;
     setFormLoading(true);
     try {
       await api.delete(`/api/ptsessionbookings/${id}`);
@@ -129,6 +129,9 @@ export default function PTBookingEditPage() {
 
   if (loading || !form) return <LoadingSpin />;
   if (!booking) return <div className="text-center text-red-400 font-medium mt-20">Booking not found</div>;
+
+  const selectedMember = members.length > 0 && form.user_member_id ? members.find(u => u.id === form.user_member_id) ?? null : null;
+  const selectedPTSession = ptSessions.length > 0 && form.personal_trainer_session_id ? ptSessions.find(u => u.id === form.personal_trainer_session_id) ?? null : null;
 
   return (
     <div>
@@ -147,33 +150,41 @@ export default function PTBookingEditPage() {
           >
             Back
           </ActionButton>
-        </div>
-        {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
-        {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}
+        </div>        
         <div className="space-y-4 mb-4">
           <FormInput
             label="Member"
-            type="select"
-            value={form.user_member_id}
-            onChange={e => setForm(f => ({ ...f, user_member_id: e.target.value, personal_trainer_session_id: '' }))}
-            options={[
-              { value: '', label: 'Pilih Member' },
-              ...members.map(m => ({ value: m.id, label: m.name }))
-            ]}
-            required
+            name="user_member_id"
+            type="searchable-select"
+            placeholder='Search Member'
             disabled={!edit}
+            value={ selectedMember ? { value: selectedMember.id, label: selectedMember.name }
+                  : null }
+            onChange={(opt) =>
+              setForm(prev => ({ ...prev, user_member_id: opt?.value || '' }))
+            }
+            options={members.map(u => ({
+              value: u.id,
+              label: u.name
+            }))}
+            required
           />
           <FormInput
             label="PT Session"
-            type="select"
-            value={form.personal_trainer_session_id}
-            onChange={e => setForm(f => ({ ...f, personal_trainer_session_id: e.target.value }))}
-            options={[
-              { value: '', label: 'Pilih PT Session' },
-              ...ptSessions.map(s => ({ value: s.id, label: s.name || `Session #${s.id}` }))
-            ]}
+            name="personal_trainer_session_id"
+            type="searchable-select"
+            placeholder='Search PT Sesi'
+            disabled={!edit}
+            value={ selectedPTSession ? { value: selectedPTSession.id, label: selectedPTSession.name }
+                  : null }
+            onChange={(opt) =>
+              setForm(prev => ({ ...prev, personal_trainer_session_id: opt?.value || '' }))
+            }
+            options={ptSessions.map(u => ({
+              value: u.id,
+              label: u.name
+            }))}
             required
-            disabled={!edit || !form.user_member_id || ptSessions.length === 0}
           />
           <FormInput
             label="Booking Time"
@@ -196,6 +207,8 @@ export default function PTBookingEditPage() {
             disabled={!edit}
           />
         </div>
+        {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
+        {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}
         <div className="flex gap-3 mt-8 justify-start">
           {!edit ? (
             <>

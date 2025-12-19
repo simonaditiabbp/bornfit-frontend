@@ -34,7 +34,7 @@ export default function PTBookingCreatePage() {
   useEffect(() => {
     const fetchMembers = async () => {
       try {
-        const dataUser = await api.get('/api/users?role=member&membership=active');
+        const dataUser = await api.get('/api/users?role=member&membership=active&limit=10000');
         setMembers(dataUser.data.users || []);
       } catch {}
     };
@@ -72,7 +72,7 @@ export default function PTBookingCreatePage() {
         booking_time: formatDateToISO(form.booking_time),
         status: form.status
       });
-      setSuccess("Booking berhasil dibuat!");
+      setSuccess("Booking successfully!");
       setTimeout(() => router.push('/admin/pt/booking'), 1200);
     } catch (err) {
       setError(err.data?.message || 'Failed to create PT booking');
@@ -80,6 +80,9 @@ export default function PTBookingCreatePage() {
     }
     setLoading(false);
   };
+
+  const selectedMember = members.length > 0 && form.user_member_id ? members.find(u => u.id === form.user_member_id) ?? null : null;
+  const selectedPTSession = ptSessions.length > 0 && form.personal_trainer_session_id ? ptSessions.find(u => u.id === form.personal_trainer_session_id) ?? null : null;
 
   return (
     <div>
@@ -93,24 +96,34 @@ export default function PTBookingCreatePage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <FormInput
             label="Member"
-            type="select"
-            value={form.user_member_id}
-            onChange={e => setForm(f => ({...f, user_member_id: e.target.value, personal_trainer_session_id: ''}))}
-            options={[
-              { value: '', label: 'Pilih Member' },
-              ...members.map(m => ({ value: m.id, label: m.name }))
-            ]}
+            name="user_member_id"
+            type="searchable-select"
+            placeholder='Search Member'
+            value={ selectedMember ? { value: selectedMember.id, label: selectedMember.name }
+                  : null }
+            onChange={(opt) =>
+              setForm(prev => ({ ...prev, user_member_id: opt?.value || '' }))
+            }
+            options={members.map(u => ({
+              value: u.id,
+              label: u.name
+            }))}
             required
           />
           <FormInput
             label="PT Session"
-            type="select"
-            value={form.personal_trainer_session_id}
-            onChange={e => setForm(f => ({...f, personal_trainer_session_id: e.target.value}))}
-            options={[
-              { value: '', label: 'Pilih PT Session' },
-              ...ptSessions.map(s => ({ value: s.id, label: s.name || `Session #${s.id}` }))
-            ]}
+            name="personal_trainer_session_id"
+            type="searchable-select"
+            placeholder='Search Member'
+            value={ selectedPTSession ? { value: selectedPTSession.id, label: selectedPTSession.name }
+                  : null }
+            onChange={(opt) =>
+              setForm(prev => ({ ...prev, personal_trainer_session_id: opt?.value || '' }))
+            }
+            options={ptSessions.map(u => ({
+              value: u.id,
+              label: u.name
+            }))}
             required
             disabled={!form.user_member_id || ptSessions.length === 0}
           />

@@ -256,6 +256,9 @@ export default function ClassSessionEditPage() {
 
   if (loading || !form) return <LoadingSpin />;
 
+  const selectedPlan = plans.length > 0 && form.event_plan_id ? plans.find(p => p.id === form.event_plan_id) ?? null : null;
+  const selectedInstructor = instructors.length > 0 && form.instructor_id ? instructors.find(u => u.id === form.instructor_id) ?? null : null;
+
   return (
     <div>
       <PageBreadcrumb
@@ -295,30 +298,38 @@ export default function ClassSessionEditPage() {
         
         <div className="space-y-4 mb-4">
           <FormInput
-            label="Event Plan"
+            label="Plan"
             name="event_plan_id"
-            type="select"
-            value={form.event_plan_id}
-            onChange={e => setForm(f => ({ ...f, event_plan_id: e.target.value }))}
+            type="searchable-select"
+            placeholder='Search Plan'
             disabled={!edit}
+            value={ selectedPlan ? { value: selectedPlan.id, label: selectedPlan.name }
+                  : null }
+            onChange={(opt) =>
+              setForm(prev => ({ ...prev, event_plan_id: opt?.value || '' }))
+            }
+            options={plans.map(u => ({
+              value: u.id,
+              label: u.name
+            }))}
             required
-            options={[
-              { value: '', label: 'Pilih Event Plan' },
-              ...plans.map(plan => ({ value: plan.id, label: plan.name }))
-            ]}
           />
           <FormInput
             label="Instructor"
             name="instructor_id"
-            type="select"
-            value={form.instructor_id}
-            onChange={e => setForm(f => ({ ...f, instructor_id: e.target.value }))}
+            type="searchable-select"
+            placeholder='Search Member'
             disabled={!edit}
+            value={ selectedInstructor ? { value: selectedInstructor.id, label: selectedInstructor.name }
+                  : null }
+            onChange={(opt) =>
+              setForm(prev => ({ ...prev, instructor_id: opt?.value || '' }))
+            }
+            options={instructors.map(u => ({
+              value: u.id,
+              label: u.name
+            }))}
             required
-            options={[
-              { value: '', label: 'Pilih Instructor' },
-              ...instructors.map(i => ({ value: i.id, label: i.name }))
-            ]}
           />
           {/* Single Class Fields */}
           {!isRecurring && (
@@ -396,8 +407,8 @@ export default function ClassSessionEditPage() {
                         form.recurrence_days.includes(day)
                           ? 'bg-gray-600 text-white dark:bg-amber-600 dark:text-white'
                           : edit 
-                            ? 'bg-gray-300 text-white hover:bg-gray-500 dark:bg-amber-600 dark:text-white'
-                            : 'bg-gray-200 text-gray-800 hover:bg-gray-400 hover:text-white dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500 cursor-not-allowed'
+                            ? 'bg-gray-300 text-white hover:bg-gray-500 dark:bg-gray-600 dark:text-white'
+                            : 'bg-gray-200 text-gray-800 hover:bg-gray-400 hover:text-white dark:bg-gray-600 dark:text-gray-400 dark:hover:bg-gray-500 cursor-not-allowed'
                       }`}
                       disabled={!edit}
                     >
@@ -430,7 +441,7 @@ export default function ClassSessionEditPage() {
               </div>
 
               {edit && (
-                <div className="bg-amber-900/30 border border-amber-700 rounded p-3 text-sm text-amber-200">
+                <div className="bg-gray-600/70 border-gray-700 text-white dark:bg-amber-900/30 dark:border-amber-700 dark:text-amber-200 border rounded p-3 text-sm">
                   <strong>Preview:</strong> Class akan dibuat otomatis setiap{' '}
                   {form.recurrence_days.length > 0 ? form.recurrence_days.join(', ') : '(pilih hari)'}{' '}
                   pada jam {form.recurrence_start_time || '(pilih waktu)'} - {form.recurrence_end_time || '(pilih waktu)'}{' '}

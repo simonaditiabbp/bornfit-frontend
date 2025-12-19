@@ -14,9 +14,9 @@ export default function PTSessionInsertPage() {
     const fetchData = async () => {
       try {
         const [plansData, membersData, trainersData] = await Promise.all([
-          api.get('/api/ptsessionplans'),
-          api.get('/api/users?role=member&membership=active'),
-          api.get('/api/users?role=trainer')
+          api.get('/api/ptsessionplans?limit=10000'),
+          api.get('/api/users?role=member&membership=active&limit=10000'),
+          api.get('/api/users?role=trainer&limit=10000')
         ]);
         setPlans(plansData.data.plans || []);
         setMembers(membersData.data.users || []);
@@ -68,6 +68,10 @@ export default function PTSessionInsertPage() {
     setLoading(false);
   };
 
+  const selectedMember = members.length > 0 && form.user_member_id ? members.find(u => u.id === form.user_member_id) ?? null : null;
+  const selectedPlan = plans.length > 0 && form.pt_session_plan_id ? plans.find(p => p.id === form.pt_session_plan_id) ?? null : null;
+  const selectedTrainer = trainers.length > 0 && form.user_pt_id ? trainers.find(u => u.id === form.user_pt_id) ?? null : null;
+
   return (
     <div>
       <PageBreadcrumb items={[
@@ -79,35 +83,50 @@ export default function PTSessionInsertPage() {
         <div className="space-y-4">
           <FormInput
             label="Plan"
-            type="select"
-            value={form.pt_session_plan_id}
-            onChange={e => setForm(f => ({ ...f, pt_session_plan_id: e.target.value }))}
-            options={[
-              { value: '', label: 'Pilih Plan' },
-              ...plans.map(p => ({ value: p.id, label: p.name || `Plan #${p.id}` }))
-            ]}
+            name="pt_session_plan_id"
+            type="searchable-select"
+            placeholder='Search Plan'
+            value={ selectedPlan ? { value: selectedPlan.id, label: selectedPlan.name }
+                  : null }
+            onChange={(opt) =>
+              setForm(prev => ({ ...prev, pt_session_plan_id: opt?.value || '' }))
+            }
+            options={plans.map(u => ({
+              value: u.id,
+              label: u.name
+            }))}
             required
           />
           <FormInput
             label="Member"
-            type="select"
-            value={form.user_member_id}
-            onChange={e => setForm(f => ({ ...f, user_member_id: e.target.value }))}
-            options={[
-              { value: '', label: 'Pilih Member' },
-              ...members.map(u => ({ value: u.id, label: u.name }))
-            ]}
+            name="user_member_id"
+            type="searchable-select"
+            placeholder='Search Member'
+            value={ selectedMember ? { value: selectedMember.id, label: selectedMember.name }
+                  : null }
+            onChange={(opt) =>
+              setForm(prev => ({ ...prev, user_member_id: opt?.value || '' }))
+            }
+            options={members.map(u => ({
+              value: u.id,
+              label: u.name
+            }))}
             required
           />
           <FormInput
             label="Personal Trainer"
-            type="select"
-            value={form.user_pt_id}
-            onChange={e => setForm(f => ({ ...f, user_pt_id: e.target.value }))}
-            options={[
-              { value: '', label: 'Pilih PT' },
-              ...trainers.map(u => ({ value: u.id, label: u.name }))
-            ]}
+            name="user_pt_id"
+            type="searchable-select"
+            placeholder='Search Member'
+            value={ selectedTrainer ? { value: selectedTrainer.id, label: selectedTrainer.name }
+                  : null }
+            onChange={(opt) =>
+              setForm(prev => ({ ...prev, user_pt_id: opt?.value || '' }))
+            }
+            options={trainers.map(u => ({
+              value: u.id,
+              label: u.name
+            }))}
             required
           />
           <FormInput
