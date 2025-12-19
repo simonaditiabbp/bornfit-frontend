@@ -25,7 +25,7 @@ export default function FreezeMembershipEditPage() {
   useEffect(() => {
     const fetchMembers = async () => {
       try {
-        const data = await api.get('/api/users?role=member');
+        const data = await api.get('/api/users?role=member&limit=10000');
         setMembers(data.data?.users || []);
       } catch (err) {
         // Silently fail - dropdown will be empty
@@ -65,7 +65,7 @@ export default function FreezeMembershipEditPage() {
 
     const fetchMemberships = async () => {
       try {
-        const data = await api.get('/api/memberships?role=member');
+        const data = await api.get('/api/memberships?role=member&limit=10000');
         const allMemberships = data.data?.memberships || [];
         const userMemberships = allMemberships.filter(m => 
           m.user_id === freeze.membership.user_id && m.status === 'active'

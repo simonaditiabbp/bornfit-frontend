@@ -43,9 +43,9 @@ export default function InsertMembershipSessionPage() {
     const fetchDropdowns = async () => {
       try {
         const [usersData, plansData, staffData] = await Promise.all([
-          api.get('/api/users?role=member'),
-          api.get('/api/membership-plans'),
-          api.get('/api/users?exclude_role=member')
+          api.get('/api/users?role=member&limit=10000'),
+          api.get('/api/membership-plans?limit=10000'),
+          api.get('/api/users?exclude_role=member&limit=10000')
         ]);
         setUsers(usersData.data?.users || []);
         setPlans(plansData.data?.membershipPlans || []);
@@ -88,6 +88,9 @@ export default function InsertMembershipSessionPage() {
     setLoading(false);
   };
 
+  const selectedUser = users.length > 0 && form.user_id ? users.find(u => u.id === form.user_id) ?? null : null;
+  const selectedPlan = plans.length > 0 && form.membership_plan_id ? plans.find(p => p.id === form.membership_plan_id) ?? null : null;
+
   return (
     <div>
       <PageBreadcrumb 
@@ -105,27 +108,36 @@ export default function InsertMembershipSessionPage() {
             <FormInput
               label="Member"
               name="user_id"
-              type="select"
-              value={form.user_id}
-              onChange={handleChange}
-              options={[
-                { value: '', label: 'Pilih Member' },
-                ...users.map(u => ({ value: u.id, label: u.name }))
-              ]}
+              type="searchable-select"
+              placeholder='Search Member'
+              value={ selectedUser ? { value: selectedUser.id, label: selectedUser.name }
+                    : null }
+              onChange={(opt) =>
+                setForm(prev => ({ ...prev, user_id: opt?.value || '' }))
+              }
+              options={users.map(u => ({
+                value: u.id,
+                label: u.name
+              }))}
               required
             />
             <FormInput
               label="Plan"
               name="membership_plan_id"
-              type="select"
-              value={form.membership_plan_id}
-              onChange={handleChange}
-              options={[
-                { value: '', label: 'Pilih Plan' },
-                ...plans.map(p => ({ value: p.id, label: p.name }))
-              ]}
+              type="searchable-select"
+              placeholder='Search Plan'
+              value={ selectedPlan ? { value: selectedPlan.id, label: selectedPlan.name }
+                    : null }
+              onChange={(opt) =>
+                setForm(prev => ({ ...prev, membership_plan_id: opt?.value || '' }))
+              }
+              options={plans.map(u => ({
+                value: u.id,
+                label: u.name
+              }))}
               required
             />
+
             <FormInput
               label="Start Date"
               name="start_date"
@@ -164,7 +176,6 @@ export default function InsertMembershipSessionPage() {
                   onClick={() => {
                     const selectedPlan = plans.find(p => p.id === Number(form.membership_plan_id));
                     if (selectedPlan) {
-                      console.log("selectedPlan.price: ", selectedPlan.price);
                       setForm(f => ({ ...f, final_price: selectedPlan.price ? selectedPlan.price : 0 }));
                     }
                   }}

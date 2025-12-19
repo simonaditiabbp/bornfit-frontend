@@ -25,7 +25,7 @@ export default function TransferMembershipEditPage() {
   useEffect(() => {
     const fetchMembers = async () => {
       try {
-        const data = await api.get('/api/users?role=member');
+        const data = await api.get('/api/users?role=member&limit=10000');
         setMembers(data.data?.users || []);
       } catch (err) {
         // Silently fail - dropdown will be empty
@@ -66,7 +66,7 @@ export default function TransferMembershipEditPage() {
 
     const fetchMemberships = async () => {
       try {
-        const data = await api.get('/api/memberships?role=member');
+        const data = await api.get('/api/memberships?role=member&limit=10000');
         const allMemberships = data.data?.memberships || [];
         const userMemberships = allMemberships.filter(m => 
           m.user_id === Number(form.from_user_id) && m.status === 'active'
@@ -110,12 +110,12 @@ export default function TransferMembershipEditPage() {
         from_membership_id: Number(form.from_membership_id),
         from_user_id: Number(form.from_user_id),
         to_user_id: Number(form.to_user_id),
-        transfer_date: form.transfer_date,
+        transfer_date: form.transfer_date ? new Date(form.transfer_date).toISOString() : null,
         fee: Number(form.fee) || 0,
         reason: form.reason || null,
         status: form.status
       });
-      setSuccess("Transfer berhasil diupdate!");
+      setSuccess("Transfer Membership Updated!");
       setEdit(false);
     } catch (err) {
       setError(err.data?.message || 'Failed to update membership transfer');
@@ -177,6 +177,9 @@ export default function TransferMembershipEditPage() {
     
   if (loading || !form) return <LoadingSpin />;
 
+  const selectedFromMember = members.length > 0 && form.from_user_id ? members.find(u => u.id === form.from_user_id) ?? null : null;
+  const selectedToMember = members.length > 0 && form.to_user_id ? members.find(u => u.id === form.to_user_id) ?? null : null;
+
   return (
     <div>
       <PageBreadcrumb 
@@ -194,74 +197,66 @@ export default function TransferMembershipEditPage() {
         </div>
 
         <div className="space-y-4 mb-4">
+            <FormInput
+              label="From Member"
+              name="from_user_id"
+              type="searchable-select"
+              placeholder='Search Member'
+              disabled={!edit}
+              value={ selectedFromMember ? { value: selectedFromMember.id, label: selectedFromMember.name }
+                    : null }
+              onChange={(opt) =>
+                setForm(prev => ({ ...prev, from_user_id: opt?.value || '' }))
+              }
+              options={members.map(u => ({
+                value: u.id,
+                label: u.name
+              }))}
+              required
+            />
+
             {edit ? (
               <FormInput
-                label="From Member"
-                name="from_user_id"
+                label="Membership"
+                name="from_membership_id"
                 type="select"
-                value={form.from_user_id}
-                onChange={e => setForm(f => ({ ...f, from_user_id: e.target.value, from_membership_id: "" }))}
+                value={form.from_membership_id}
+                onChange={e => setForm(f => ({ ...f, from_membership_id: e.target.value }))}
                 options={[
-                  { value: '', label: 'Select Member' },
-                  ...members.map(member => ({ value: member.id, label: `${member.name} - ${member.email}` }))
+                  { value: '', label: 'Select Membership' },
+                  ...memberships.map(membership => ({
+                    value: membership.id,
+                    label: `${membership.membershipPlan?.name || 'Unknown Plan'} (${membership.start_date ? new Date(membership.start_date).toLocaleDateString('id-ID') : 'N/A'} - ${membership.end_date ? new Date(membership.end_date).toLocaleDateString('id-ID') : 'N/A'})`
+                  }))
                 ]}
+                disabled={!form.from_user_id}
                 required
               />
             ) : (
               <FormInput
-                label="From Member"
-                value={transfer?.fromUser?.name || 'N/A'}
+                label="Membership"
+                value={transfer?.fromMembership?.membershipPlan?.name || 'N/A'}
                 disabled
               />
             )}
 
-            <div>
-              {edit ? (
-                <FormInput
-                  label="Membership"
-                  name="from_membership_id"
-                  type="select"
-                  value={form.from_membership_id}
-                  onChange={e => setForm(f => ({ ...f, from_membership_id: e.target.value }))}
-                  options={[
-                    { value: '', label: 'Select Membership' },
-                    ...memberships.map(membership => ({
-                      value: membership.id,
-                      label: `${membership.membershipPlan?.name || 'Unknown Plan'} (${membership.start_date ? new Date(membership.start_date).toLocaleDateString('id-ID') : 'N/A'} - ${membership.end_date ? new Date(membership.end_date).toLocaleDateString('id-ID') : 'N/A'})`
-                    }))
-                  ]}
-                  disabled={!form.from_user_id}
-                  required
-                />
-              ) : (
-                <FormInput
-                  label="Membership"
-                  value={transfer?.fromMembership?.membershipPlan?.name || 'N/A'}
-                  disabled
-                />
-              )}
-            </div>
-
-            {edit ? (
-              <FormInput
-                label="To Member"
-                name="to_user_id"
-                type="select"
-                value={form.to_user_id}
-                onChange={e => setForm(f => ({ ...f, to_user_id: e.target.value }))}
-                options={[
-                  { value: '', label: 'Select Member' },
-                  ...members.filter(m => m.id !== Number(form.from_user_id)).map(member => ({ value: member.id, label: `${member.name} - ${member.email}` }))
-                ]}
-                required
-              />
-            ) : (
-              <FormInput
-                label="To Member"
-                value={transfer?.toUser?.name || 'N/A'}
-                disabled
-              />
-            )}
+            <FormInput
+              label="To Member"
+              name="to_user_id"
+              type="searchable-select"
+              placeholder='Search Member'
+              disabled={!edit}
+              value={ selectedToMember ? { value: selectedToMember.id, label: selectedToMember.name }
+                    : null }
+              onChange={(opt) =>
+                setForm(prev => ({ ...prev, to_user_id: opt?.value || '' }))
+              }
+              options={members.map(u => ({
+                value: u.id,
+                label: u.name
+              }))}
+              required
+            />
 
             <FormInput
               label="Fee (IDR)"

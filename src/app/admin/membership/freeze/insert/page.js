@@ -44,7 +44,7 @@ export default function FreezeMembershipInsertPage() {
   useEffect(() => {
     const fetchMembers = async () => {
       try {
-        const data = await api.get('/api/users?role=member');
+        const data = await api.get('/api/users?role=member&limit=10000');
         setMembers(data.data?.users || []);
       } catch (err) {
         // Silently fail - dropdown will be empty
@@ -62,7 +62,7 @@ export default function FreezeMembershipInsertPage() {
 
     const fetchMemberships = async () => {
       try {
-        const data = await api.get('/api/memberships?role=member');
+        const data = await api.get('/api/memberships?role=member&limit=10000');
         const allMemberships = data.data?.memberships || [];
         // Filter active memberships for selected user
         const userMemberships = allMemberships.filter(m => 
@@ -113,6 +113,8 @@ export default function FreezeMembershipInsertPage() {
     setLoading(false);
   };
 
+  const selectedMember = members.length > 0 && selectedMemberId ? members.find(m => m.id === Number(selectedMemberId)) ?? null : null;
+
   return (
     <div>
       <PageBreadcrumb 
@@ -124,25 +126,33 @@ export default function FreezeMembershipInsertPage() {
       />
 
       <PageContainerInsert>
-        <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-amber-300 text-center">Create Freeze Membership</h1>
-        
-        {success && <div className="text-green-400 font-semibold mb-2 text-center">{success}</div>}
-        {error && <div className="text-red-400 font-semibold mb-2 text-center">{error}</div>}
-        
+        <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-amber-300 text-center">Create Freeze Membership</h1>                      
         <form className="space-y-4" onSubmit={handleSave}>
           <FormInput
             label="Member"
             name="member_id"
-            type="select"
-            value={selectedMemberId}
-            onChange={e => {
-              setSelectedMemberId(e.target.value);
-              setForm({ ...form, membership_id: "" });
+            type="searchable-select"
+            placeholder="Search Member"
+            value={
+              selectedMember
+                ? {
+                    value: selectedMember.id,
+                    label: `${selectedMember.name} - ${selectedMember.email}`
+                  }
+                : null
+            }
+            onChange={(opt) => {
+              const memberId = opt?.value ?? '';
+              setSelectedMemberId(memberId);
+              setForm(prev => ({
+                ...prev,
+                membership_id: '' // reset membership saat ganti member
+              }));
             }}
-            options={[
-              { value: '', label: 'Select Member' },
-              ...members.map(member => ({ value: member.id, label: `${member.name} - ${member.email}` }))
-            ]}
+            options={members.map(member => ({
+              value: member.id,
+              label: `${member.name} - ${member.email}`
+            }))}
             required
           />
 
@@ -221,6 +231,9 @@ export default function FreezeMembershipInsertPage() {
             onChange={e => setForm({ ...form, reason: e.target.value })}
             placeholder="Reason for freezing..."
           />
+
+          {success && <div className="text-green-400 font-semibold mb-2 text-center">{success}</div>}
+          {error && <div className="text-red-400 font-semibold mb-2 text-center">{error}</div>}
 
           <FormActions
             onReset={handleReset}

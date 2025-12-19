@@ -100,6 +100,9 @@ export default function EditMembershipSessionPage() {
 
   if (loading || !form) return <LoadingSpin />;
 
+  const selectedUser = users.length > 0 && form.user_id ? users.find(u => u.id === form.user_id) ?? null : null;
+  const selectedPlan = plans.length > 0 && form.membership_plan_id ? plans.find(p => p.id === form.membership_plan_id) ?? null : null;
+
   return (
     <div>      
       <PageBreadcrumb 
@@ -118,36 +121,41 @@ export default function EditMembershipSessionPage() {
             >
               Back
             </ActionButton>
-          </div>
-          {success && <div className="text-green-400 mb-2">{success}</div>}
-          {error && <div className="text-red-400 mb-2">{error}</div>}
+          </div>          
           <div className="space-y-4 mb-4">
             <FormInput
               label="Member"
               name="user_id"
-              type="select"
-              value={form.user_id}
-              onChange={handleChange}
+              type="searchable-select"
+              placeholder='Search Member'
               disabled={!edit}
+              value={ selectedUser ? { value: selectedUser.id, label: selectedUser.name }
+                    : null }
+              onChange={(opt) =>
+                setForm(prev => ({ ...prev, user_id: opt?.value || '' }))
+              }
+              options={users.map(u => ({
+                value: u.id,
+                label: u.name
+              }))}
               required
-              options={[
-                { value: '', label: 'Pilih Member' },
-                ...users.map(u => ({ value: u.id, label: u.name }))
-              ]}
             />
-            
             <FormInput
               label="Plan"
               name="membership_plan_id"
-              type="select"
-              value={form.membership_plan_id}
-              onChange={handleChange}
+              type="searchable-select"
+              placeholder='Search Plan'
               disabled={!edit}
+              value={ selectedPlan ? { value: selectedPlan.id, label: selectedPlan.name }
+                    : null }
+              onChange={(opt) =>
+                setForm(prev => ({ ...prev, membership_plan_id: opt?.value || '' }))
+              }
+              options={plans.map(u => ({
+                value: u.id,
+                label: u.name
+              }))}
               required
-              options={[
-                { value: '', label: 'Pilih Plan' },
-                ...plans.map(p => ({ value: p.id, label: p.name }))
-              ]}
             />
             
             <FormInput
@@ -320,7 +328,8 @@ export default function EditMembershipSessionPage() {
                 />
               </>
             )}
-
+          {success && <div className="text-green-400 mb-2">{success}</div>}
+          {error && <div className="text-red-400 mb-2">{error}</div>}
           <div className="flex gap-3 mt-8 justify-start">
             {!edit ? (
               <>
