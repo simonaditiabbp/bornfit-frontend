@@ -35,7 +35,7 @@ export default function ClassPurchaseEditPage() {
   // Fetch all classes
   const fetchClasses = async () => {
     try {
-      const data = await api.get('/api/classes?limit=10000');
+      const data = await api.get('/api/classes/exclude-recurring-parent?limit=10000');
       setClasses(data.data?.classes || []);
     } catch (err) {
       // Silently fail - dropdown will be empty
