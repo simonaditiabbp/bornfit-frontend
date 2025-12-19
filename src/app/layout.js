@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "BornFit",
   description: "BornFit Website",
+  icons: {
+  icon: '/favicon.svg',
+},
 };
 
 export default function RootLayout({ children }) {
