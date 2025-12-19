@@ -1,3 +1,5 @@
+import Select from 'react-select';
+
 // FormInput Component
 export default function FormInput({ 
   label, 
@@ -23,7 +25,27 @@ export default function FormInput({
       <label className={labelClass}>
         {label} {required && <span className="text-red-400">*</span>}
       </label>
-      {type === 'select' ? (
+      {
+      type === 'searchable-select' ? (
+        <Select
+          name={name}
+          value={value}
+          onChange={onChange}
+          options={options}
+          isDisabled={disabled}
+          placeholder={placeholder || 'Ketik untuk mencari...'}
+          classNamePrefix="react-select"
+          className="text-sm"
+          styles={{
+            control: (base) => ({
+              ...base,
+              minHeight: '38px',
+              backgroundColor: disabled ? '#f3f4f6' : 'white',
+              borderColor: '#d1d5db',
+            }),
+          }}
+        />
+      ) : type === 'select' ? (
         <select
           name={name}
           value={value}

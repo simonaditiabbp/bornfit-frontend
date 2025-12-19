@@ -36,7 +36,7 @@ export default function TransferMembershipInsertPage() {
   useEffect(() => {
     const fetchMembers = async () => {
       try {
-        const data = await api.get('/api/users?role=member');
+        const data = await api.get('/api/users?role=member&limit=10000');
         setMembers(data.data?.users || []);
       } catch (err) {
         // Silently fail - dropdown will be empty
@@ -54,7 +54,7 @@ export default function TransferMembershipInsertPage() {
 
     const fetchMemberships = async () => {
       try {
-        const data = await api.get('/api/memberships?role=member');
+        const data = await api.get('/api/memberships?role=member&limit=10000');
         const allMemberships = data.data?.memberships || [];
         // Filter active memberships for selected user
         const userMemberships = allMemberships.filter(m => 
@@ -96,6 +96,9 @@ export default function TransferMembershipInsertPage() {
     setLoading(false);
   };
 
+  const selectedFromMember = members.length > 0 && form.from_user_id ? members.find(u => u.id === form.from_user_id) ?? null : null;
+  const selectedToMember = members.length > 0 && form.to_user_id ? members.find(u => u.id === form.to_user_id) ?? null : null;
+
   return (
     <div>
       <PageBreadcrumb 
@@ -107,22 +110,23 @@ export default function TransferMembershipInsertPage() {
       />
 
       <PageContainerInsert>
-        <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-amber-300 text-center">Create Transfer Membership</h1>
-        
-        {success && <div className="text-green-400 font-semibold mb-2 text-center">{success}</div>}
-        {error && <div className="text-red-400 font-semibold mb-2 text-center">{error}</div>}
+        <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-amber-300 text-center">Create Transfer Membership</h1>              
         
         <form className="space-y-4" onSubmit={handleSave}>
           <FormInput
             label="From Member"
             name="from_user_id"
-            type="select"
-            value={form.from_user_id}
-            onChange={e => setForm({ ...form, from_user_id: e.target.value, from_membership_id: "" })}
-            options={[
-              { value: '', label: 'Select Member' },
-              ...members.map(member => ({ value: member.id, label: `${member.name} - ${member.email}` }))
-            ]}
+            type="searchable-select"
+            placeholder='Search Member'
+            value={ selectedFromMember ? { value: selectedFromMember.id, label: selectedFromMember.name }
+                  : null }
+            onChange={(opt) =>
+              setForm(prev => ({ ...prev, from_user_id: opt?.value || '' }))
+            }
+            options={members.map(u => ({
+              value: u.id,
+              label: u.name
+            }))}
             required
           />
 
@@ -151,15 +155,17 @@ export default function TransferMembershipInsertPage() {
           <FormInput
             label="To Member"
             name="to_user_id"
-            type="select"
-            value={form.to_user_id}
-            onChange={e => setForm({ ...form, to_user_id: e.target.value })}
-            options={[
-              { value: '', label: 'Select Member' },
-              ...members
-                .filter(m => m.id !== Number(form.from_user_id))
-                .map(member => ({ value: member.id, label: `${member.name} - ${member.email}` }))
-            ]}
+            type="searchable-select"
+            placeholder='Search Member'
+            value={ selectedToMember ? { value: selectedToMember.id, label: selectedToMember.name }
+                  : null }
+            onChange={(opt) =>
+              setForm(prev => ({ ...prev, to_user_id: opt?.value || '' }))
+            }
+            options={members.map(u => ({
+              value: u.id,
+              label: u.name
+            }))}
             required
           />
 
@@ -191,6 +197,9 @@ export default function TransferMembershipInsertPage() {
             onChange={e => setForm({ ...form, reason: e.target.value })}
             placeholder="Reason for transfer..."
           />
+
+          {success && <div className="text-green-400 font-semibold mb-2 text-center">{success}</div>}
+          {error && <div className="text-red-400 font-semibold mb-2 text-center">{error}</div>}
 
           <FormActions
             onReset={handleReset}
