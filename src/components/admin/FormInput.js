@@ -1,4 +1,5 @@
 import Select from 'react-select';
+import { useTheme } from '@/contexts/ThemeContext';
 
 // FormInput Component
 export default function FormInput({ 
@@ -19,6 +20,7 @@ export default function FormInput({
     : `w-full bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-3 py-2 rounded text-sm ${className}`;
 
   const labelClass = "block mb-1 text-gray-800 dark:text-gray-200 font-medium text-sm";
+  const { theme } = useTheme();
 
   return (
     <div className="mb-4">
@@ -35,15 +37,67 @@ export default function FormInput({
           isDisabled={disabled}
           placeholder={placeholder || 'Ketik untuk mencari...'}
           classNamePrefix="react-select"
-          className="text-sm"
           styles={{
-            control: (base) => ({
+            control: (base, state) => ({
               ...base,
               minHeight: '38px',
-              backgroundColor: disabled ? '#f3f4f6' : 'white',
-              borderColor: '#d1d5db',
+              backgroundColor: theme === 'dark' ? '#374151' : '#ffffff',
+              borderColor: state.isFocused
+                ? theme === 'dark' ? '#6b7280' : '#2563eb'
+                : theme === 'dark' ? '#4b5563' : '#d1d5db',
+              boxShadow: 'none',
+              '&:hover': {
+                borderColor: theme === 'dark' ? '#9ca3af' : '#2563eb',
+              },
+            }),
+
+            menu: (base) => ({
+              ...base,
+              backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff',
+            }),
+
+            option: (base, state) => ({
+              ...base,
+              backgroundColor: state.isSelected
+                ? theme === 'dark' ? '#374151' : '#2563eb'
+                : state.isFocused
+                ? theme === 'dark' ? '#4b5563' : '#e5e7eb'
+                : 'transparent',
+
+              color: state.isSelected
+                ? '#ffffff'
+                : theme === 'dark' ? '#e5e7eb' : '#111827',
+
+              cursor: 'pointer',
+
+              // 🔥 INI KUNCINYA
+              ':active': {
+                backgroundColor: theme === 'dark'
+                  ? '#374151'   // ⬅️ ganti biru total
+                  : '#bfdbfe',
+              },
+            }),
+
+            singleValue: (base) => ({
+              ...base,
+              color: theme === 'dark' ? '#e5e7eb' : '#111827',
+            }),
+
+            placeholder: (base) => ({
+              ...base,
+              color: theme === 'dark' ? '#9ca3af' : '#6b7280',
             }),
           }}
+
+          theme={(theme) => ({
+            ...theme,
+            colors: {
+              ...theme.colors,
+              primary: theme === 'dark' ? '#374151' : '#2563eb',
+              primary25: theme === 'dark' ? '#4b5563' : '#e5e7eb',
+              primary50: theme === 'dark' ? '#374151' : '#bfdbfe',
+            },
+          })}
         />
       ) : type === 'select' ? (
         <select
