@@ -9,6 +9,7 @@ import { id, enUS } from "date-fns/locale";
 import { useRouter } from 'next/navigation';
 import BackendErrorFallback from '../../components/BackendErrorFallback';
 import { formatInTimeZone } from "date-fns-tz";
+import { useBirthdayEffect } from '@/hooks/useBirthdayEffect';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -31,6 +32,8 @@ export default function BarcodePage() {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
   const [buffer, setBuffer] = useState("");
   const timerRef = useRef(null);
+  const [plans, setPlans] = useState([]);
+  const { showBirthday } = useBirthdayEffect({result, user, messageType});
 
   // Modal state for booking class
     // Modal state for booking PT session
@@ -326,10 +329,7 @@ export default function BarcodePage() {
       localStorage.removeItem('user');
       router.push('/login');
     }
-  };
-
-  // State untuk PT session plans
-  const [plans, setPlans] = useState([]);
+  };  
 
   // Fetch PT session plans saat modal PT dibuka
   useEffect(() => {
@@ -783,7 +783,7 @@ useEffect(() => {
             <line x1="21" y1="12" x2="9" y2="12" />
           </svg>
           Logout
-        </button>
+        </button>        
       </div>
 
       <h1 className="text-4xl font-extrabold mb-8 text-gray-800 dark:text-amber-400 drop-shadow-lg tracking-tight text-center">
@@ -878,7 +878,7 @@ useEffect(() => {
             <div className="flex items-center justify-center h-full">
               <div className="w-96 h-96 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center text-gray-500 dark:text-gray-400 font-medium overflow-hidden border-4 border-gray-600 dark:border-amber-400 shadow-2xl p-2">
                 {user?.photo ? (
-                  <Image src={user.photo.startsWith('http') ? user.photo : `${API_URL?.replace(/\/$/, '')}${user.photo}`} alt="Foto Member" width={300} height={300} className="w-full h-full object-cover scale-105 rounded-xl" />
+                  <img src={user.photo.startsWith('http') ? user.photo : `${API_URL?.replace(/\/$/, '')}${user.photo}`} alt="Foto Member" width={300} height={300} className="w-full h-full object-cover scale-105 rounded-xl" />
                 ) : (
                   <span className="text-gray-500 dark:text-gray-400 text-lg">No photo available</span>
                 )}
@@ -896,6 +896,13 @@ useEffect(() => {
           <div className="text-left text-lg text-gray-700 dark:text-gray-200 flex flex-col justify-center">
             {messageType === 'success' ? (
               <>
+                {/* <button className='flex items-center gap-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg font-semibold shadow-lg transition-all duration-200' onClick={playBirthday} style={{ display: 'none' }}> Play Birthday </button> */}
+                {showBirthday && (
+                  <div className="mb-4 flex items-center gap-2">
+                    <span role="img" aria-label="birthday" className="text-3xl">🎉</span>
+                    <span className="text-2xl font-bold text-pink-500 dark:text-pink-300 animate-bounce">Happy Birthday! 🎂</span>
+                  </div>
+                )}
                 <p className="font-bold text-3xl text-gray-800 dark:text-amber-400 mb-4 leading-tight">{user?.name || '-'}</p>
                 <p className="mb-2 text-lg"><span className="font-semibold">Email:</span> {user?.email || '-'}</p>
                 <p className="mb-2 text-lg">
