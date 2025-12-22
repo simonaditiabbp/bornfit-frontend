@@ -31,9 +31,9 @@ export default function PTSessionEditPage() {
     const fetchDropdownData = async () => {
       try {
         const [dataPlans, dataMember, dataTrainer] = await Promise.all([
-          api.get('/api/ptsessionplans'),
-          api.get('/api/users?role=member&membership=active'),
-          api.get('/api/users?role=trainer')
+          api.get('/api/ptsessionplans?limit=10000'),
+          api.get('/api/users?role=member&membership=active,pending&limit=10000'),
+          api.get('/api/users?role=trainer&limit=10000')
         ]);
         setPlans(dataPlans.data.plans || []);
         setMembers(dataMember.data.users || []);
