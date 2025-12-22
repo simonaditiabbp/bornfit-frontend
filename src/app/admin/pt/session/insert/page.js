@@ -15,7 +15,7 @@ export default function PTSessionInsertPage() {
       try {
         const [plansData, membersData, trainersData] = await Promise.all([
           api.get('/api/ptsessionplans?limit=10000'),
-          api.get('/api/users?role=member&membership=active&limit=10000'),
+          api.get('/api/users?role=member&membership=active,pending&limit=10000'),
           api.get('/api/users?role=trainer&limit=10000')
         ]);
         setPlans(plansData.data.plans || []);
