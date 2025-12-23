@@ -170,7 +170,7 @@ export default function ClassSessionInsertPage() {
             label="Instructor"
             name="instructor_id"
             type="searchable-select"
-            placeholder='Search Member'
+            placeholder='Search Instructor'
             value={ selectedInstructor ? { value: selectedInstructor.id, label: selectedInstructor.name }
                   : null }
             onChange={(opt) =>

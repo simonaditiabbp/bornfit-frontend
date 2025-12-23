@@ -51,7 +51,10 @@ export default function ClassReportPage() {
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      alert('An error occurred while downloading the report.');
+      console.error('Download error:', err);
+      if (err?.status === 404) return alert(err.data?.message || 'No data found for selected date range.'), location.reload();
+      if (err?.status === 401) return alert('Your session has expired.'), location.reload();
+      alert('An error occurred while downloading the report.'), location.reload();
     }
     setDownloading('');
   };

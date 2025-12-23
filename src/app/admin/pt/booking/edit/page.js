@@ -18,7 +18,7 @@ export default function PTBookingEditPage() {
   useEffect(() => {
     const fetchMembers = async () => {
       try {
-        const dataMembers = await api.get('/api/users?role=member&membership=active');
+        const dataMembers = await api.get('/api/users?role=member&membership=active,pending&limit=10000');
         setMembers(dataMembers.data.users || []);
       } catch {}
     };

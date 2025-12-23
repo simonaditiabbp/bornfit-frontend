@@ -59,7 +59,7 @@ export default function EditAttendancePage() {
         let hasMore = true;
 
         while (hasMore) {
-          const data = await api.get(`/api/classes/paginated?page=${currentPage}&limit=100&scheduleType=all`);
+          const data = await api.get(`/api/classes/paginated?page=${currentPage}&limit=100&scheduleType=all&orderBy=start_time&orderDir=asc`);
           
           if (data.data?.classes) {
             allClasses = [...allClasses, ...data.data.classes];

@@ -50,6 +50,9 @@ export default function CheckinReportPage() {
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
+      console.error('Download error:', err);
+      if (err?.status === 404) return alert(err.data?.message || 'No data found for selected date range.'), location.reload();
+      if (err?.status === 401) return alert('Your session has expired.'), location.reload();
       alert('An error occurred while downloading the report.');
     }
     setDownloading('');
@@ -153,10 +156,10 @@ export default function CheckinReportPage() {
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">All Check-ins</h3>
               <div className="flex gap-2">
-                <button onClick={() => handleDownload('export', 'csv')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
+                <button onClick={() => handleDownload('checkins', 'csv')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
                   <FaFileCsv className="inline mr-1" /> CSV
                 </button>
-                <button onClick={() => handleDownload('export', 'excel')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
+                <button onClick={() => handleDownload('checkins', 'excel')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
                   <FaFileExcel className="inline mr-1" /> Excel
                 </button>
               </div>

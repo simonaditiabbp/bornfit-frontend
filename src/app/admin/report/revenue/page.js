@@ -62,9 +62,13 @@ export default function RevenueReportPage() {
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
+      console.error('Download error:', err);
+      if (err?.status === 404) return alert(err.data?.message || 'No data found for selected date range.'), location.reload();
+      if (err?.status === 401) return alert('Your session has expired.'), location.reload();
       alert('An error occurred while downloading the report.');
+    } finally {
+      setDownloading('');
     }
-    setDownloading('');
   };
 
   const formatCurrency = (amount) => {
