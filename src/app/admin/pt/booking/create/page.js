@@ -10,11 +10,17 @@ export default function PTBookingCreatePage() {
   const [members, setMembers] = useState([]);
   const [ptSessions, setPTSessions] = useState([]);
   const formatDateToISO = (val) => val ? (val.length === 16 ? val + ":00.000Z" : val) : "";
+  const getNowForDatetimeLocal = () => {
+    const now = new Date();
+    const pad = n => String(n).padStart(2, "0");
+
+    return `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  };
   
   const initialFormState = {
     user_member_id: '',
     personal_trainer_session_id: '',
-    booking_time: new Date().toISOString().slice(0, 16),
+    booking_time: getNowForDatetimeLocal(),
     status: 'booked'
   };
   
