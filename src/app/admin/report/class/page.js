@@ -14,9 +14,11 @@ export default function ClassReportPage() {
     start_date: '',
     end_date: '',
     class_type: '',
+    search: '',
     page: 1,
-    limit: 50
+    limit: 25
   });
+  const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 50, total_pages: 1 });
 
   const fetchData = async () => {
     setLoading(true);
@@ -25,6 +27,9 @@ export default function ClassReportPage() {
       const params = new URLSearchParams(Object.fromEntries(Object.entries(filters).filter(([_, v]) => v !== '')));
       const result = await api.get(`/api/class-reports/data?${params}`);
       setData(result.data.data);
+      if (result.data.pagination) {
+        setPagination(result.data.pagination);
+      }
     } catch (err) {
       if (err.isNetworkError) setBackendError(true);
     }
@@ -51,7 +56,10 @@ export default function ClassReportPage() {
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      alert('An error occurred while downloading the report.');
+      console.error('Download error:', err);
+      if (err?.status === 404) return alert(err.data?.message || 'No data found for selected date range.'), location.reload();
+      if (err?.status === 401) return alert('Your session has expired.'), location.reload();
+      alert('An error occurred while downloading the report.'), location.reload();
     }
     setDownloading('');
   };
@@ -87,13 +95,64 @@ export default function ClassReportPage() {
       <div className="m-5 p-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
         <h1 className="text-2xl font-bold text-black dark:text-amber-400 mb-6">Class & Event Data</h1>
 
-        {/* Filters */}
+        {/* Download Buttons */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200">Download Reports</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Classes</h3>
+              <div className="flex gap-2">
+                <button onClick={() => handleDownload('classes', 'csv')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
+                  <FaFileCsv className="inline mr-1" /> CSV
+                </button>
+                <button onClick={() => handleDownload('classes', 'excel')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
+                  <FaFileExcel className="inline mr-1" /> Excel
+                </button>
+              </div>
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Attendance</h3>
+              <div className="flex gap-2">
+                <button onClick={() => handleDownload('attendance', 'csv')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
+                  <FaFileCsv className="inline mr-1" /> CSV
+                </button>
+                <button onClick={() => handleDownload('attendance', 'excel')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
+                  <FaFileExcel className="inline mr-1" /> Excel
+                </button>
+              </div>
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Event Plans</h3>
+              <div className="flex gap-2">
+                <button onClick={() => handleDownload('event-plans', 'csv')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
+                  <FaFileCsv className="inline mr-1" /> CSV
+                </button>
+                <button onClick={() => handleDownload('event-plans', 'excel')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
+                  <FaFileExcel className="inline mr-1" /> Excel
+                </button>
+              </div>
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Instructor Performance</h3>
+              <div className="flex gap-2">
+                <button onClick={() => handleDownload('instructor-performance', 'csv')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
+                  <FaFileCsv className="inline mr-1" /> CSV
+                </button>
+                <button onClick={() => handleDownload('instructor-performance', 'excel')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
+                  <FaFileExcel className="inline mr-1" /> Excel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Filters & Search */}
         <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2 mb-3">
             <FaFilter className="text-amber-500 dark:text-amber-400" />
             <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">Filter Data</h3>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
               <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Start Date</label>
               <input
@@ -125,9 +184,19 @@ export default function ClassReportPage() {
                 <option value="Both">Both</option>
               </select>
             </div>
+            <div>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Pencarian</label>
+              <input
+                type="text"
+                placeholder="Cari nama, event, instruktur, dsb..."
+                value={filters.search}
+                onChange={(e) => setFilters({ ...filters, search: e.target.value, page: 1 })}
+                className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-gray-800 dark:text-white"
+              />
+            </div>
             <div className="flex items-end">
               <button
-                onClick={() => setFilters({ start_date: '', end_date: '', class_type: '', page: 1, limit: 50 })}
+                onClick={() => setFilters({ start_date: '', end_date: '', class_type: '', search: '', page: 1, limit: 50 })}
                 className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded transition w-full"
               >
                 Reset Filters
@@ -184,58 +253,29 @@ export default function ClassReportPage() {
               )}
             </tbody>
           </table>
-        </div>
-
-        {/* Download Buttons */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200">Download Reports</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Classes</h3>
-              <div className="flex gap-2">
-                <button onClick={() => handleDownload('classes', 'csv')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
-                  <FaFileCsv className="inline mr-1" /> CSV
-                </button>
-                <button onClick={() => handleDownload('classes', 'excel')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
-                  <FaFileExcel className="inline mr-1" /> Excel
-                </button>
-              </div>
+          {/* Pagination Controls */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-2 mt-4">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              Halaman {pagination.page} dari {pagination.total_pages} | Total Data: {pagination.total}
             </div>
-            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Attendance</h3>
-              <div className="flex gap-2">
-                <button onClick={() => handleDownload('attendance', 'csv')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
-                  <FaFileCsv className="inline mr-1" /> CSV
-                </button>
-                <button onClick={() => handleDownload('attendance', 'excel')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
-                  <FaFileExcel className="inline mr-1" /> Excel
-                </button>
-              </div>
-            </div>
-            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Event Plans</h3>
-              <div className="flex gap-2">
-                <button onClick={() => handleDownload('event-plans', 'csv')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
-                  <FaFileCsv className="inline mr-1" /> CSV
-                </button>
-                <button onClick={() => handleDownload('event-plans', 'excel')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
-                  <FaFileExcel className="inline mr-1" /> Excel
-                </button>
-              </div>
-            </div>
-            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Instructor Performance</h3>
-              <div className="flex gap-2">
-                <button onClick={() => handleDownload('instructor-performance', 'csv')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
-                  <FaFileCsv className="inline mr-1" /> CSV
-                </button>
-                <button onClick={() => handleDownload('instructor-performance', 'excel')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
-                  <FaFileExcel className="inline mr-1" /> Excel
-                </button>
-              </div>
+            <div className="flex gap-2">
+              <button
+                className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 disabled:opacity-50"
+                disabled={pagination.page <= 1 || loading}
+                onClick={() => setFilters(f => ({ ...f, page: f.page - 1 }))}
+              >
+                Prev
+              </button>
+              <button
+                className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 disabled:opacity-50"
+                disabled={pagination.page >= pagination.total_pages || loading}
+                onClick={() => setFilters(f => ({ ...f, page: f.page + 1 }))}
+              >
+                Next
+              </button>
             </div>
           </div>
-        </div>
+        </div>        
       </div>
     </div>
   );

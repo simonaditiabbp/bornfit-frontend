@@ -54,7 +54,7 @@ export default function InsertAttendancePage() {
         let hasMore = true;
 
         while (hasMore) {
-          const data = await api.get(`/api/classes/paginated?page=${currentPage}&limit=1000&scheduleType=all`);
+          const data = await api.get(`/api/classes/paginated?page=${currentPage}&limit=1000&scheduleType=all&orderBy=start_time&orderDir=asc`);
           
           if (data.data?.classes) {
             allClasses = [...allClasses, ...data.data.classes];
@@ -95,7 +95,7 @@ export default function InsertAttendancePage() {
         let hasMore = true;
 
         while (hasMore) {
-          const data = await api.get(`/api/users?page=${currentPage}&limit=1000&role=member`);
+          const data = await api.get(`/api/users?page=${currentPage}&role=member&membership=active,pending&limit=10000`);
           
           if (data.data?.users) {
             allMembers = [...allMembers, ...data.data.users];
@@ -116,7 +116,9 @@ export default function InsertAttendancePage() {
 
         // Filter members - exclude those with Silver plan
         const filteredMembers = allMembers.filter(member => {
-          const membership = memberships.find(m => m.user_id === member.id && m.is_active);
+          const membership = memberships.find(m => m.user_id === member.id && (
+            m.is_active || (m.is_active === false && m.status === 'pending')
+          ));
           if (!membership) return false; // No active membership
           
           const plan = plans.find(p => p.id === membership.membership_plan_id);
@@ -192,6 +194,8 @@ export default function InsertAttendancePage() {
       }
     }
   }, [preselectedClassId, classes, form.class_id, handleSelectClass]);
+
+  console.log("classes: ", classes);
 
   // Close dropdowns when clicking outside
   useEffect(() => {

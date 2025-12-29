@@ -139,12 +139,19 @@ class FetchClient {
 
     // Parse successful response
     let data;
+    const responseType = extraConfig.responseType || 'json';
     try {
-      data = await response.json();
-    } catch {
+      if (responseType === 'blob') {
+        data = await response.blob();
+      } else if (responseType === 'text') {
+        data = await response.text();
+      } else {
+        data = await response.json();
+      }
+    } catch (err) {
       data = null;
     }
-
+    
     // Run success interceptors
     for (const { successFn } of this.responseInterceptors) {
       if (successFn) data = successFn(data) || data;

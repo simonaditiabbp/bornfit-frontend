@@ -14,8 +14,10 @@ export default function CheckinReportPage() {
     start_date: '',
     end_date: '',
     page: 1,
-    limit: 50
+    search: '',
+    limit: 25
   });
+  const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 50, total_pages: 1 });
 
   const fetchData = async () => {
     setLoading(true);
@@ -24,6 +26,9 @@ export default function CheckinReportPage() {
       const params = new URLSearchParams(filters);
       const result = await api.get(`/api/checkin-reports/data?${params}`);
       setData(result.data.data);
+      if (result.data.pagination) {
+        setPagination(result.data.pagination);
+      }
     } catch (err) {
       if (err.isNetworkError) setBackendError(true);
     }
@@ -50,6 +55,9 @@ export default function CheckinReportPage() {
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
+      console.error('Download error:', err);
+      if (err?.status === 404) return alert(err.data?.message || 'No data found for selected date range.'), location.reload();
+      if (err?.status === 401) return alert('Your session has expired.'), location.reload();
       alert('An error occurred while downloading the report.');
     }
     setDownloading('');
@@ -78,74 +86,6 @@ export default function CheckinReportPage() {
       <div className="m-5 p-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
         <h1 className="text-2xl font-bold text-black dark:text-amber-400 mb-6">Check-in Data</h1>
 
-        {/* Filters */}
-        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center gap-2 mb-3">
-            <FaFilter className="text-amber-500 dark:text-amber-400" />
-            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">Filter Data</h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Start Date</label>
-              <input
-                type="date"
-                value={filters.start_date}
-                onChange={(e) => setFilters({ ...filters, start_date: e.target.value, page: 1 })}
-                className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-gray-800 dark:text-white"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">End Date</label>
-              <input
-                type="date"
-                value={filters.end_date}
-                onChange={(e) => setFilters({ ...filters, end_date: e.target.value, page: 1 })}
-                className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-gray-800 dark:text-white"
-              />
-            </div>
-            <div className="flex items-end">
-              <button
-                onClick={() => setFilters({ start_date: '', end_date: '', page: 1, limit: 50 })}
-                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded transition w-full"
-              >
-                Reset Filters
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Data Table */}
-        <div className="mb-6 overflow-x-auto">
-          <table className="w-full text-sm text-left text-gray-700 dark:text-gray-300">
-            <thead className="text-xs uppercase bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-              <tr>
-                <th className="px-4 py-3">Check-in Time</th>
-                <th className="px-4 py-3">Member Name</th>
-                <th className="px-4 py-3">Email</th>
-                <th className="px-4 py-3">Phone</th>
-                <th className="px-4 py-3">Location</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr><td colSpan="5" className="text-center py-8 text-gray-500 dark:text-gray-400">Loading...</td></tr>
-              ) : data.length === 0 ? (
-                <tr><td colSpan="5" className="text-center py-8 text-gray-500 dark:text-gray-400">No data found</td></tr>
-              ) : (
-                data.map((item) => (
-                  <tr key={item.id} className="border-b border-gray-200 dark:border-gray-700">
-                    <td className="px-4 py-3">{formatDate(item.checkin_time)}</td>
-                    <td className="px-4 py-3 font-semibold">{item.user_name}</td>
-                    <td className="px-4 py-3">{item.user_email}</td>
-                    <td className="px-4 py-3">{item.user_phone}</td>
-                    <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">{item.location || '-'}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
         {/* Download Buttons */}
         <div className="space-y-4">
           <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200">Download Reports</h2>
@@ -153,10 +93,10 @@ export default function CheckinReportPage() {
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">All Check-ins</h3>
               <div className="flex gap-2">
-                <button onClick={() => handleDownload('export', 'csv')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
+                <button onClick={() => handleDownload('checkins', 'csv')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
                   <FaFileCsv className="inline mr-1" /> CSV
                 </button>
-                <button onClick={() => handleDownload('export', 'excel')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
+                <button onClick={() => handleDownload('checkins', 'excel')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
                   <FaFileExcel className="inline mr-1" /> Excel
                 </button>
               </div>
@@ -185,6 +125,121 @@ export default function CheckinReportPage() {
             </div>
           </div>
         </div>
+
+        {/* Filters */}
+        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-2 mb-3">
+            <FaFilter className="text-amber-500 dark:text-amber-400" />
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">Filter Data</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Start Date</label>
+              <input
+                type="date"
+                value={filters.start_date}
+                onChange={(e) => setFilters({ ...filters, start_date: e.target.value, page: 1 })}
+                className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-gray-800 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">End Date</label>
+              <input
+                type="date"
+                value={filters.end_date}
+                onChange={(e) => setFilters({ ...filters, end_date: e.target.value, page: 1 })}
+                className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-gray-800 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Pencarian</label>
+              <input
+                type="text"
+                placeholder="Cari member, trainer, plan, dsb..."
+                value={filters.search}
+                onChange={(e) => setFilters({ ...filters, search: e.target.value, page: 1 })}
+                className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-gray-800 dark:text-white"
+              />
+            </div>
+            <div className="flex items-end">
+              <button
+                onClick={() => setFilters({ start_date: '', end_date: '', search: '', page: 1, limit: 50 })}
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded transition w-full"
+              >
+                Reset Filters
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Data Table */}        
+        <div className="mb-6 overflow-x-auto">
+          <table className="w-full text-sm text-left text-gray-700 dark:text-gray-300">
+            <thead className="text-xs uppercase bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+              <tr>
+                <th className="px-4 py-3">Check-in Time</th>
+                <th className="px-4 py-3">Member Name</th>
+                <th className="px-4 py-3">Email</th>
+                <th className="px-4 py-3">Phone</th>
+                <th className="px-4 py-3">Location</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan="5" className="text-center py-8 text-gray-500 dark:text-gray-400">Loading...</td></tr>
+              ) : data.length === 0 ? (
+                <tr><td colSpan="5" className="text-center py-8 text-gray-500 dark:text-gray-400">No data found</td></tr>
+              ) : (
+                data.map((item) => (
+                  console.log("item.checkin_time: ", formatDate(item.checkin_time)),  
+                  <tr key={item.id} className="border-b border-gray-200 dark:border-gray-700">
+                    <td className="px-4 py-3">{formatDate(item.checkin_time)}</td>
+                    <td className="px-4 py-3 font-semibold">{item.user_name}</td>
+                    <td className="px-4 py-3">{item.email}</td>
+                    <td className="px-4 py-3">{item.phone}</td>
+                    <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">
+                      {item.latitude && item.longitude ? (
+                        <a
+                          href={`https://www.google.com/maps?q=${item.latitude},${item.longitude}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-600 hover:bg-blue-100 dark:bg-blue-900 dark:text-blue-200 dark:hover:bg-blue-900/70"
+                        >
+                          📍 Lihat Lokasi
+                        </a>
+                      ) : (
+                        '-'
+                      )}
+                    </td>
+
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+          {/* Pagination Controls */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-2 mt-4">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              Halaman {pagination.page} dari {pagination.total_pages} | Total Data: {pagination.total}
+            </div>
+            <div className="flex gap-2">
+              <button
+                className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 disabled:opacity-50"
+                disabled={pagination.page <= 1 || loading}
+                onClick={() => setFilters(f => ({ ...f, page: f.page - 1 }))}
+              >
+                Prev
+              </button>
+              <button
+                className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 disabled:opacity-50"
+                disabled={pagination.page >= pagination.total_pages || loading}
+                onClick={() => setFilters(f => ({ ...f, page: f.page + 1 }))}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </div>        
       </div>
     </div>
   );

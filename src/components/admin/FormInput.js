@@ -78,6 +78,11 @@ export default function FormInput({
               },
             }),
 
+            input: (base) => ({
+              ...base,
+              color: theme === 'dark' ? '#e5e7eb' : '#111827',
+            }),
+
             singleValue: (base) => ({
               ...base,
               color: theme === 'dark' ? '#e5e7eb' : '#111827',
@@ -96,6 +101,9 @@ export default function FormInput({
               primary: theme === 'dark' ? '#374151' : '#2563eb',
               primary25: theme === 'dark' ? '#4b5563' : '#e5e7eb',
               primary50: theme === 'dark' ? '#374151' : '#bfdbfe',
+              neutral80: theme === 'dark' ? '#e5e7eb' : '#111827',
+              neutral40: theme === 'dark' ? '#9ca3af' : '#6b7280',
+              neutral20: theme === 'dark' ? '#4b5563' : '#d1d5db',
             },
           })}
         />
