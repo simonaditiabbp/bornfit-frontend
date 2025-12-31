@@ -49,6 +49,7 @@ export default function FormInput({
               '&:hover': {
                 borderColor: theme === 'dark' ? '#9ca3af' : '#2563eb',
               },
+              opacity: state.isDisabled ? 0.5 : 1,
             }),
 
             menu: (base) => ({
