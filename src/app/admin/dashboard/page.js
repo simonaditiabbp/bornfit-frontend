@@ -436,9 +436,6 @@ export default function AdminDashboardPage() {
                       <p className="text-sm text-gray-600 dark:text-gray-400">
                         {member.phone}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                        {member.planName}
-                      </p>
                     </div>
                     <div className="text-right">
                       <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
