@@ -46,14 +46,17 @@ export default function ClassSessionListPage() {
     const fetchMeta = async () => {
       try {
         const [plansData, membersData, instructorsData] = await Promise.all([
-          api.get('/api/eventplans'),
-          api.get('/api/users/?role=member'),
-          api.get('/api/users/?role=instructor')
+          api.get('/api/eventplans?limit=10000'),
+          api.get('/api/users/?role=member&limit=10000'),
+          api.get('/api/users/?role=instructor&limit=10000')
         ]);
         setPlans(plansData.data?.plans || []);
         setMembers(membersData.data?.users || []);
         setInstructors(instructorsData.data?.users || []);
-      } catch {}
+      } catch (err) {
+        // Silently fail - dropdowns will be empty
+        console.error('Error fetching class session meta data:', err);
+      }
     };
     fetchMeta();
   }, []);

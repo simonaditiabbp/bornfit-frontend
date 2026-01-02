@@ -157,7 +157,6 @@ export default function PTBookingCreatePage() {
             onSubmit={() => {}}
             onReset={handleReset}
             cancelHref="/admin/pt/booking"
-            submitText="Create Booking"
             isLoading={loading}
             isFormSubmit={true}
           />

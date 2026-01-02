@@ -246,7 +246,8 @@ export default function EditAttendancePage() {
   });
 
 
-  const handleEdit = () => {
+  const handleEdit = (e) => {
+    e.preventDefault();
     setEdit(true);
     setSuccess("");
     setError("");
@@ -266,7 +267,8 @@ export default function EditAttendancePage() {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e) => {
+    e.preventDefault();
     setFormLoading(true);
     setError("");
     setSuccess("");
@@ -359,10 +361,8 @@ export default function EditAttendancePage() {
           >
             Back
           </ActionButton>
-        </div>     
-        {success && <div className="text-green-400 mb-2">{success}</div>}
-        {error && <div className="text-red-400 mb-2">{error}</div>}
-        <div className="space-y-4 mb-4">
+        </div>             
+        <form onSubmit={handleSave} className="space-y-4 mb-4">
           {/* Searchable Class Dropdown */}
           <div className="mb-4 relative" ref={classDropdownRef}>
             <label className="block mb-2 text-gray-800 dark:text-gray-200 font-semibold">Class *</label>
@@ -375,11 +375,12 @@ export default function EditAttendancePage() {
                 onChange={(e) => setClassSearch(e.target.value)}
                 onFocus={() => edit && setShowClassDropdown(true)}
                 disabled={!edit}
+                required
               />
               {classSearch && edit && (
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300 dark:text-gray-400 dark:hover:text-gray-200"
                   onClick={() => {
                     setClassSearch("");
                     setForm(prev => ({ ...prev, class_id: "" }));
@@ -395,7 +396,7 @@ export default function EditAttendancePage() {
                   filteredClasses.map(cls => (
                     <div
                       key={cls.id}
-                      className="p-3 hover:bg-gray-600 cursor-pointer border-b border-gray-600 last:border-b-0"
+                      className="p-3 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer border-b border-gray-600 last:border-b-0"
                       onClick={() => handleSelectClass(cls)}
                     >
                       <div className="flex items-start justify-between gap-2">
@@ -456,11 +457,12 @@ export default function EditAttendancePage() {
                 onChange={(e) => setMemberSearch(e.target.value)}
                 onFocus={() => edit && setShowMemberDropdown(true)}
                 disabled={!edit}
+                required
               />
               {memberSearch && edit && (
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300 dark:text-gray-400 dark:hover:text-gray-200"
                   onClick={() => {
                     setMemberSearch("");
                     setForm(prev => ({ ...prev, member_id: "" }));
@@ -476,7 +478,7 @@ export default function EditAttendancePage() {
                   filteredMembers.map(m => (
                     <div
                       key={m.id}
-                      className="p-3 hover:bg-gray-600 cursor-pointer border-b border-gray-600 last:border-b-0"
+                      className="p-3 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer border-b border-gray-600 last:border-b-0"
                       onClick={() => handleSelectMember(m)}
                     >
                       <div className={`${theme === 'light' ? 'text-gray-800' : 'text-gray-200'} font-medium`}>{m.name || `Member #${m.id}`}</div>
@@ -496,6 +498,7 @@ export default function EditAttendancePage() {
             value={form.checked_in_at}
             onChange={e => setForm(f => ({ ...f, checked_in_at: e.target.value }))}
             disabled={!edit}
+            required
           />
           <FormInput
             label="Status"
@@ -510,6 +513,8 @@ export default function EditAttendancePage() {
               { value: 'cancelled', label: 'Cancelled' }
             ]}
           />
+          {success && <div className="text-green-400 mb-2">{success}</div>}
+          {error && <div className="text-red-400 mb-2">{error}</div>}
           <div className="flex gap-3 mt-8 justify-start">
             {!edit ? (
               <>
@@ -518,12 +523,12 @@ export default function EditAttendancePage() {
               </>
             ) : (
               <>
-                <ActionButton variant="primary" onClick={handleSave} disabled={formLoading}>{formLoading ? "Saving..." : "Save"}</ActionButton>
+                <ActionButton type="submit" disabled={formLoading}>{formLoading ? "Saving..." : "Save"}</ActionButton>
                 <ActionButton variant="gray" onClick={handleCancel}>Cancel</ActionButton>
               </>
             )}
           </div>
-        </div>
+        </form>
       </PageContainerInsert>
     </div>
   );

@@ -73,7 +73,8 @@ export default function ClassPurchaseEditPage() {
     if (id) fetchData();
   }, [id]);
 
-  const handleEdit = () => {
+  const handleEdit = (e) => {
+    e.preventDefault();
     setEdit(true);
     setSuccess('');
     setError('');
@@ -86,7 +87,8 @@ export default function ClassPurchaseEditPage() {
     setForm(initialForm);
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e) => {
+    e.preventDefault();
     setFormLoading(true);
     setError('');
     setSuccess('');
@@ -146,7 +148,7 @@ export default function ClassPurchaseEditPage() {
           </ActionButton>
         </div>                
         
-        <div className="space-y-4 mb-4">
+        <form onSubmit={handleSave} className="space-y-4 mb-4">
           <FormInput
             label="Member Name"
             name="user_id"
@@ -204,14 +206,12 @@ export default function ClassPurchaseEditPage() {
               </>
             ) : (
               <>
-                <ActionButton variant="primary" onClick={handleSave} disabled={formLoading}>
-                  {formLoading ? "Saving..." : "Save"}
-                </ActionButton>
+                <ActionButton type="submit" variant="primary" disabled={formLoading}>{formLoading ? "Saving..." : "Save"}</ActionButton>
                 <ActionButton variant="gray" onClick={handleCancel}>Cancel</ActionButton>
               </>
             )}
           </div>
-        </div>
+        </form>
       </PageContainerInsert>
     </div>
   );

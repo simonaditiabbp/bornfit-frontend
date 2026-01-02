@@ -47,7 +47,8 @@ export default function PTSessionInsertPage() {
     setSuccess('');
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e) => {
+    e.preventDefault();
     setLoading(true);
     setError("");
     setSuccess("");
@@ -80,7 +81,7 @@ export default function PTSessionInsertPage() {
       ]} />
       <PageContainerInsert>
         <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-amber-300 text-center">Create PT Session</h1>
-        <div className="space-y-4">
+        <form onSubmit={handleSave} className="space-y-4">
           <FormInput
             label="Plan"
             name="pt_session_plan_id"
@@ -147,16 +148,14 @@ export default function PTSessionInsertPage() {
             ]}
             required
           />
-        </div>
-        {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
-        {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}
-        <FormActions
-          onSubmit={handleSave}
-          onReset={handleReset}
-          cancelHref="/admin/pt/session"
-          submitText="Create PT Session"
-          isSubmitting={loading}
-        />
+          {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
+          {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}       
+          <FormActions
+            onReset={handleReset}
+            cancelHref="/admin/pt/session"
+            isSubmitting={loading}
+          />
+        </form>
       </PageContainerInsert>
     </div>
   );
