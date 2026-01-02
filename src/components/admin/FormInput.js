@@ -37,24 +37,25 @@ export default function FormInput({
           isDisabled={disabled}
           placeholder={placeholder || 'Ketik untuk mencari...'}
           classNamePrefix="react-select"
+          required={required}
           styles={{
             control: (base, state) => ({
               ...base,
               minHeight: '38px',
               backgroundColor: theme === 'dark' ? '#374151' : '#ffffff',
               borderColor: state.isFocused
-                ? theme === 'dark' ? '#6b7280' : '#2563eb'
+                ? theme === 'dark' ? '#6b7280' : '#374151'
                 : theme === 'dark' ? '#4b5563' : '#d1d5db',
               boxShadow: 'none',
               '&:hover': {
-                borderColor: theme === 'dark' ? '#9ca3af' : '#2563eb',
+                borderColor: theme === 'dark' ? '#9ca3af' : '#374151',
               },
               opacity: state.isDisabled ? 0.5 : 1,
             }),
 
             menu: (base) => ({
               ...base,
-              backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff',
+              backgroundColor: theme === 'dark' ? '#111827' : '#ffffff',
             }),
 
             option: (base, state) => ({
@@ -114,6 +115,7 @@ export default function FormInput({
           value={value}
           onChange={onChange}
           disabled={disabled}
+          required={required}
           className={baseInputClass}
           {...props}
         >
@@ -130,6 +132,7 @@ export default function FormInput({
           onChange={onChange}
           disabled={disabled}
           placeholder={placeholder}
+          required={required}
           className={baseInputClass}
           rows={4}
           {...props}

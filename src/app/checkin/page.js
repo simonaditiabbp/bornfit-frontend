@@ -275,7 +275,7 @@ export default function BarcodePage() {
     try {
       const res = await fetch(`${API_URL}/api/checkinptsession/checkin`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, },
         body: JSON.stringify({ qr_code, latitude, longitude }),
       });
       const apiResult = await res.json();
@@ -514,7 +514,7 @@ export default function BarcodePage() {
                 try {
                   const res = await fetch(`${API_URL}/api/checkinptsession/checkin`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, },
                     body: JSON.stringify({ qr_code, latitude, longitude }),
                   });
                   const result = await res.json();
