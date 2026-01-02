@@ -83,6 +83,39 @@ export default function ClassSessionInsertPage() {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    
+    // Validasi untuk recurring class
+    if (form.is_recurring) {
+      if (!form.valid_from) {
+        setError("Valid From date is required for recurring classes");
+        return;
+      }
+      if (!form.valid_until) {
+        setError("Valid Until date is required for recurring classes");
+        return;
+      }
+      if (form.recurrence_days.length === 0) {
+        setError("Please select at least one day for recurring classes");
+        return;
+      }
+      if (!form.recurrence_start_time) {
+        setError("Start time is required for recurring classes");
+        return;
+      }
+      if (!form.recurrence_end_time) {
+        setError("End time is required for recurring classes");
+        return;
+      }
+      if (new Date(form.valid_from) > new Date(form.valid_until)) {
+        setError("Valid From date cannot be later than Valid Until date");
+        return;
+      }
+      if (new Date(form.valid_until) < new Date()) {
+        setError("Valid Until date cannot be in the past");
+        return;
+      }
+    }
+    
     setLoading(true);
     setError("");
     setSuccess("");
@@ -148,7 +181,7 @@ export default function ClassSessionInsertPage() {
 
       <PageContainerInsert>
         <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-amber-300 text-center">Create Detail Class</h1>        
-        <form className="space-y-4">
+        <form onSubmit={handleSave} className="space-y-4">
           <FormInput
             label="Plan"
             name="event_plan_id"
@@ -237,14 +270,14 @@ export default function ClassSessionInsertPage() {
             <>
               <div className="grid grid-cols-2 gap-4">
                 <FormInput
-                  label="Valid From *"
+                  label="Valid From"
                   type="date"
                   value={form.valid_from}
                   onChange={e => setForm({ ...form, valid_from: e.target.value })}
                   required
                 />
                 <FormInput
-                  label="Valid Until *"
+                  label="Valid Until"
                   type="date"
                   value={form.valid_until}
                   onChange={e => setForm({ ...form, valid_until: e.target.value })}
@@ -279,7 +312,7 @@ export default function ClassSessionInsertPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <FormInput
-                  label="Time Start *"
+                  label="Time Start"
                   type="time"
                   value={form.recurrence_start_time}
                   onChange={e => setForm({ ...form, recurrence_start_time: e.target.value })}
@@ -287,7 +320,7 @@ export default function ClassSessionInsertPage() {
                 />
                 <div>
                   <FormInput
-                    label="Time End * (Auto-calculated)"
+                    label="Time End (Auto-calculated)"
                     type="time"
                     value={form.recurrence_end_time}
                     onChange={e => setForm({ ...form, recurrence_end_time: e.target.value })}
@@ -298,10 +331,10 @@ export default function ClassSessionInsertPage() {
               </div>
 
               <div className="text-white bg-gray-900/70 border-gray-700 dark:text-amber-200 dark:bg-amber-900/30 dark:border-amber-700 border rounded p-3 text-sm">
-                <strong>Preview:</strong> Class akan dibuat otomatis setiap{' '}
-                {form.recurrence_days.length > 0 ? form.recurrence_days.join(', ') : '(pilih hari)'}{' '}
-                pada jam {form.recurrence_start_time || '(pilih waktu)'} - {form.recurrence_end_time || '(pilih waktu)'}{' '}
-                dari {form.valid_from || '(tanggal mulai)'} sampai {form.valid_until || '(tanggal selesai)'}
+                <strong>Preview:</strong> Class will be created automatically every{' '}
+                {form.recurrence_days.length > 0 ? form.recurrence_days.join(', ') : '(select day)'}{' '}
+                at {form.recurrence_start_time || '(select time)'} - {form.recurrence_end_time || '(select time)'}{' '}
+                from {form.valid_from || '(start date)'} until {form.valid_until || '(end date)'}
               </div>
             </>
           )}
@@ -317,7 +350,6 @@ export default function ClassSessionInsertPage() {
           {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
           {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}
           <FormActions
-            onSubmit={handleSave}
             onReset={handleReset}
             cancelHref="/admin/class/session"
             loading={loading}

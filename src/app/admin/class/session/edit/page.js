@@ -169,6 +169,38 @@ export default function ClassSessionEditPage() {
   };
 
   const handleSave = async () => {
+    // Validasi untuk recurring class
+    if (form.is_recurring) {
+      if (!form.valid_from) {
+        setError("Valid From date is required for recurring classes");
+        return;
+      }
+      if (!form.valid_until) {
+        setError("Valid Until date is required for recurring classes");
+        return;
+      }
+      if (form.recurrence_days.length === 0) {
+        setError("Please select at least one day for recurring classes");
+        return;
+      }
+      if (!form.recurrence_start_time) {
+        setError("Start time is required for recurring classes");
+        return;
+      }
+      if (!form.recurrence_end_time) {
+        setError("End time is required for recurring classes");
+        return;
+      }
+      if (new Date(form.valid_from) > new Date(form.valid_until)) {
+        setError("Valid From date cannot be later than Valid Until date");
+        return;
+      }
+      if (new Date(form.valid_until) < new Date()) {
+        setError("Valid Until date cannot be in the past");
+        return;
+      }
+    }
+    
     setFormLoading(true);
     setError("");
     setSuccess("");

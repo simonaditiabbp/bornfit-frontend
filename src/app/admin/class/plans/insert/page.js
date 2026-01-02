@@ -159,7 +159,6 @@ export default function ClassPlanInsertPage() {
               <label htmlFor="is_active" className="block mb-0 text-gray-800 dark:text-gray-200">Active</label>
             </div>
           <FormActions
-            onSubmit={handleSubmit}
             onReset={handleReset}
             cancelHref="/admin/class/plans"
             loading={loading}

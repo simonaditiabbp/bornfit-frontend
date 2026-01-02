@@ -295,7 +295,6 @@ export default function InsertAttendancePage() {
 
       <PageContainerInsert>
         <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-amber-300 text-center">Create Class Attendance</h1>
-        {error && <div className="text-red-400 mb-2">{error}</div>}
         <form onSubmit={handleSubmit}>
           {/* Searchable Class Dropdown */}
           <div className="mb-4 relative" ref={classDropdownRef}>
@@ -308,11 +307,12 @@ export default function InsertAttendancePage() {
                 value={classSearch}
                 onChange={(e) => setClassSearch(e.target.value)}
                 onFocus={() => setShowClassDropdown(true)}
+                required
               />
               {classSearch && (
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300 dark:text-gray-400 dark:hover:text-gray-200"
                   onClick={() => {
                     setClassSearch("");
                     setForm(prev => ({ ...prev, class_id: "" }));
@@ -328,7 +328,7 @@ export default function InsertAttendancePage() {
                   filteredClasses.map(cls => (
                     <div
                       key={cls.id}
-                      className="p-3 hover:bg-gray-600 cursor-pointer border-b border-gray-600 last:border-b-0"
+                      className="p-3 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer border-b border-gray-600 last:border-b-0"
                       onClick={() => handleSelectClass(cls)}
                     >
                       <div className="flex items-start justify-between gap-2">
@@ -388,11 +388,12 @@ export default function InsertAttendancePage() {
                 value={memberSearch}
                 onChange={(e) => setMemberSearch(e.target.value)}
                 onFocus={() => setShowMemberDropdown(true)}
+                required
               />
               {memberSearch && (
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300 dark:text-gray-400 dark:hover:text-gray-200"
                   onClick={() => {
                     setMemberSearch("");
                     setForm(prev => ({ ...prev, member_id: "" }));
@@ -408,7 +409,7 @@ export default function InsertAttendancePage() {
                   filteredMembers.map(m => (
                     <div
                       key={m.id}
-                      className="p-3 hover:bg-gray-600 cursor-pointer border-b border-gray-600 last:border-b-0"
+                      className="p-3 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer border-b border-gray-600 last:border-b-0"
                       onClick={() => handleSelectMember(m)}
                     >
                       <div className={`${theme === 'light' ? 'text-gray-800' : 'text-gray-200'} font-medium`}>{m.name || `Member #${m.id}`}</div>
@@ -440,8 +441,8 @@ export default function InsertAttendancePage() {
               { value: 'cancelled', label: 'Cancelled' }
             ]}
           />
+          {error && <div className="text-red-400 mb-2">{error}</div>}
           <FormActions
-            onSubmit={handleSubmit}
             onReset={handleReset}
             cancelHref="/admin/class/attendance"
             loading={loading}

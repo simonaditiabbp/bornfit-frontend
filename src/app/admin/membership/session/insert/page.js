@@ -90,6 +90,7 @@ export default function InsertMembershipSessionPage() {
 
   const selectedUser = users.length > 0 && form.user_id ? users.find(u => u.id === form.user_id) ?? null : null;
   const selectedPlan = plans.length > 0 && form.membership_plan_id ? plans.find(p => p.id === form.membership_plan_id) ?? null : null;
+  const selectedStaff = staff.length > 0 && form.referral_user_staff_id ? staff.find(s => s.id === form.referral_user_staff_id) ?? null : null;
 
   return (
     <div>
@@ -189,13 +190,17 @@ export default function InsertMembershipSessionPage() {
             <FormInput
               label="Referral Staff/Sales"
               name="referral_user_staff_id"
-              type="select"
-              value={form.referral_user_staff_id}
-              onChange={handleChange}
-              options={[
-                { value: '', label: 'Pilih Referral Staff/Sales' },
-                ...staff.map(u => ({ value: u.id, label: u.name }))
-              ]}
+              type="searchable-select"
+              placeholder='Select Referral Staff/Sales'
+              value={ selectedStaff ? { value: selectedStaff.id, label: selectedStaff.name }
+                    : null }
+              onChange={(opt) =>
+                setForm(prev => ({ ...prev, referral_user_staff_id: opt?.value || '' }))
+              }
+              options={staff.map(s => ({
+                value: s.id,
+                label: s.name
+              }))}
             />
             <div className="mb-2">
               <label className="inline-flex items-center">
@@ -251,13 +256,17 @@ export default function InsertMembershipSessionPage() {
                 <FormInput
                   label="Referral Member"
                   name="referral_user_member_id"
-                  type="select"
-                  value={form.referral_user_member_id}
-                  onChange={handleChange}
-                  options={[
-                    { value: '', label: 'Pilih Referral Member' },
-                    ...users.map(u => ({ value: u.id, label: u.name }))
-                  ]}
+                  type="searchable-select"
+                  placeholder='Select Referral Member'
+                  value={ selectedUser ? { value: selectedUser.id, label: selectedUser.name }
+                        : null }
+                  onChange={(opt) =>
+                    setForm(prev => ({ ...prev, referral_user_member_id: opt?.value || '' }))
+                  }
+                  options={users.map(u => ({
+                    value: u.id,
+                    label: u.name
+                  }))}
                 />
                 <FormInput
                   label="Note"
