@@ -153,6 +153,15 @@ export default function BarcodePage() {
   const [bookingClassSuccess, setBookingClassSuccess] = useState("");
   const [classSearch, setClassSearch] = useState("");
   const classSearchDebounceRef = useRef(null);
+  
+  // Manual Checkin Modal State
+  const [showManualCheckinModal, setShowManualCheckinModal] = useState(false);
+  const [memberSearch, setMemberSearch] = useState("");
+  const [searchedMembers, setSearchedMembers] = useState([]);
+  const [memberSearchLoading, setMemberSearchLoading] = useState(false);
+  const [memberSearchError, setMemberSearchError] = useState("");
+  const memberSearchDebounceRef = useRef(null);
+  
   // Handler for Booking Class button
   const fetchAvailableClasses = async (page = 1, limit = 10, search = "") => {
     setBookingClassLoading(true);
@@ -331,6 +340,69 @@ export default function BarcodePage() {
     }
   };  
 
+  // Handler untuk membuka modal manual checkin
+  const handleOpenManualCheckin = () => {
+    setShowManualCheckinModal(true);
+    setMemberSearch("");
+    setSearchedMembers([]);
+    setMemberSearchError("");
+  };
+
+  // Handler untuk search member
+  const searchMembers = async (searchQuery) => {
+    if (!searchQuery || searchQuery.trim().length < 2) {
+      setSearchedMembers([]);
+      return;
+    }
+    
+    setMemberSearchLoading(true);
+    setMemberSearchError("");
+    try {
+      const res = await fetch(`${API_URL}/api/users?search=${encodeURIComponent(searchQuery)}&role=member&limit=20`, {
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
+      });
+      const data = await res.json();
+      if (res.ok && Array.isArray(data.data?.users)) {
+        setSearchedMembers(data.data.users);
+      } else {
+        setSearchedMembers([]);
+        setMemberSearchError(data.message || "Member not found");
+      }
+    } catch (err) {
+      setSearchedMembers([]);
+      setMemberSearchError("Failed to search for member");
+    }
+    setMemberSearchLoading(false);
+  };
+
+  // Handler untuk input search dengan debounce
+  const handleMemberSearchChange = (e) => {
+    const value = e.target.value;
+    setMemberSearch(value);
+    if (memberSearchDebounceRef.current) clearTimeout(memberSearchDebounceRef.current);
+    memberSearchDebounceRef.current = setTimeout(() => {
+      searchMembers(value);
+    }, 400);
+  };
+
+  // Handler untuk melakukan manual checkin berdasarkan member yang dipilih
+  const handleManualCheckinMember = async (selectedMember) => {
+    if (!selectedMember?.qr_code) {
+      setMemberSearchError("Member not have QR code");
+      return;
+    }
+    
+    // Close modal
+    setShowManualCheckinModal(false);
+    
+    // Reset state
+    setMemberSearch("");
+    setSearchedMembers([]);
+    
+    // Lakukan checkin menggunakan barcode member
+    await handleQrResponse(selectedMember.qr_code);
+  };
+
   // Fetch PT session plans saat modal PT dibuka
   useEffect(() => {
     if (!showPTModal) return;
@@ -380,11 +452,11 @@ export default function BarcodePage() {
     fetchLatestCheckin();
   }, [user]);
 
-  // Keep manual QR input always focused, kecuali modal booking class/PT session sedang terbuka
+  // Keep manual QR input always focused, kecuali modal booking class/PT session/manual checkin sedang terbuka
   useEffect(() => {
     const handleGlobalClick = (e) => {
-      // Jangan paksa fokus jika modal booking class atau PT session terbuka
-      if (showClassModal || showPTModal) return;
+      // Jangan paksa fokus jika modal booking class, PT session, atau manual checkin terbuka
+      if (showClassModal || showPTModal || showManualCheckinModal) return;
       if (manualQrInputRef.current && document.activeElement !== manualQrInputRef.current) {
         manualQrInputRef.current.focus();
       }
@@ -393,7 +465,7 @@ export default function BarcodePage() {
     return () => {
       window.removeEventListener('click', handleGlobalClick);
     };
-  }, [showClassModal, showPTModal]);
+  }, [showClassModal, showPTModal, showManualCheckinModal]);
 
   // Cancel scan
   const handleCancelScan = () => {
@@ -685,7 +757,6 @@ useEffect(() => {
 
   // Helper untuk render info PT Session
   const renderPTSessionInfo = (result) => {
-    // console.log("result di renderPTSessionInfo:", result);
     // if (!result?.data?.type?.toLowerCase().includes('pt')) return null;
     const ptsession = Array.isArray(result.data?.ptsessions) ? result.data.ptsessions[0] : null;
     if (!ptsession) return null;
@@ -761,8 +832,28 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-2 py-8">
-      {/* 🔴 Tombol Logout pojok kanan atas */}
-      <div className="absolute top-4 right-6">
+      <div className="absolute top-4 right-6 flex gap-3">
+        <button
+          onClick={handleOpenManualCheckin}
+          className="flex items-center gap-2 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow-lg transition-all duration-200"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="feather feather-user-check"
+          >
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="8.5" cy="7" r="4" />
+            <polyline points="17 11 19 13 23 9" />
+          </svg>
+          Manual Checkin
+        </button>
         <button
           onClick={handleLogout}
           className="flex items-center gap-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg font-semibold shadow-lg transition-all duration-200"
@@ -1059,13 +1150,13 @@ useEffect(() => {
               <div className="shadow-lg rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
                 <BookingDataTable
                   columns={[
-                    { name: 'Nama Kelas', selector: row => row.name, sortable: true, grow: 2 },
-                    { name: 'Tanggal', selector: row => row.class_date?.slice(0, 10), sortable: true },
-                    { name: 'Mulai', selector: row => row.start_time?.slice(11, 16), sortable: true },
-                    { name: 'Selesai', selector: row => row.end_time?.slice(11, 16), sortable: true },
-                    { name: 'Instruktur', selector: row => row.instructor?.name || '-', sortable: true, grow: 1.5 },
+                    { name: 'Class Name', selector: row => row.name, sortable: true, grow: 2 },
+                    { name: 'Date', selector: row => row.class_date?.slice(0, 10), sortable: true },
+                    { name: 'Start', selector: row => row.start_time?.slice(11, 16), sortable: true },
+                    { name: 'End', selector: row => row.end_time?.slice(11, 16), sortable: true },
+                    { name: 'Instructor', selector: row => row.instructor?.name || '-', sortable: true, grow: 1.5 },
                     { 
-                      name: 'Aksi', 
+                      name: 'Action', 
                       cell: row => {
                         // Cek apakah user memiliki Gold membership (id=2)
                         // const isGoldMember = user?.membership_plan?.id === 2;
@@ -1133,7 +1224,7 @@ useEffect(() => {
                     className="bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 px-5 py-2 rounded-lg font-bold transition duration-200 shadow-md"
                     onClick={() => setShowClassModal(false)}
                 >
-                    Tutup
+                    Close
                 </button>
               </div>
             </Modal>
@@ -1164,9 +1255,9 @@ useEffect(() => {
                 </button>
               </div>
               <div className="mb-4">
-                {bookingPTLoading && <div className="p-3 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border-l-4 border-blue-500 rounded-md font-medium">Memuat data...</div>}
+                {bookingPTLoading && <div className="p-3 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border-l-4 border-blue-500 rounded-md font-medium">Loading data...</div>}
                 {bookingPTError && <div className="p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 border-l-4 border-red-500 rounded-md font-medium">Error: {bookingPTError}</div>}
-                {bookingPTSuccess && <div className="p-3 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200 border-l-4 border-green-500 rounded-md font-medium">Berhasil: {bookingPTSuccess}</div>}
+                {bookingPTSuccess && <div className="p-3 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200 border-l-4 border-green-500 rounded-md font-medium">Success: {bookingPTSuccess}</div>}
               </div>
               <div className="mb-4 flex items-center gap-4">
                 <input
@@ -1198,7 +1289,7 @@ useEffect(() => {
                       return `${sisa} of ${max} sessions remaining`;
                     }, sortable: true },
                     {
-                      name: 'Aksi',
+                      name: 'Action',
                       cell: row => (
                         <button
                           className={`px-4 py-2 rounded-lg font-semibold transition duration-200 ${
@@ -1238,13 +1329,156 @@ useEffect(() => {
                   className="bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 px-5 py-2 rounded-lg font-bold transition duration-200 shadow-md"
                   onClick={() => setShowPTModal(false)}
                 >
-                  Tutup
+                  Close
                 </button>
               </div>
             </Modal>
           </div>
         </div>
       )}
+
+      {/* Modal Manual Checkin */}
+      <Modal
+        isOpen={showManualCheckinModal}
+        onRequestClose={() => setShowManualCheckinModal(false)}
+        contentLabel="Manual Checkin"
+        ariaHideApp={false}
+        className="bg-white dark:bg-gray-800 rounded-xl max-w-[800px] w-full mx-auto p-8 shadow-2xl outline-none max-h-[95vh] overflow-y-auto border border-gray-200 dark:border-gray-700"
+        overlayClassName="fixed inset-0 bg-black/70 flex items-center justify-center z-[1000]"
+        portalClassName="z-[1000]"
+      >
+        {/* HEADER MODAL */}
+        <div className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-4 mb-6">
+          <div>
+            <h2 className="flex items-center gap-3 text-3xl font-extrabold text-blue-600 dark:text-blue-400">
+              <svg
+                className="w-8 h-8"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M9 2h6a1 1 0 011 1v2a1 1 0 01-1 1H9a1 1 0 01-1-1V3a1 1 0 011-1z
+                    M7 6h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V8a2 2 0 012-2z
+                    M9 11h6
+                    M9 15h6
+                    M9 19h4"
+                />
+              </svg>
+              Manual Check-in
+            </h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Search for a member by name or email</p>
+          </div>
+          {/* Tombol close di sudut kanan atas */}
+          <button
+            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition duration-150"
+            onClick={() => setShowManualCheckinModal(false)}
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        {/* FEEDBACK AREA */}
+        <div className="mb-4">
+          {memberSearchLoading && <div className="p-3 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border-l-4 border-blue-500 rounded-md font-medium">Searching for member...</div>}
+          {memberSearchError && <div className="p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 border-l-4 border-red-500 rounded-md font-medium">Error: {memberSearchError}</div>}
+        </div>
+
+        {/* SEARCH INPUT */}
+        <div className="mb-6">
+          <input
+            type="text"
+            className="w-full p-4 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder:text-gray-400 shadow"
+            placeholder="Type the member’s name or email (minimum 2 characters)..."
+            value={memberSearch}
+            onChange={handleMemberSearchChange}
+            autoFocus
+          />
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Search will start automatically after 0.4 seconds</p>
+        </div>
+
+        {/* MEMBER LIST */}
+        {searchedMembers.length > 0 && (
+          <div className="space-y-3 max-h-[500px] overflow-y-auto">
+            <h3 className="font-semibold text-lg text-gray-700 dark:text-gray-300 mb-3">Search Results ({searchedMembers.length} member{searchedMembers.length !== 1 ? 's' : ''}):</h3>
+            {searchedMembers.map((member) => (
+              <div
+                key={member.id}
+                className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition cursor-pointer flex justify-between items-center shadow-sm"
+                onClick={() => handleManualCheckinMember(member)}
+              >
+                <div className="flex-1">
+                  <p className="font-bold text-gray-800 dark:text-gray-200 text-lg">{member.name}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{member.email}</p>
+                  {member.membership_plan?.name && (
+                    <span className={`inline-block mt-2 px-2 py-1 rounded-full text-xs font-semibold ${
+                      member.membership_plan.name.toLowerCase() === "platinum"
+                        ? "bg-gray-100 text-gray-800"
+                        : member.membership_plan.name.toLowerCase() === "gold"
+                        ? "bg-amber-100 text-amber-700"
+                        : member.membership_plan.name.toLowerCase() === "silver"
+                        ? "bg-slate-100 text-slate-700"
+                        : member.membership_plan.name.toLowerCase() === "trial"
+                        ? "bg-blue-100 text-blue-700"
+                        : "bg-gray-100 text-gray-500"
+                    }`}>
+                      {member.membership_plan.name}
+                    </span>
+                  )}
+                </div>
+                <button
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold shadow transition-all"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleManualCheckinMember(member);
+                  }}
+                >
+                  Check In
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* EMPTY STATE */}
+        {!memberSearchLoading && memberSearch.length >= 2 && searchedMembers.length === 0 && !memberSearchError && (
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            <svg className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            <p className="text-lg font-medium">No members found</p>
+            <p className="text-sm mt-1">Try using a different keyword</p>
+          </div>
+        )}
+
+        {/* INITIAL STATE */}
+        {memberSearch.length < 2 && searchedMembers.length === 0 && (
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            <svg className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+            <p className="text-lg font-medium">Start searching for member</p>
+            <p className="text-sm mt-1">Type at least 2 characters to start searching</p>
+          </div>
+        )}
+
+        {/* FOOTER MODAL */}
+        <div className="flex justify-end mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <button
+            className="bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 px-5 py-2 rounded-lg font-bold transition duration-200 shadow-md"
+            onClick={() => setShowManualCheckinModal(false)}
+          >
+            Close
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }
