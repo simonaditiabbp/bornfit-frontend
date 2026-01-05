@@ -5,8 +5,10 @@ import { FaHistory, FaFilter, FaSearch, FaEye, FaTrash, FaDownload } from 'react
 import api from '@/utils/fetchClient';
 import LoadingSpin from '@/components/admin/LoadingSpin';
 import dayjs from 'dayjs';
+import utc from 'dayjs-plugin-utc';
 
 export default function HistoryPage() {
+    dayjs.extend(utc);
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [pagination, setPagination] = useState({
@@ -21,6 +23,7 @@ export default function HistoryPage() {
         user_id: '',
         startDate: '',
         endDate: '',
+        user_name: '',
     });
     const [showFilters, setShowFilters] = useState(false);
     const [selectedLog, setSelectedLog] = useState(null);
@@ -90,29 +93,46 @@ export default function HistoryPage() {
         }
     };
 
-    const handleExport = () => {
-        // Export logs as CSV
-        const csv = [
-            ['Timestamp', 'Action', 'Entity', 'Flag Name', 'User Name', 'Entity ID'],
-            ...logs.map(log => [
-                dayjs(log.timestamp).format('YYYY-MM-DD HH:mm:ss'),
-                log.action,
-                log.entity,
-                log.flag_name,
-                log.user_name,
-                log.entity_id || '',
-            ]),
-        ]
-            .map(row => row.join(','))
-            .join('\n');
+    const handleExport = async () => {
+        try {
+            setLoading(true);
+            const params = new URLSearchParams({
+                page: 1,
+                limit: 999999,
+                ...Object.fromEntries(Object.entries(filters).filter(([_, v]) => v)),
+            });
 
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `audit-logs-${dayjs().format('YYYY-MM-DD')}.csv`;
-        a.click();
-        window.URL.revokeObjectURL(url);
+            const response = await api.get(`/api/audit-logs?${params}`);
+            if (response.status) {
+                const allLogs = response.data.logs;
+                const csv = [
+                    ['Timestamp', 'Action', 'Entity', 'Flag Name', 'User Name', 'Entity ID'],
+                    ...allLogs.map(log => [
+                        dayjs(log.timestamp).format('YYYY-MM-DD HH:mm:ss'),
+                        log.action,
+                        log.entity,
+                        log.flag_name,
+                        log.user_name,
+                        log.entity_id || '',
+                    ]),
+                ]
+                    .map(row => row.join(','))
+                    .join('\n');
+
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `audit-logs-${dayjs().format('YYYY-MM-DD')}.csv`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+            }
+        } catch (error) {
+            console.error('Failed to export logs:', error);
+            alert('Failed to export logs. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const getActionBadgeColor = (action) => {
@@ -123,6 +143,8 @@ export default function HistoryPage() {
                 return 'bg-blue-500 text-white';
             case 'delete':
                 return 'bg-red-500 text-white';
+            case 'checkin':
+                return 'bg-amber-500 text-white';
             default:
                 return 'bg-gray-500 text-white';
         }
@@ -167,7 +189,8 @@ export default function HistoryPage() {
                                     <option value="">All Actions</option>
                                     <option value="insert">Insert</option>
                                     <option value="update">Update</option>
-                                    {/* <option value="delete">Delete</option> */}
+                                    <option value="delete">Delete</option>
+                                    <option value="checkin">Checkin</option>
                                 </select>
                             </div>
 
@@ -183,12 +206,12 @@ export default function HistoryPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">User ID</label>
+                                <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Staff Username</label>
                                 <input
-                                    type="number"
-                                    value={filters.user_id}
-                                    onChange={(e) => handleFilterChange('user_id', e.target.value)}
-                                    placeholder="Filter by user ID"
+                                    type="text"
+                                    value={filters.user_name}
+                                    onChange={(e) => handleFilterChange('user_name', e.target.value)}
+                                    placeholder="Filter by Staff Username"
                                     className="w-full bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded px-3 py-2 text-gray-800 dark:text-gray-200"
                                 />
                             </div>
@@ -298,7 +321,7 @@ export default function HistoryPage() {
                                     {logs.map((log) => (
                                         <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                                             <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200">
-                                                {dayjs(log.timestamp).format('YYYY-MM-DD HH:mm:ss')}
+                                                {dayjs.utc(log.timestamp).format('YYYY-MM-DD HH:mm:ss')}
                                             </td>
                                             <td className="px-4 py-3 text-sm">
                                                 <span className={`px-2 py-1 rounded text-xs font-semibold ${getActionBadgeColor(log.action)}`}>
