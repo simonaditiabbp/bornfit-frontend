@@ -68,12 +68,12 @@ export default function BarcodePage() {
         } else {
           setAvailablePTSessions([]);
           setPTTotalRows(0);
-          setBookingPTError(data.message || "Tidak ada PT session tersedia");
+          setBookingPTError(data.message || "No PT sessions available");
         }
       } catch (err) {
         setAvailablePTSessions([]);
         setPTTotalRows(0);
-        setBookingPTError("Gagal mengambil data PT session");
+        setBookingPTError("Failed to fetch PT session data");
       }
       setBookingPTLoading(false);
     };
@@ -131,15 +131,15 @@ export default function BarcodePage() {
           })
         });
         if (res.ok) {
-          setBookingPTSuccess("Berhasil booking PT session!");
-          fetchAvailablePTSessions(ptPage, ptLimit);
+          setBookingPTSuccess("PT session booked successfully!");
+          // fetchAvailablePTSessions(ptPage, ptLimit);
         } else {
           const data = await res.json();
-          setBookingPTError(data.message || "Gagal booking PT session");
+          setBookingPTError(data.message || "Failed to book PT session");
         }
       } catch (err) {
         console.log("error: ", err);
-        setBookingPTError("Gagal booking PT session");
+        setBookingPTError("Failed to book PT session");
       }
       setBookingPTLoading(false);
     };
@@ -182,12 +182,12 @@ export default function BarcodePage() {
       } else {
         setAvailableClasses([]);
         setClassTotalRows(0);
-        setBookingClassError(data.message || "Tidak ada kelas tersedia");
+        setBookingClassError(data.message || "No Classes available");
       }
     } catch (err) {
       setAvailableClasses([]);
       setClassTotalRows(0);
-      setBookingClassError("Gagal mengambil data kelas");
+      setBookingClassError("Failed to fetch Class data");
     }
     setBookingClassLoading(false);
   };
@@ -257,14 +257,14 @@ export default function BarcodePage() {
         })
       });
       if (res.ok) {
-        setBookingClassSuccess("Berhasil booking kelas!");
-        fetchAvailableClasses(classPage, classLimit);
+        setBookingClassSuccess("Class booked successfully!");
+        // fetchAvailableClasses(classPage, classLimit);
       } else {
         const data = await res.json();
-        setBookingClassError(data.message || "Gagal booking kelas");
+        setBookingClassError(data.message || "Failed to book class");
       }
     } catch (err) {
-      setBookingClassError("Gagal booking kelas");
+      setBookingClassError("Failed to book class");
     }
     setBookingClassLoading(false);
   };
@@ -291,7 +291,7 @@ export default function BarcodePage() {
       setResult(apiResult);
       if (res.status === 201 && apiResult.data) {
         setUser(apiResult.data.user);
-        setMessage(apiResult.message || 'Check-in berhasil');
+        setMessage(apiResult.message || 'Check-in successfully');
         setMessageType('success');
       } else {
         setUser(null);
@@ -307,7 +307,7 @@ export default function BarcodePage() {
     } catch (err) {
       console.log("error: ", err);
       setUser(null);
-      setMessage('Terjadi kesalahan saat check-in');
+      setMessage('An error occurred during check-in');
       setMessageType('error');
     } finally {
       setLoading(false);
@@ -1130,9 +1130,9 @@ useEffect(() => {
 
               {/* FEEDBACK AREA */}
               <div className="mb-4">
-                  {bookingClassLoading && <div className="p-3 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border-l-4 border-blue-500 rounded-md font-medium">Memuat data...</div>}
+                  {bookingClassLoading && <div className="p-3 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border-l-4 border-blue-500 rounded-md font-medium">Loading data...</div>}
                   {bookingClassError && <div className="p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 border-l-4 border-red-500 rounded-md font-medium">Error: {bookingClassError}</div>}
-                  {bookingClassSuccess && <div className="p-3 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200 border-l-4 border-green-500 rounded-md font-medium">Berhasil: {bookingClassSuccess}</div>}
+                  {bookingClassSuccess && <div className="p-3 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200 border-l-4 border-green-500 rounded-md font-medium">Successfully: {bookingClassSuccess}</div>}
               </div>
               
               {/* SEARCH INPUT & DATA TABLE */}
