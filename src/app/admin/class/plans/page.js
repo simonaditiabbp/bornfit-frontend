@@ -90,7 +90,7 @@ export default function ClassPlansPage() {
       />
       <PageContainer>
         <PageHeader
-          searchPlaceholder="Search plans..."
+          searchPlaceholder="Search name/description..."
           searchValue={search}
           onSearchChange={(e) => setSearch(e.target.value)}
           actionHref="/admin/class/plans/insert"

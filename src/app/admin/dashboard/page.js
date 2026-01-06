@@ -140,7 +140,7 @@ export default function AdminDashboardPage() {
             planName: m.membershipPlan?.name || 'N/A'
           }))
           .sort((a, b) => a.daysLeft - b.daysLeft)
-          .slice(0, 10);
+          .slice(0, 10000);
 
         // 2. Recently Expired (1-7 days ago)
         const recentlyExpired = memberships
@@ -158,7 +158,7 @@ export default function AdminDashboardPage() {
             planName: m.membershipPlan?.name || 'N/A'
           }))
           .sort((a, b) => a.daysAgo - b.daysAgo)
-          .slice(0, 10);
+          .slice(0, 10000);
 
         // 3. Inactive Members (tidak checkin 30 hari, membership aktif)
         const thirtyDaysAgo = now.subtract(30, 'day');
@@ -180,7 +180,7 @@ export default function AdminDashboardPage() {
             planName: m.membershipPlan?.name || 'N/A',
             startDate: m.start_date
           }))
-          .slice(0, 10);
+          .slice(0, 10000);
 
         // 4. New Members This Month
         const startOfMonth = now.startOf('month');
@@ -196,7 +196,7 @@ export default function AdminDashboardPage() {
             startDate: m.start_date
           }))
           .sort((a, b) => dayjs(b.startDate).diff(dayjs(a.startDate)))
-          .slice(0, 10);
+          .slice(0, 10000);
 
         const memberBirthdays = birthdays.map(user => ({
           id: user.id,
