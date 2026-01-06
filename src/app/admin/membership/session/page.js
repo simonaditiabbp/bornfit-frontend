@@ -87,11 +87,11 @@ export default function MembershipSessionPage() {
         setTotalRows(data.data?.total || 0);
         
         // Tampilkan notifikasi sukses (opsional)
-        alert('Membership status berhasil diperbarui!');
+        alert('Membership status has been successfully updated!');
       }
     } catch (err) {
       console.error('Error refreshing status:', err);
-      alert('Gagal memperbarui status membership');
+      alert('Failed to update membership status. Please try again.');
     }
     setRefreshing(false);
   };
@@ -128,7 +128,7 @@ export default function MembershipSessionPage() {
           </div>
           <a
             href="/admin/membership/session/insert"
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg font-semibold hover:bg-gray-700 transition-colors"
           >
             <FaPlus />
             Add Session

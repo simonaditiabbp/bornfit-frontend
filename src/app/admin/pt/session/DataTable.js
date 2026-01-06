@@ -32,7 +32,7 @@ export default function PTSessionDataTable({
       const pt = trainers.find(t => t.id === row.user_pt_id);
       return pt ? pt.name : row.user_pt_id;
     }, sortable: true },
-    { name: 'Join Date', selector: row => row.join_date?.slice(0,10), sortable: true },
+    { name: 'Start Date', selector: row => row.start_date?.slice(0,10), sortable: true },
     {
       name: 'Remaining Session',
       selector: row => {
