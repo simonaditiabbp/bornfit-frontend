@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import api from '@/utils/fetchClient';
 import BackendErrorFallback from "@/components/BackendErrorFallback";
 import { jsPDF } from "jspdf";
-import { FaChalkboardTeacher, FaPlus } from 'react-icons/fa';
+import { FaChalkboardTeacher, FaPlus, FaSyncAlt } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainer, PageHeader, LoadingText, StyledDataTable } from '@/components/admin';
 
 export default function PTSessionListPage() {
@@ -22,6 +22,7 @@ export default function PTSessionListPage() {
   const [page, setPage] = useState(1);
   const [totalRows, setTotalRows] = useState(0);
   const [perPage, setPerPage] = useState(10);
+  const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -87,6 +88,35 @@ export default function PTSessionListPage() {
     return () => clearTimeout(handler);
   }, [searchInput]);
 
+  const handleRefreshStatus = async () => {
+    setRefreshing(true);
+    try {
+      const result = await api.post('/api/personaltrainersessions/update-status-cron');
+      if (result.status === 'success') {
+        // Refresh data setelah update status berhasil
+        const params = new URLSearchParams({
+          page: page.toString(),
+          limit: perPage.toString(),
+        });
+        
+        if (search && search.trim() !== '') {
+          params.append('search', search);
+        }
+        
+        const sessionData = await api.get(`/api/personaltrainersessions/paginated?${params.toString()}`);
+        setSessions(sessionData.data?.sessions || []);
+        setTotalRows(sessionData.data?.total || 0);
+        
+        // Tampilkan notifikasi sukses (opsional)
+        alert('PT Session status has been successfully updated!');
+      }
+    } catch (err) {
+      console.error('Error refreshing status:', err);
+      alert('Failed to update PT Session status. Please try again.');
+    }
+    setRefreshing(false);
+  };
+
   if (backendError) {
     return <BackendErrorFallback onRetry={() => window.location.reload()} />;
   }
@@ -100,14 +130,33 @@ export default function PTSessionListPage() {
       />
       
       <PageContainer>
-        <PageHeader
-          searchPlaceholder="Search member/plan/status..."
-          searchValue={searchInput}
-          onSearchChange={(e) => setSearchInput(e.target.value)}
-          actionHref="/admin/pt/session/insert"
-          actionIcon={<FaPlus />}
-          actionText="Add PT Session"
-        />
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2 flex-1">
+            <input
+              type="text"
+              placeholder="Search member/plan/status..."
+              value={searchInput}
+              onChange={e => setSearchInput(e.target.value)}
+              className="w-full max-w-xs p-2 border text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 border-gray-300 dark:border-amber-200 rounded focus:outline-none text-base"
+            />
+            <button
+              onClick={handleRefreshStatus}
+              disabled={refreshing}
+              className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg font-semibold hover:bg-amber-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              title="Update PT Session Status"
+            >
+              <FaSyncAlt className={refreshing ? 'animate-spin' : ''} />
+              {refreshing ? 'Updating...' : 'Refresh Status'}
+            </button>
+          </div>
+          <a
+            href="/admin/pt/session/insert"
+            className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg font-semibold hover:bg-gray-700 transition-colors"
+          >
+            <FaPlus />
+            Add PT Session
+          </a>
+        </div>
         {loading ? (
           <LoadingText />
         ) : (

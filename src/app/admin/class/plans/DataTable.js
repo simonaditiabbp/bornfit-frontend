@@ -21,7 +21,19 @@ export default function ClassPlansDataTable({
     { name: 'Max Visitors', selector: row => row.max_visitor, sortable: true, cell: row => `${row.max_visitor} people` },
     { name: 'Minutes/Session', selector: row => row.minutes_per_session, sortable: true, cell: row => `${row.minutes_per_session} minutes` },
     { name: 'Description', selector: row => row.description, sortable: false },
-    { name: 'Status', selector: row => row.is_active ? 'Active' : 'Inactive', sortable: false },
+    { name: 'Status',
+      cell: row => {
+        const status = row.is_active ? 'active' : 'inactive';
+        const styleMap = { active: 'bg-green-100 text-green-700', inactive: 'bg-red-100 text-red-700' };
+        const label = status.charAt(0).toUpperCase() + status.slice(1);
+        return (
+          <span className={`px-2 py-1 rounded-full text-xs font-bold ${ styleMap[status] }`}>
+            {label}
+          </span>
+        );
+      },
+      sortable: false
+    },
     {
       name: 'Actions',
       cell: row => (

@@ -102,8 +102,7 @@ export default function ClassPurchaseInsertPage() {
       />
 
       <PageContainerInsert title="Create Class Purchase">
-        <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-amber-300 text-center">Create Class Purchase</h1>
-        {error && <div className="text-red-400 mb-2 text-center">{error}</div>}
+        <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-amber-300 text-center">Create Class Purchase</h1>        
         {fetchingData && <div className="text-amber-400 mb-4 text-center">Loading data...</div>}
         <form onSubmit={handleSubmit}>
           <FormInput
@@ -115,7 +114,7 @@ export default function ClassPurchaseInsertPage() {
               selectedUser
                 ? {
                     value: selectedUser.id,
-                    label: `${selectedUser.name} (${selectedUser.email})`
+                    label: `${selectedUser.name} ${selectedUser.email ? `(${selectedUser.email})` : ''}`
                   }
                 : null
             }
@@ -124,7 +123,7 @@ export default function ClassPurchaseInsertPage() {
             }}
             options={users.map(user => ({
               value: user.id,
-              label: `${user.name} (${user.email})`
+              label: `${user.name} ${user.email ? `(${user.email})` : ''}`
             }))}
             required
           />
@@ -137,7 +136,12 @@ export default function ClassPurchaseInsertPage() {
               selectedClass
                 ? {
                     value: selectedClass.id,
-                    label: `${selectedClass.name} - ${selectedClass.class_date?.slice(0, 10)} ${selectedClass.start_time?.slice(0, 5)}`
+                    label: `${selectedClass.event_plan?.name || selectedClass.name} - 
+                    ${selectedClass.instructor?.name || ''} 
+                    (${new Date(selectedClass.start_time)?.toLocaleDateString('id-ID', { weekday: 'long', timeZone: 'UTC' })}, 
+                    ${selectedClass.start_time?.replace('T', ' ').replace('.000Z', '')} - 
+                    ${new Date(selectedClass.end_time)?.toLocaleDateString('id-ID', { weekday: 'long', timeZone: 'UTC' })}, 
+                    ${selectedClass.end_time?.replace('T', ' ').replace('.000Z', '')})`
                   }
                 : null
             }
@@ -146,7 +150,12 @@ export default function ClassPurchaseInsertPage() {
             }}
             options={classes.map(cls => ({
               value: cls.id,
-              label: `${cls.name} - ${cls.class_date?.slice(0, 10)} ${cls.start_time?.slice(0, 5)}`
+              label: `${cls.event_plan?.name || cls.name} - 
+              ${cls.instructor?.name || ''} 
+              (${new Date(cls.start_time)?.toLocaleDateString('id-ID', { weekday: 'long', timeZone: 'UTC' })}, 
+              ${cls.start_time?.replace('T', ' ').replace('.000Z', '')} - 
+              ${new Date(cls.end_time)?.toLocaleDateString('id-ID', { weekday: 'long', timeZone: 'UTC' })}, 
+              ${cls.end_time?.replace('T', ' ').replace('.000Z', '')})`
             }))}
             required
           />
@@ -157,6 +166,7 @@ export default function ClassPurchaseInsertPage() {
             onChange={e => setPrice(e.target.value)}
             required
           />
+          {error && <div className="text-red-400 mb-2 text-center">{error}</div>}
           <FormActions
             onReset={handleReset}
             cancelHref="/admin/class/classpurchase"

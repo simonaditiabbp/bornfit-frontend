@@ -79,7 +79,7 @@ export default function MembershipPlansPage() {
       
       <PageContainer>
         <PageHeader
-          searchPlaceholder="Search name/desc..."
+          searchPlaceholder="Search name/description..."
           searchValue={searchInput}
           onSearchChange={e => setSearchInput(e.target.value)}
           actionHref="/admin/membership/plans/insert"

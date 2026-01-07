@@ -81,7 +81,6 @@ export default function EditAttendancePage() {
           return true;
         });
         
-        console.log("Filtered Classes:", filteredClasses);
         setClasses(filteredClasses);
       } catch (err) {
         // Silently fail - dropdown will be empty but form still usable
@@ -111,7 +110,7 @@ export default function EditAttendancePage() {
         const memberships = membershipData.data?.memberships || [];
         
         // Fetch membership plans to get plan names
-        const plansData = await api.get('/api/membership-plans?limit=1000');
+        const plansData = await api.get('/api/membership-plans?limit=10000');
         const plans = plansData.data?.membershipPlans || [];
         
         const filteredMembers = allMembers.filter(member => {
@@ -181,8 +180,11 @@ export default function EditAttendancePage() {
   }, [form?.member_id, members]);
 
   function formatClassDisplay(cls) {
-    let display = cls.name || `Class #${cls.id}`;
-    if (cls.class_date) {
+    let display = cls.event_plan.name || `Class #${cls.id}`;
+    if (cls.instructor && cls.instructor.name) {
+      display += ` - ${cls.instructor.name}`;
+    }
+    /*if (cls.class_date) {
       // Parse date without timezone conversion
       const dateStr = cls.class_date.split('T')[0];
       const [year, month, day] = dateStr.split('-');
@@ -202,7 +204,7 @@ export default function EditAttendancePage() {
       const hours = time.getUTCHours().toString().padStart(2, '0');
       const minutes = time.getUTCMinutes().toString().padStart(2, '0');
       display += `-${hours}:${minutes}`;
-    }
+    }*/
     return display;
   }
 
@@ -277,7 +279,7 @@ export default function EditAttendancePage() {
       const selectedClass = classes.find(c => c.id == form.class_id);
       if (selectedClass && form.class_id !== initialForm.class_id) {
         // Fetch class attendance count for the specific class
-        const attendanceData = await api.get('/api/classattendances');
+        const attendanceData = await api.get('/api/classattendances?limit=10000');
         // Filter attendance untuk class yang dipilih saja, exclude yang Cancelled, dan exclude current attendance
         const currentAttendance = attendanceData.data?.attendances?.filter(
           a => a.class_id === form.class_id && a.status !== 'Cancelled' && a.id !== parseInt(id)
@@ -365,7 +367,7 @@ export default function EditAttendancePage() {
         <form onSubmit={handleSave} className="space-y-4 mb-4">
           {/* Searchable Class Dropdown */}
           <div className="mb-4 relative" ref={classDropdownRef}>
-            <label className="block mb-2 text-gray-800 dark:text-gray-200 font-semibold">Class *</label>
+            <label className="block mb-2 text-gray-800 dark:text-gray-200 font-medium text-sm">Class <span className="text-red-400">*</span></label>
             <div className="relative">
               <input
                 type="text"
@@ -401,7 +403,7 @@ export default function EditAttendancePage() {
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1">
-                          <div className={`${theme === 'light' ? 'text-gray-800' : 'text-gray-200'} font-medium`}>{cls.name || `Class #${cls.id}`}</div>
+                          <div className={`${theme === 'light' ? 'text-gray-800' : 'text-gray-200'} font-medium`}>{cls.event_plan.name || `Class #${cls.id}`}</div>
                           <div className={`${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} text-sm mt-1`}>
                             {cls.instructor?.name && (
                               <span>👤 {cls.instructor.name}</span>
@@ -447,7 +449,7 @@ export default function EditAttendancePage() {
 
           {/* Searchable Member Dropdown */}
           <div className="mb-4 relative" ref={memberDropdownRef}>
-            <label className="block mb-2 text-gray-800 dark:text-gray-200 font-semibold">Member *</label>
+            <label className="block mb-2 text-gray-800 dark:text-gray-200 font-medium text-sm">Member <span className="text-red-400">*</span></label>
             <div className="relative">
               <input
                 type="text"

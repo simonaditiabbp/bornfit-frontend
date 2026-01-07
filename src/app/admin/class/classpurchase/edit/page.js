@@ -155,14 +155,14 @@ export default function ClassPurchaseEditPage() {
             type="searchable-select"
             placeholder='Search Member'
             disabled={!edit}
-            value={ selectedUser ? { value: selectedUser.id, label: `${selectedUser.name} (${selectedUser.email || 'No email'})` }
+            value={ selectedUser ? { value: selectedUser.id, label: `${selectedUser.name} ${selectedUser.email ? `(${selectedUser.email})` : ''}` }
                   : null }
             onChange={(opt) =>
               setForm(prev => ({ ...prev, user_id: opt?.value || '' }))
             }
             options={users.map(u => ({
               value: u.id,
-              label: `${u.name} (${u.email})`
+              label: `${u.name} ${u.email ? `(${u.email})` : ''}`
             }))}
             required
           />
@@ -173,14 +173,27 @@ export default function ClassPurchaseEditPage() {
             type="searchable-select"
             placeholder='Search Member'
             disabled={!edit}
-            value={ selectedClass ? { value: selectedClass.id, label: `${selectedClass.name} - ${selectedClass.class_date?.slice(0, 10)} ${selectedClass.start_time?.slice(0, 5)}` }
-                  : null }
+            value={ selectedClass ? { 
+              value: selectedClass.id, 
+              label: `${selectedClass.event_plan?.name || selectedClass.name} - 
+                      ${selectedClass.instructor?.name || ''} 
+                      (${new Date(selectedClass.start_time)?.toLocaleDateString('id-ID', { weekday: 'long', timeZone: 'UTC' })}, 
+                      ${selectedClass.start_time?.replace('T', ' ').replace('.000Z', '')} - 
+                      ${new Date(selectedClass.end_time)?.toLocaleDateString('id-ID', { weekday: 'long', timeZone: 'UTC' })}, 
+                      ${selectedClass.end_time?.replace('T', ' ').replace('.000Z', '')})`
+            }
+            : null }
             onChange={(opt) =>
               setForm(prev => ({ ...prev, class_id: opt?.value || '' }))
             }
-            options={classes.map(u => ({
-              value: u.id,
-              label: `${u.name} - ${u.class_date?.slice(0, 10)} ${u.start_time?.slice(0, 5)}`
+            options={classes.map(cls => ({
+              value: cls.id,
+              label: `${cls.event_plan?.name || cls.name} - 
+                      ${cls.instructor?.name || ''} 
+                      (${new Date(cls.start_time)?.toLocaleDateString('id-ID', { weekday: 'long', timeZone: 'UTC' })}, 
+                      ${cls.start_time?.replace('T', ' ').replace('.000Z', '')} - 
+                      ${new Date(cls.end_time)?.toLocaleDateString('id-ID', { weekday: 'long', timeZone: 'UTC' })}, 
+                      ${cls.end_time?.replace('T', ' ').replace('.000Z', '')})`
             }))}
             required
           />
@@ -198,7 +211,7 @@ export default function ClassPurchaseEditPage() {
           {success && <div className="text-green-400 mb-2">{success}</div>}
           {error && <div className="text-red-400 mb-2">{error}</div>}
           
-          <div className="flex gap-3 mt-8 justify-start">
+          <div className="flex gap-3 mt-6 justify-start">
             {!edit ? (
               <>
                 <ActionButton variant="primary" onClick={handleEdit}>Edit</ActionButton>
