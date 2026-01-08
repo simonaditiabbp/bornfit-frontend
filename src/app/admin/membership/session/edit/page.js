@@ -102,7 +102,8 @@ export default function EditMembershipSessionPage() {
 
   const selectedUser = users.length > 0 && form.user_id ? users.find(u => u.id === form.user_id) ?? null : null;
   const selectedPlan = plans.length > 0 && form.membership_plan_id ? plans.find(p => p.id === form.membership_plan_id) ?? null : null;
-  const selectedStaff = staff.length > 0 && form.referral_user_staff_id ? staff.find(s => s.id === form.referral_user_staff_id) ?? null : null;
+  const selectedStaffRefferal = staff.length > 0 && form.referral_user_staff_id ? staff.find(s => s.id === form.referral_user_staff_id) ?? null : null;
+  const selectedMemberReferral = users.length > 0 && form.referral_user_member_id ? users.find(u => u.id === form.referral_user_member_id) ?? null : null;
 
   return (
     <div>      
@@ -209,15 +210,15 @@ export default function EditMembershipSessionPage() {
               disabled={!edit}
               required
               options={[
-                { value: 'true', label: 'Ya' },
-                { value: 'false', label: 'Tidak' }
+                { value: 'true', label: 'Yes' },
+                { value: 'false', label: 'No' }
               ]}
             />
             
             <div>
-              <label className={`block font-medium text-gray-800 dark:text-gray-200 mb-1`}>Final Price <span className="text-red-400">*</span></label>
+              <label className={`block font-medium text-sm text-gray-800 dark:text-gray-200 mb-1`}>Final Price <span className="text-red-400">*</span></label>
               <div className="flex gap-2">
-                <input type="number" name="final_price" value={form.final_price || ''} onChange={handleChange} className={`flex-1 p-3 border rounded-lg ${edit ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600' : 'bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-700'}`} required disabled={!edit} />
+                <input type="number" name="final_price" value={form.final_price || ''} onChange={handleChange} className={`flex-1 p-2 border rounded font-medium text-sm ${edit ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600' : 'bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-700'}`} required disabled={!edit} />
                 <button
                   type="button"
                   onClick={() => {
@@ -227,7 +228,7 @@ export default function EditMembershipSessionPage() {
                     }
                   }}
                   disabled={!form.membership_plan_id || !edit}
-                  className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-semibold transition whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded font-semibold transition whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Plan Price
                 </button>
@@ -239,7 +240,7 @@ export default function EditMembershipSessionPage() {
               type="searchable-select"
               placeholder='Select Referral Staff/Sales'
               disabled={!edit}
-              value={ selectedStaff ? { value: selectedStaff.id, label: selectedStaff.name }
+              value={ selectedStaffRefferal ? { value: selectedStaffRefferal.id, label: selectedStaffRefferal.name }
                     : null }
               onChange={(opt) =>
                 setForm(prev => ({ ...prev, referral_user_staff_id: opt?.value || '' }))
@@ -253,13 +254,14 @@ export default function EditMembershipSessionPage() {
             <div className="mb-2">
               <label className="inline-flex items-center">
                 <input type="checkbox" checked={showAdditional} onChange={e => setShowAdditional(e.target.checked)} className="mr-2" />
-                <span className="font-medium text-gray-800 dark:text-gray-200">View Additional Settings</span>
+                <span className="font-medium text-sm text-gray-800 dark:text-gray-200">Show Additional Settings</span>
               </label>
             </div>
             {showAdditional && (
               <>
                 <FormInput
                   label="Additional Fee"
+                  placeholder="Enter additional fee"
                   name="additional_fee"
                   type="number"
                   value={form.additional_fee || ''}
@@ -282,6 +284,7 @@ export default function EditMembershipSessionPage() {
                 {form.discount_type === 'amount' && (
                   <FormInput
                     label="Value Amount"
+                    placeholder="Enter value amount"
                     name="discount_amount"
                     type="number"
                     value={form.discount_amount ?? ''}
@@ -291,7 +294,8 @@ export default function EditMembershipSessionPage() {
                 )}
                 {form.discount_type === 'percent' && (
                   <FormInput
-                    label="Value Percent"
+                    label="Value Percent (%)"
+                    placeholder="Enter value percent"
                     name="discount_percent"
                     type="number"
                     value={form.discount_percent ?? ''}
@@ -302,6 +306,7 @@ export default function EditMembershipSessionPage() {
                 
                 <FormInput
                   label="Extra Duration Days"
+                  placeholder="Enter extra duration days"
                   name="extra_duration_days"
                   type="number"
                   value={form.extra_duration_days || ''}
@@ -315,7 +320,7 @@ export default function EditMembershipSessionPage() {
                   type="searchable-select"
                   placeholder='Select Referral Member'
                   disabled={!edit}
-                  value={ selectedUser ? { value: selectedUser.id, label: selectedUser.name }
+                  value={ selectedMemberReferral ? { value: selectedMemberReferral.id, label: selectedMemberReferral.name }
                         : null }
                   onChange={(opt) =>
                     setForm(prev => ({ ...prev, referral_user_member_id: opt?.value || '' }))
@@ -329,6 +334,7 @@ export default function EditMembershipSessionPage() {
                 
                 <FormInput
                   label="Note"
+                  placeholder="Enter a note"
                   name="note"
                   type="text"
                   value={form.note}

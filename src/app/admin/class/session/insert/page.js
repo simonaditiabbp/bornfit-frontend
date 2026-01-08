@@ -286,7 +286,7 @@ export default function ClassSessionInsertPage() {
               </div>
 
               <div>
-                <label className="block mb-2 text-gray-600 dark:text-gray-200">Repeat On (Days) *</label>
+                <label className="block mb-2 text-gray-600 dark:text-gray-200 font-medium text-sm">Repeat On (Days) *</label>
                 <div className="grid grid-cols-4 gap-2">
                   {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => (
                     <button
@@ -340,12 +340,12 @@ export default function ClassSessionInsertPage() {
           )}
           
           <div>
-            <label className="block mb-1 text-gray-800 dark:text-gray-200">Total Manual Checkin</label>
-            <input name="total_manual_checkin" type="number" value={form.total_manual_checkin} onChange={e => setForm({ ...form, total_manual_checkin: e.target.value })} className="w-full border border-gray-300 dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200" />
+            <label className="block mb-1 text-gray-800 dark:text-gray-200 font-medium text-sm">Total Manual Checkin</label>
+            <input name="total_manual_checkin" type="number" value={form.total_manual_checkin} onChange={e => setForm({ ...form, total_manual_checkin: e.target.value })} className="w-full border border-gray-300 dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-medium text-sm" />
           </div>
           <div>
-            <label className="block mb-1 text-gray-800 dark:text-gray-200">Notes</label>
-            <textarea name="notes" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className="w-full border border-gray-300 dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200" />
+            <label className="block mb-1 text-gray-800 dark:text-gray-200 font-medium text-sm">Notes</label>
+            <textarea name="notes" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className="w-full border border-gray-300 dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-medium text-sm" />
           </div>
           {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
           {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}

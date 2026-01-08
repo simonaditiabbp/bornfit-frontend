@@ -237,8 +237,8 @@ export default function EditMembershipPlanPage() {
               onChange={handleSelectChange}
               disabled={!edit}
               options={[
-                { value: 'false', label: 'Tidak' },
-                { value: 'true', label: 'Ya' }
+                { value: 'false', label: 'No' },
+                { value: 'true', label: 'Yes' }
               ]}
             />
             
@@ -284,8 +284,8 @@ export default function EditMembershipPlanPage() {
               onChange={handleSelectChange}
               disabled={!edit}
               options={[
-                { value: 'false', label: 'Tidak' },
-                { value: 'true', label: 'Ya' }
+                { value: 'false', label: 'No' },
+                { value: 'true', label: 'Yes' }
               ]}
             />
             
