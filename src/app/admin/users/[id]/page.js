@@ -309,12 +309,14 @@ export default function UserDetailPage() {
             <FormInputGroup className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormInput
                 label="Name"
+                placeholder="Enter name"
                 value={form.name}
                 disabled={!edit}
                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
               />
               <FormInput
                 label="Email"
+                placeholder="Enter email"
                 type="email"
                 value={form.email}
                 disabled={!edit}
@@ -322,6 +324,7 @@ export default function UserDetailPage() {
               />
               <FormInput
                 label="Phone"
+                placeholder="Enter phone"
                 value={form.phone}
                 disabled={!edit}
                 onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
@@ -335,6 +338,7 @@ export default function UserDetailPage() {
               />
               <FormInput
                 label="NIK/Passport"
+                placeholder="Enter NIK/Passport"
                 value={form.nik_passport}
                 disabled={!edit}
                 onChange={e => setForm(f => ({ ...f, nik_passport: e.target.value }))}
@@ -355,12 +359,14 @@ export default function UserDetailPage() {
               />
               <FormInput
                 label="Emergency Contact Name"
+                placeholder="Enter contact name"
                 value={form.emergency_contact_name}
                 disabled={!edit}
                 onChange={e => setForm(f => ({ ...f, emergency_contact_name: e.target.value }))}
               />
               <FormInput
                 label="Emergency Contact Phone"
+                placeholder="Enter contact phone"
                 value={form.emergency_contact_phone}
                 disabled={!edit}
                 onChange={e => setForm(f => ({ ...f, emergency_contact_phone: e.target.value }))}

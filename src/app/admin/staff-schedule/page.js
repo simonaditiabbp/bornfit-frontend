@@ -578,7 +578,7 @@ export default function StaffScheduleCalendarPage() {
                   label="Staff"
                   name="staff_id"
                   type="searchable-select"
-                  placeholder='Search Member'
+                  placeholder='Search Staff'
                   value={ selectedStaffOption ? { value: selectedStaffOption.id, label: `${selectedStaffOption.name} - ${selectedStaffOption.role}` }
                         : null }
                   onChange={(opt) =>
@@ -593,21 +593,21 @@ export default function StaffScheduleCalendarPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-gray-700 dark:text-gray-200 mb-2 font-semibold">Date *</label>
+                  <label className="block text-gray-700 dark:text-gray-200 mb-2 font-medium text-sm">Date *</label>
                   <input
                     type="date"
                     value={formData.schedule_date}
                     onChange={(e) => setFormData({ ...formData, schedule_date: e.target.value })}
-                    className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2"
+                    className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 font-medium text-sm"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-700 dark:text-gray-200 mb-2 font-semibold">Type *</label>
+                  <label className="block text-gray-700 dark:text-gray-200 mb-2 font-medium text-sm">Type *</label>
                   <select
                     value={formData.schedule_type}
                     onChange={(e) => setFormData({ ...formData, schedule_type: e.target.value })}
-                    className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2"
+                    className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 font-medium text-sm"
                     required
                   >
                     <option value="available">Available</option>
@@ -619,44 +619,44 @@ export default function StaffScheduleCalendarPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-gray-700 dark:text-gray-200 mb-2 font-semibold">Start *</label>
+                  <label className="block text-gray-700 dark:text-gray-200 mb-2 font-medium text-sm">Start *</label>
                   <input
                     type="datetime-local"
                     value={formData.start_time}
                     onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
-                    className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2"
+                    className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 font-medium text-sm"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-700 dark:text-gray-200 mb-2 font-semibold">End *</label>
+                  <label className="block text-gray-700 dark:text-gray-200 mb-2 font-medium text-sm">End *</label>
                   <input
                     type="datetime-local"
                     value={formData.end_time}
                     onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
-                    className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2"
+                    className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 font-medium text-sm"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-gray-700 dark:text-gray-200 mb-2 font-semibold">Title</label>
+                <label className="block text-gray-700 dark:text-gray-200 mb-2 font-medium text-sm">Title</label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2"
+                  className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 font-medium text-sm"
                   placeholder="e.g., Lunch Break, Day Off"
                 />
               </div>
 
               <div>
-                <label className="block text-gray-700 dark:text-gray-200 mb-2 font-semibold">Notes</label>
+                <label className="block text-gray-700 dark:text-gray-200 mb-2 font-medium text-sm">Notes</label>
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2"
+                  className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 font-medium text-sm"
                   rows={3}
                 />
               </div>

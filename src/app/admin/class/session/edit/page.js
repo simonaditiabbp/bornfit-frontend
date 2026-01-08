@@ -422,7 +422,7 @@ export default function ClassSessionEditPage() {
               </div>
 
               <div>
-                <label className="block mb-2 text-gray-600 dark:text-gray-200">Repeat On (Days) *</label>
+                <label className="block mb-2 text-gray-600 dark:text-gray-200 font-medium text-sm">Repeat On (Days) *</label>
                 <div className="grid grid-cols-4 gap-2">
                   {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => (
                     <button

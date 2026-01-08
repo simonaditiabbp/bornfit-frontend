@@ -218,6 +218,7 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
 
             <FormInput
               label="Name"
+              placeholder="Enter name"
               name="name"
               value={form.name}
               onChange={handleChange}
@@ -228,6 +229,7 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
             <FormInputGroup className="grid grid-cols-2 gap-4">
               <FormInput
                 label="Email"
+                placeholder="Enter email"
                 name="email"
                 type="email"
                 value={form.email}
@@ -235,6 +237,7 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
               />
               <FormInput
                 label="Phone"
+                placeholder="Enter phone"
                 name="phone"
                 value={form.phone}
                 onChange={handleChange}
@@ -245,6 +248,7 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
             <FormInputGroup className="grid grid-cols-2 gap-4">
               <FormInput
                 label="NIK/Passport"
+                placeholder="Enter NIK/Passport"
                 name="nik_passport"
                 value={form.nik_passport}
                 onChange={handleChange}
@@ -261,6 +265,7 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
             <FormInputGroup className="grid grid-cols-2 gap-4">
               <FormInput
                 label="Emergency Contact Name"
+                placeholder="Enter contact Name"
                 name="emergency_contact_name"
                 value={form.emergency_contact_name}
                 onChange={handleChange}
@@ -268,6 +273,7 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
               />
               <FormInput
                 label="Emergency Contact Phone"
+                placeholder="Enter contact phone"
                 name="emergency_contact_phone"
                 value={form.emergency_contact_phone}
                 onChange={handleChange}
@@ -303,21 +309,21 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
             )}
 
             <div>
-              <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">Photo</label>
+              <label className="block font-medium text-sm text-gray-800 dark:text-gray-200 mb-1">Photo</label>
               
               {/* Input File */}
               <input
                 type="file"
                 accept="image/*"
                 onChange={handlePhotoChange}
-                className="w-full text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-400 p-2 rounded"
+                className="w-full text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-400 p-2 rounded font-medium text-sm"
               />
 
               {/* Button buka kamera */}
               <button
                 type="button"
                 onClick={() => setIsCameraOpen(!isCameraOpen)}
-                className="mt-2 px-4 py-2 bg-gray-600 dark:bg-gray-600 border border-gray-400 dark:border-gray-500 text-white dark:text-gray-300 rounded hover:bg-gray-700 dark:hover:bg-gray-500 transition-colors"
+                className="mt-2 px-4 py-2 bg-gray-600 dark:bg-gray-600 border border-gray-400 dark:border-gray-500 text-white dark:text-gray-300 rounded hover:bg-gray-700 dark:hover:bg-gray-500 transition-colors font-medium text-sm"
               >
                 {isCameraOpen ? "Close Camera" : "Open Camera"}
               </button>

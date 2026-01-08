@@ -42,6 +42,7 @@ export default function FormInput({
             control: (base, state) => ({
               ...base,
               minHeight: '38px',
+              fontSize: '0.875rem',
               backgroundColor: theme === 'dark' ? '#374151' : '#ffffff',
               borderColor: state.isFocused
                 ? theme === 'dark' ? '#6b7280' : '#374151'
