@@ -128,7 +128,8 @@ export default function InsertMembershipPlanPage() {
         {error && <div className="text-red-400 mb-2">{error}</div>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <FormInput
-            label="Nama Plan"
+            label="Plan Name"
+            placeholder="Enter plan name"
             name="name"
             value={form.name}
             onChange={handleChange}
@@ -139,6 +140,7 @@ export default function InsertMembershipPlanPage() {
             <div className="flex-1">
               <FormInput
                 label="Duration Value"
+                placeholder="Enter duration"
                 name="duration_value"
                 type="number"
                 value={form.duration_value}
@@ -162,7 +164,8 @@ export default function InsertMembershipPlanPage() {
           </FormInputGroup>
 
           <FormInput
-            label="Harga"
+            label="Price"
+            placeholder="Enter price"
             name="price"
             type="number"
             value={form.price}
@@ -171,7 +174,8 @@ export default function InsertMembershipPlanPage() {
           />
 
           <FormInput
-            label="Keterangan"
+            label="Description"
+            placeholder="Enter description"
             name="description"
             value={form.description}
             onChange={handleChange}

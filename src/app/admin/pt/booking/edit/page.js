@@ -173,7 +173,7 @@ export default function PTBookingEditPage() {
             label="PT Session"
             name="personal_trainer_session_id"
             type="searchable-select"
-            placeholder='Search PT Sesi'
+            placeholder='Search PT Session'
             disabled={!edit}
             value={ selectedPTSession ? { value: selectedPTSession.id, label: selectedPTSession.name }
                   : null }
