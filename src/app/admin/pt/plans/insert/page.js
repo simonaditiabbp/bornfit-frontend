@@ -60,7 +60,8 @@ export default function PTPlanInsertPage() {
         <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-amber-300 text-center">Create PT Session Plan</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <FormInput
-            label="Name"
+            label="Plan Name"
+            placeholder="Enter plan name"
             name="name"
             value={form.name}
             onChange={handleChange}
@@ -70,6 +71,7 @@ export default function PTPlanInsertPage() {
           <FormInputGroup className="grid grid-cols-2 gap-4">
             <FormInput
               label="Duration (days)"
+              placeholder="Enter duration"
               name="duration_value"
               type="number"
               value={form.duration_value}
@@ -78,6 +80,7 @@ export default function PTPlanInsertPage() {
             />
             <FormInput
               label="Max Session"
+              placeholder="Enter max session"
               name="max_session"
               type="number"
               value={form.max_session}
@@ -89,6 +92,7 @@ export default function PTPlanInsertPage() {
           <FormInputGroup className="grid grid-cols-2 gap-4">
             <FormInput
               label="Price (Rp)"
+              placeholder="Enter price"
               name="price"
               type="number"
               value={form.price}
@@ -97,6 +101,7 @@ export default function PTPlanInsertPage() {
             />
             <FormInput
               label="Minutes/Session"
+              placeholder="Enter minutes per session"
               name="minutes_per_session"
               type="number"
               value={form.minutes_per_session}
@@ -107,6 +112,7 @@ export default function PTPlanInsertPage() {
 
           <FormInput
             label="Description"
+            placeholder="Enter description"
             name="description"
             type="textarea"
             value={form.description}

@@ -118,7 +118,7 @@ export default function PTSessionInsertPage() {
             label="Personal Trainer"
             name="user_pt_id"
             type="searchable-select"
-            placeholder='Search Member'
+            placeholder='Search Trainer'
             value={ selectedTrainer ? { value: selectedTrainer.id, label: selectedTrainer.name }
                   : null }
             onChange={(opt) =>

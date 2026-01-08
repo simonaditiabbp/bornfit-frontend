@@ -120,7 +120,7 @@ export default function PTBookingCreatePage() {
             label="PT Session"
             name="personal_trainer_session_id"
             type="searchable-select"
-            placeholder='Search Member'
+            placeholder='Search PT Session'
             value={ selectedPTSession ? { value: selectedPTSession.id, label: selectedPTSession.name }
                   : null }
             onChange={(opt) =>

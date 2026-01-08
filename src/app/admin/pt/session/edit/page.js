@@ -184,7 +184,7 @@ export default function PTSessionEditPage() {
             label="Personal Trainer"
             name="user_pt_id"
             type="searchable-select"
-            placeholder='Search Member'
+            placeholder='Search Trainer'
             disabled={!edit}
             value={ selectedTrainer ? { value: selectedTrainer.id, label: selectedTrainer.name }
                   : null }

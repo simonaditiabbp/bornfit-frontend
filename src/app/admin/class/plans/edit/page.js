@@ -122,7 +122,8 @@ export default function ClassPlanEditPage() {
         {error && <div className="text-red-400 mb-2">{error}</div>}
         <div className="space-y-4 mb-4">
           <FormInput
-            label="Name"
+            label="Plan Name"
+            placeholder="Enter plan name"
             name="name"
             type="text"
             value={form.name}
@@ -144,6 +145,7 @@ export default function ClassPlanEditPage() {
           />
           <FormInput
             label="Max Visitor"
+            placeholder="Enter max visitor"
             name="max_visitor"
             type="number"
             value={form.max_visitor}
@@ -152,6 +154,7 @@ export default function ClassPlanEditPage() {
           />
           <FormInput
             label="Minutes per Session"
+            placeholder="Enter minutes per session"
             name="minutes_per_session"
             type="number"
             value={form.minutes_per_session}
@@ -160,6 +163,7 @@ export default function ClassPlanEditPage() {
           />
           <FormInput
             label="Description"
+            placeholder="Enter description"
             name="description"
             type="textarea"
             value={form.description}
@@ -173,6 +177,7 @@ export default function ClassPlanEditPage() {
           {!form.unlimited_monthly_session && (
             <FormInput
               label="Monthly Limit"
+              placeholder="Enter monthly limit"
               name="monthly_limit"
               type="number"
               value={form.monthly_limit}
@@ -187,6 +192,7 @@ export default function ClassPlanEditPage() {
           {!form.unlimited_daily_session && (
             <FormInput
               label="Daily Limit"
+              placeholder="Enter daily limit"
               name="daily_limit"
               type="number"
               value={form.daily_limit}

@@ -115,7 +115,8 @@ export default function PTPlanEditPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <FormInput
-                label="Name"
+                label="Plan Name"
+                placeholder="Enter plan name"
                 name="name"
                 type="text"
                 value={editForm.name}
@@ -126,6 +127,7 @@ export default function PTPlanEditPage() {
               
               <FormInput
                 label="Duration (days)"
+                placeholder="Enter duration"
                 name="duration_value"
                 type="number"
                 value={editForm.duration_value}
@@ -136,6 +138,7 @@ export default function PTPlanEditPage() {
               
               <FormInput
                 label="Max Session"
+                placeholder="Enter max session"
                 name="max_session"
                 type="number"
                 value={editForm.max_session}
@@ -146,6 +149,7 @@ export default function PTPlanEditPage() {
               
               <FormInput
                 label="Price (Rp)"
+                placeholder="Enter price"
                 name="price"
                 type="number"
                 value={editForm.price}
@@ -156,6 +160,7 @@ export default function PTPlanEditPage() {
               
               <FormInput
                 label="Minutes/Session"
+                placeholder="Enter minutes per session"
                 name="minutes_per_session"
                 type="number"
                 value={editForm.minutes_per_session}
@@ -167,6 +172,7 @@ export default function PTPlanEditPage() {
               <div className="col-span-2">
                 <FormInput
                   label="Description"
+                  placeholder="Enter description"
                   name="description"
                   type="textarea"
                   value={editForm.description}

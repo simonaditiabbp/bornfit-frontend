@@ -163,7 +163,8 @@ export default function EditMembershipPlanPage() {
           
           <div className="space-y-4 mb-4">
             <FormInput
-              label="Nama Plan"
+              label="Plan Name"
+              placeholder="Enter plan name"
               name="name"
               type="text"
               value={form.name}
@@ -176,6 +177,7 @@ export default function EditMembershipPlanPage() {
                 <div className="flex-1">
                     <FormInput
                       label="Duration Value"
+                      placeholder="Enter duration"
                       name="duration_value"
                       type="number"
                       value={form.duration_value}
@@ -201,7 +203,8 @@ export default function EditMembershipPlanPage() {
             </div>
             
             <FormInput
-              label="Harga"
+              label="Price"
+              placeholder="Enter price"
               name="price"
               type="number"
               value={form.price}
@@ -217,7 +220,8 @@ export default function EditMembershipPlanPage() {
             <input type="hidden" name="class_access_type" value={form.class_access_type} onChange={handleChange} />
             
             <FormInput
-              label="Keterangan"
+              label="Description"
+              placeholder="Enter description"
               name="description"
               type="text"
               value={form.description}
