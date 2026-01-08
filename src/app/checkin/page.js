@@ -640,7 +640,7 @@ export default function BarcodePage() {
             setScanner(html5QrCode);
           })
           .catch((err) => {
-            setMessage('Tidak dapat mengakses kamera: ' + (err?.message || err));
+            setMessage('Unable to access the camera: ' + (err?.message || err));
             setMessageType('error');
             console.error('html5-qrcode start error:', err);
           });

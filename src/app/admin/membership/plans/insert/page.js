@@ -188,8 +188,8 @@ export default function InsertMembershipPlanPage() {
             value={form.allow_unlimited_session ? 'true' : 'false'}
             onChange={handleSelectChange}
             options={[
-              { value: 'false', label: 'Tidak' },
-              { value: 'true', label: 'Ya' }
+              { value: 'false', label: 'No' },
+              { value: 'true', label: 'Yes' }
             ]}
             required
           />
@@ -232,8 +232,8 @@ export default function InsertMembershipPlanPage() {
             value={form.always_available ? 'true' : 'false'}
             onChange={handleSelectChange}
             options={[
-              { value: 'false', label: 'Tidak' },
-              { value: 'true', label: 'Ya' }
+              { value: 'false', label: 'No' },
+              { value: 'true', label: 'Yes' }
             ]}
             required
           />

@@ -210,8 +210,8 @@ export default function EditMembershipSessionPage() {
               disabled={!edit}
               required
               options={[
-                { value: 'true', label: 'Ya' },
-                { value: 'false', label: 'Tidak' }
+                { value: 'true', label: 'Yes' },
+                { value: 'false', label: 'No' }
               ]}
             />
             
