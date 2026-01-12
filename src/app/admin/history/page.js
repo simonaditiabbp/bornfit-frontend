@@ -180,6 +180,12 @@ export default function HistoryPage() {
                 return 'bg-gray-400 text-white';
             case 'send':
                 return 'bg-teal-600 text-white';
+            case 'send_email':
+                return 'bg-teal-600 text-white';
+            case 'bulk_send':
+                return 'bg-teal-800 text-white';
+            case 'bulk_send_email':
+                return 'bg-teal-800 text-white';
             case 'book':
                 return 'bg-emerald-500 text-white'
             case 'approve':
@@ -579,6 +585,15 @@ export default function HistoryPage() {
                                     </div>
                                 </div>
                             </div>
+
+                            {((selectedLog.action.toUpperCase() == "BULK_SEND" || selectedLog.action.toUpperCase() == "BULK_SEND_EMAIL") && selectedLog.response_data) && (
+                                <div>
+                                    <div className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">Response Data</div>
+                                    <pre className="bg-gray-100 dark:bg-gray-900 p-4 rounded text-xs overflow-x-auto">
+                                        {JSON.stringify(JSON.parse(selectedLog.response_data), null, 2)}
+                                    </pre>
+                                </div>
+                            )}
 
                             {selectedLog.request_body && (
                                 <div>

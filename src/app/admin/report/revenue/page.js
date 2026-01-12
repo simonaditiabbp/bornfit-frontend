@@ -85,10 +85,13 @@ export default function RevenueReportPage() {
   };
 
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('id-ID', {
+    const d = new Date(date);
+    d.setHours(d.getHours() );
+
+    return d.toLocaleDateString('id-ID', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 

@@ -197,7 +197,8 @@ export default function EditMembershipSessionPage() {
               options={[
                 { value: 'pending', label: 'Pending' },
                 { value: 'active', label: 'Active' },
-                { value: 'expired', label: 'Expired' }
+                { value: 'expired', label: 'Expired' },
+                { value: 'frozen', label: 'Frozen' },
               ]}
             />
             

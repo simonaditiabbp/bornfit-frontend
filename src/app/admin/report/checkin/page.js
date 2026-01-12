@@ -69,7 +69,8 @@ export default function CheckinReportPage() {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      timeZone: 'UTC',
     });
   };
 
@@ -191,7 +192,6 @@ export default function CheckinReportPage() {
                 <tr><td colSpan="5" className="text-center py-8 text-gray-500 dark:text-gray-400">No data found</td></tr>
               ) : (
                 data.map((item) => (
-                  console.log("item.checkin_time: ", formatDate(item.checkin_time)),  
                   <tr key={item.id} className="border-b border-gray-200 dark:border-gray-700">
                     <td className="px-4 py-3">{formatDate(item.checkin_time)}</td>
                     <td className="px-4 py-3 font-semibold">{item.user_name}</td>
