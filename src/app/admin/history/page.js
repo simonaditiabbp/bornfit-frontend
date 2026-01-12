@@ -24,6 +24,7 @@ export default function HistoryPage() {
         startDate: '',
         endDate: '',
         user_name: '',
+        status: '',
     });
     const [hideFetchActions, setHideFetchActions] = useState(true);
     const [showFilters, setShowFilters] = useState(false);
@@ -71,17 +72,23 @@ export default function HistoryPage() {
         fetchLogs();
     };
 
+    const emptyFilters = {
+        action: '',
+        entity: '',
+        user_id: '',
+        startDate: '',
+        endDate: '',
+        user_name: '',
+        status: '',
+    };
+
     const handleClearFilters = () => {
-        setFilters({
-            action: '',
-            entity: '',
-            user_id: '',
-            startDate: '',
-            endDate: '',
-            user_name: '',
-        });
+        setFilters(emptyFilters);
         setPagination(prev => ({ ...prev, page: 1 }));
-        fetchLogs();
+        fetchLogs({
+            ...emptyFilters,
+            page: 1
+        });
     };
 
     const handleViewDetail = (log) => {
@@ -117,7 +124,7 @@ export default function HistoryPage() {
             if (response.status) {
                 const allLogs = response.data.logs;
                 const csv = [
-                    ['Timestamp', 'Action', 'Entity', 'Flag Name', 'User Name', 'Entity ID'],
+                    ['Timestamp', 'Action', 'Entity', 'Flag Name', 'User Name', 'Entity ID', 'Status'],
                     ...allLogs.map(log => [
                         dayjs(log.timestamp).format('YYYY-MM-DD HH:mm:ss'),
                         log.action,
@@ -125,6 +132,7 @@ export default function HistoryPage() {
                         log.flag_name,
                         log.user_name,
                         log.entity_id || '',
+                        log.status || '',
                     ]),
                 ]
                     .map(row => row.join(','))
@@ -172,12 +180,33 @@ export default function HistoryPage() {
                 return 'bg-gray-400 text-white';
             case 'send':
                 return 'bg-teal-600 text-white';
+            case 'send_email':
+                return 'bg-teal-600 text-white';
+            case 'bulk_send':
+                return 'bg-teal-800 text-white';
+            case 'bulk_send_email':
+                return 'bg-teal-800 text-white';
             case 'book':
                 return 'bg-emerald-500 text-white'
             case 'approve':
                 return 'bg-green-700 text-white';
             case 'verify':
                 return 'bg-pink-500 text-white';
+            default:
+                return 'bg-gray-500 text-white';
+        }
+    };
+
+    const getStatusBadgeColor = (status) => {
+        switch (status.toLowerCase()) {
+            case 'success':
+                return 'bg-green-500 text-white';
+            case 'error':
+                return 'bg-red-500 text-white';
+            case 'failed':
+                return 'bg-red-500 text-white';
+            case 'warning':
+                return 'bg-amber-500 text-white';
             default:
                 return 'bg-gray-500 text-white';
         }
@@ -211,7 +240,7 @@ export default function HistoryPage() {
                 {/* Filters */}
                 {showFilters && (
                     <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 mb-4">
-                        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div>
                                 <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Action</label>
                                 <select
@@ -248,6 +277,20 @@ export default function HistoryPage() {
                                     className="w-full bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded px-3 py-2 text-gray-800 dark:text-gray-200"
                                 />
                             </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Status</label>
+                                <select
+                                    value={filters.status}
+                                    onChange={(e) => handleFilterChange('status', e.target.value)}
+                                    className="w-full bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded px-3 py-2 text-gray-800 dark:text-gray-200"
+                                >
+                                    <option value="">Status</option>
+                                    <option value="success">Success</option>
+                                    <option value="error">Error</option>
+                                    <option value="warning">Warning</option>
+                                </select>
+                            </div>                            
 
                             <div>
                                 <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Staff Username</label>
@@ -370,6 +413,9 @@ export default function HistoryPage() {
                                         <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                             Entity ID
                                         </th>
+                                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                            Status
+                                        </th>
                                         <th className="px-4 py-3 text-right text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                             Actions
                                         </th>
@@ -397,6 +443,11 @@ export default function HistoryPage() {
                                             </td>
                                             <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200">
                                                 {log.entity_id || '-'}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm">
+                                                <span className={`px-2 py-1 rounded text-xs font-semibold ${getStatusBadgeColor(log.status)}`}>
+                                                    {log.status.toUpperCase()}
+                                                </span>
                                             </td>
                                             <td className="px-4 py-3 text-sm text-right">
                                                 <button
@@ -504,7 +555,7 @@ export default function HistoryPage() {
                                 <div>
                                     <div className="text-sm font-semibold text-gray-600 dark:text-gray-400">Entity ID</div>
                                     <div className="text-lg">{selectedLog.entity_id || '-'}</div>
-                                </div>
+                                </div>                                
                                 <div className="col-span-2">
                                     <div className="text-sm font-semibold text-gray-600 dark:text-gray-400">Flag Name</div>
                                     <div className="text-lg">{selectedLog.flag_name}</div>
@@ -525,7 +576,24 @@ export default function HistoryPage() {
                                     <div className="text-sm font-semibold text-gray-600 dark:text-gray-400">IP Address</div>
                                     <div className="text-lg">{selectedLog.ip_address || '-'}</div>
                                 </div>
+                                <div>
+                                    <div className="text-sm font-semibold text-gray-600 dark:text-gray-400">Status</div>
+                                    <div className="text-lg">
+                                        <span className={`px-2 py-1 rounded text-xs font-semibold ${getStatusBadgeColor(selectedLog.status || '-')}`}>
+                                            {selectedLog.status.toUpperCase() || '-'}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
+
+                            {((selectedLog.action.toUpperCase() == "BULK_SEND" || selectedLog.action.toUpperCase() == "BULK_SEND_EMAIL") && selectedLog.response_data) && (
+                                <div>
+                                    <div className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">Response Data</div>
+                                    <pre className="bg-gray-100 dark:bg-gray-900 p-4 rounded text-xs overflow-x-auto">
+                                        {JSON.stringify(JSON.parse(selectedLog.response_data), null, 2)}
+                                    </pre>
+                                </div>
+                            )}
 
                             {selectedLog.request_body && (
                                 <div>
