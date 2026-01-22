@@ -42,7 +42,10 @@ function RenewalActionsCell({ row, membership }) {
   const handleSendEmail = async () => {
     setEmailLoading(true);
     try {
-      await api.post(`/api/memberships/user/${row.id}/send-renew-email`);
+      await api.post(`/api/memberships/user/${row.id}/send-renew-email`, {
+        membershipId: membership.id,
+        senderEmail: senderEmail,
+      });
       alert('Renewal email sent successfully!');
     } catch (err) {
       alert(err.data?.message || 'Error sending email.');
@@ -165,7 +168,7 @@ export default function AdminUsersPage() {
           setHasPrev(usersRes.hasPrev || false);
         }
         // memberships and checkins can still be fetched all at once (or paginated if needed)
-        const membershipsRes = await api.get('/api/memberships');
+        const membershipsRes = await api.get('/api/memberships?limit=10000');
         const checkinsRes = await api.get('/api/checkins');
         setMemberships(membershipsRes.data.memberships);
         setCheckins(checkinsRes);

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import api from '@/utils/fetchClient';
 import BackendErrorFallback from '../../../../components/BackendErrorFallback';
 import MembershipSessionDataTable from './DataTable';
-import { FaPlus, FaIdCard, FaSyncAlt } from 'react-icons/fa';
+import { FaPlus, FaIdCard, FaSyncAlt, FaEnvelope } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainer, PageHeader, LoadingText } from '../../../../components/admin';
 
 export default function MembershipSessionPage() {
@@ -16,6 +16,8 @@ export default function MembershipSessionPage() {
   const [perPage, setPerPage] = useState(10);
   const [totalRows, setTotalRows] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const [sendingBulk, setSendingBulk] = useState(false);
+  const [sendingText, setSendingText] = useState('Send Bulk Reminder');
 
   const handleChangePage = (newPage) => {
     const pageNum = typeof newPage === 'number' ? newPage : (Array.isArray(newPage) ? newPage[0] : Number(newPage));
@@ -96,6 +98,43 @@ export default function MembershipSessionPage() {
     setRefreshing(false);
   };
 
+  const handleSendBulkReminder = async () => {
+    setSendingBulk(true);
+    setSendingText('Sending...');
+
+    try {
+      const result = await api.post('/api/memberships/bulk-send-renewal-email', {}, {
+        timeout: 10000
+      });
+      
+      if (!result || !result.data) {
+        alert('❌ Failed to queue job. Please try again.');
+        setSendingBulk(false);
+        setSendingText('Send Bulk Reminder');
+        return;
+      }
+
+      const { jobId } = result.data;
+      
+      // Show success immediately - no waiting!
+      alert(`✅ Bulk email job queued successfully!\n\n` +
+        `Job ID: ${jobId}\n\n` +
+        `Emails will be sent in the background.\n` +
+        `Check audit logs (History) later for results.`);
+      
+      setSendingBulk(false);
+      setSendingText('Send Bulk Reminder');
+      
+    } catch (error) {
+      console.error('Error queueing bulk send:', error);
+      setSendingBulk(false);
+      setSendingText('Send Bulk Reminder');
+      
+      const errorMessage = error?.data?.message || error?.message || 'Unknown error';
+      alert(`❌ Failed to queue bulk send job\n\n${errorMessage}`);
+    }
+  };
+
   if (backendError) return <BackendErrorFallback onRetry={() => { setBackendError(false); window.location.reload(); }} />;
 
   return (
@@ -125,6 +164,15 @@ export default function MembershipSessionPage() {
               <FaSyncAlt className={refreshing ? 'animate-spin' : ''} />
               {refreshing ? 'Updating...' : 'Refresh Status'}
             </button>
+            <button
+                onClick={handleSendBulkReminder}
+                disabled={sendingBulk}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                title="Send renewal reminder emails to all members expiring within 7 days and all expired memberships"
+              >
+                <FaEnvelope className={sendingBulk ? 'animate-pulse' : ''} />
+                {sendingText}
+              </button>
           </div>
           <a
             href="/admin/membership/session/insert"
