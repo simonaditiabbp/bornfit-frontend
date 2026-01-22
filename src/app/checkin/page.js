@@ -771,9 +771,9 @@ useEffect(() => {
           const joinDate = ptsession.join_date ? format(parseISO(ptsession.join_date), "dd MMM yyyy", { locale: enUS }) : "–";
           const endDate = ptsession.join_date ? format(parseISO(ptsession.join_date), "dd MMM yyyy", { locale: enUS }) : "–";
           let endDateCalc = null;
-          if (ptsession.join_date && ptplan.duration_value) {
-            const joinDateObj = parseISO(ptsession.join_date);
-            endDateCalc = format(new Date(joinDateObj.getTime() + ptplan.duration_value * 24 * 60 * 60 * 1000), "dd MMM yyyy", { locale: enUS });
+          if (ptsession.start_date && ptplan.duration_value) {
+            const startDateObj = parseISO(ptsession.start_date);
+            endDateCalc = format(new Date(startDateObj.getTime() + ptplan.duration_value * 24 * 60 * 60 * 1000), "dd MMM yyyy", { locale: enUS });
           }
           // ptPeriod = `${joinDate}${endDateCalc ? ` - ${endDateCalc}` : ""}`;
           ptPeriod = `${endDateCalc ? `${endDateCalc}` : ""}`;
@@ -814,9 +814,9 @@ useEffect(() => {
           {ptsession.status === 'pending' && (
             <span className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-2 py-1 rounded-full font-bold">Finished</span>
           )}
-          {ptsession.status === 'expired' && (
+          {/* {ptsession.status === 'expired' && (
             <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full font-bold">Cancelled</span>
-          )}
+          )} */}
           {ptsession.status !== 'active' && ptsession.status !== 'selesai' && ptsession.status !== 'batal' && (
             <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full font-bold">{ptsession.status}</span>
           )}

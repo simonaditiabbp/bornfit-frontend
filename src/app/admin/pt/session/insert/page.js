@@ -58,7 +58,7 @@ export default function PTSessionInsertPage() {
         user_member_id: Number(form.user_member_id),
         user_pt_id: Number(form.user_pt_id),
         start_date: formatDateToISO(form.start_date),
-        status: form.status
+        // status: form.status
       });
       setSuccess("Session successfully added!");
       setTimeout(() => router.push("/admin/pt/session"), 1200);
@@ -137,7 +137,7 @@ export default function PTSessionInsertPage() {
             onChange={e => setForm(f => ({ ...f, start_date: e.target.value }))}
             required
           />
-          <FormInput
+          {/* <FormInput
             label="Status"
             type="select"
             value={form.status}
@@ -147,7 +147,7 @@ export default function PTSessionInsertPage() {
               { value: 'pending', label: 'Pending' }
             ]}
             required
-          />
+          /> */}
           {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
           {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}       
           <FormActions

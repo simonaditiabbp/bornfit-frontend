@@ -62,6 +62,8 @@ class FetchClient {
       clearTimeout(timeoutId);
     } catch (err) {
       clearTimeout(timeoutId);
+
+      console.log("err:", err);
       
       // Retry on network error
       if (retryCount < this.maxRetries) {
