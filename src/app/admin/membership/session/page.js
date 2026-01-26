@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import api from '@/utils/fetchClient';
 import BackendErrorFallback from '../../../../components/BackendErrorFallback';
 import MembershipSessionDataTable from './DataTable';
@@ -7,11 +8,20 @@ import { FaPlus, FaIdCard, FaSyncAlt, FaEnvelope } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainer, PageHeader, LoadingText } from '../../../../components/admin';
 
 export default function MembershipSessionPage() {
+  const searchParams = useSearchParams();
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [backendError, setBackendError] = useState(false);
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  // Initialize statusFilter from URL parameter
+  const [statusFilter, setStatusFilter] = useState(() => {
+    const filterParam = searchParams.get('filter');
+    if (filterParam && ['active', 'frozen', 'expired', 'pending', 'inactive'].includes(filterParam)) {
+      return filterParam === 'inactive' ? 'expired' : filterParam;
+    }
+    return 'all';
+  });
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [totalRows, setTotalRows] = useState(0);
@@ -47,6 +57,10 @@ export default function MembershipSessionPage() {
           params.append('search', search);
         }
         
+        if (statusFilter && statusFilter !== 'all') {
+          params.append('status', statusFilter);
+        }
+        
         const data = await api.get(`/api/memberships?${params.toString()}`);
         setSessions(data.data?.memberships || []);
         setTotalRows(data.data?.total || 0);
@@ -59,7 +73,7 @@ export default function MembershipSessionPage() {
       setLoading(false);
     };
     fetchSessions();
-  }, [page, perPage, search]);
+  }, [page, perPage, search, statusFilter]);
 
   // Debounce search input
   useEffect(() => {
@@ -82,6 +96,10 @@ export default function MembershipSessionPage() {
         
         if (search && search.trim() !== '') {
           params.append('search', search);
+        }
+        
+        if (statusFilter && statusFilter !== 'all') {
+          params.append('status', statusFilter);
         }
         
         const data = await api.get(`/api/memberships?${params.toString()}`);
@@ -153,8 +171,22 @@ export default function MembershipSessionPage() {
               placeholder="Search member/plan..."
               value={searchInput}
               onChange={e => setSearchInput(e.target.value)}
-              className="w-full max-w-xs p-2 border text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 border-gray-300 dark:border-amber-200 rounded focus:outline-none text-base"
+              className="w-full max-w-xs p-2 border text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-500 rounded focus:outline-none focus:border-amber-500 text-base"
             />
+            <select
+              value={statusFilter}
+              onChange={e => {
+                setStatusFilter(e.target.value);
+                if (page !== 1) setPage(1);
+              }}
+              className="p-2 border text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-500 rounded focus:outline-none text-base"
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="frozen">Frozen</option>
+              <option value="expired">Expired</option>
+              <option value="pending">Pending</option>
+            </select>
             <button
               onClick={handleRefreshStatus}
               disabled={refreshing}
