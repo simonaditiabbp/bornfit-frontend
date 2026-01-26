@@ -343,7 +343,7 @@ export default function AdminDashboardPage() {
             </div>
             <div>
               <div className="text-lg font-bold text-gray-700 dark:text-gray-300">
-                Expired / Inactive Memberships
+                Expired / Pending Memberships
               </div>
               <div className="text-3xl font-extrabold text-red-600">
                 {loading ? "-" : stats.inactiveMembership}
