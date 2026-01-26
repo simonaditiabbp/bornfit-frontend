@@ -281,7 +281,7 @@ export default function AdminUsersPage() {
               placeholder="Search name/email..."
               value={searchInput}
               onChange={e => setSearchInput(e.target.value)}
-              className="w-full max-w-xs p-2 border text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 border-gray-300 dark:border-amber-200 rounded focus:outline-none text-base"
+              className="w-full max-w-xs p-2 border text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-500 rounded focus:outline-none focus:border-amber-500 text-base"
             />
           <button 
             onClick={() => setCreateUser(true)}
