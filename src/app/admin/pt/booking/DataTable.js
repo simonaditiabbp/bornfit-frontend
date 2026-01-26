@@ -17,14 +17,13 @@ export default function PTBookingDataTable({
   const columns = [
     { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px', center: "true" },
     // { name: 'ID', selector: row => row.id, sortable: true },
-    { name: 'Plan', selector: row => row.pt_session_plan?.name || row.pt_session_plan_id, sortable: true },
-    { name: 'Member', selector: row => row.user_member?.name || row.user_member_id, sortable: true },
-    { name: 'Personal Trainer', selector: row => row.personal_trainer_session?.user_pt?.name || row.personal_trainer_session?.user_pt_id, sortable: true },
+    { name: 'Plan', cell: row => row.pt_session_plan?.name || row.pt_session_plan_id, sortable: true },
+    { name: 'Member', cell: row => row.user_member?.name || row.user_member_id, sortable: true },
+    { name: 'Personal Trainer', cell: row => row.personal_trainer_session?.user_pt?.name || row.personal_trainer_session?.user_pt_id, sortable: true },
     // { name: 'PT Session', selector: row => `${row.pt_session_plan?.name} - ${row.personal_trainer_session.user_pt.name}` || '', sortable: true },
     // { name: 'Plan', selector: row => row.pt_session_plan?.name || row.pt_session_plan_id, sortable: true },
     // { name: 'Trainer', selector: row => row.personal_trainer_session?.user_pt_id || '-', sortable: true },
-    { name: 'Booking Time', selector: row => row.booking_time?.slice(0,16).replace('T',' '), sortable: true },
-    { name: 'Status', selector: row => row.status, sortable: true },
+    { name: 'Booking Time', cell: row => row.booking_time?.slice(0,16).replace('T',' '), sortable: true },
     {
       name: 'Status',
       cell: row => {

@@ -10,11 +10,11 @@ export default function ClassSessionDataTable({ data, plans = [], members = [], 
 
   const columns = [
     { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px', center: "true" },
-    { name: 'Plan', selector: row => {
+    { name: 'Plan', cell: row => {
       const plan = plans.find(p => p.id === row.event_plan_id);
       return plan ? (plan.name || `Plan #${plan.id}`) : row.event_plan_id;
     }, sortable: true },
-    { name: 'Instructor', selector: row => {
+    { name: 'Instructor', cell: row => {
       const ins = instructors.find(t => t.id === row.instructor_id);
       return ins ? ins.name : row.instructor_id;
     }, sortable: true },
@@ -87,7 +87,7 @@ export default function ClassSessionDataTable({ data, plans = [], members = [], 
       }
       return row.end_time ? row.end_time.slice(11,16) : '';
     }, sortable: true },
-    { name: 'Type', selector: row => row.class_type, sortable: true },
+    { name: 'Type', cell: row => row.class_type, sortable: true },
   //   { name: 'Manual Checkin', selector: row => row.total_manual_checkin, sortable: true },
     { name: 'Notes', selector: row => row.notes, sortable: false },
     {

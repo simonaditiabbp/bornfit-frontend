@@ -20,22 +20,22 @@ export default function PTSessionDataTable({
   const columns = [
     { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px', center: "true" },
     // { name: 'Name', selector: row => row.name, sortable: true },
-    { name: 'Plan', selector: row => {
+    { name: 'Plan', cell: row => {
       const plan = plans.find(p => p.id === row.pt_session_plan_id);
       return plan ? (plan.name || `Plan #${plan.id}`) : row.pt_session_plan_id;
     }, sortable: true },
-    { name: 'Member', selector: row => {
+    { name: 'Member', cell: row => {
       const member = members.find(m => m.id === row.user_member_id);
       return member ? member.name : row.user_member_id;
     }, sortable: true },
-    { name: 'Personal Trainer', selector: row => {
+    { name: 'Personal Trainer', cell: row => {
       const pt = trainers.find(t => t.id === row.user_pt_id);
       return pt ? pt.name : row.user_pt_id;
     }, sortable: true },
-    { name: 'Start Date', selector: row => row.start_date?.slice(0,10), sortable: true },
+    { name: 'Start Date', cell: row => row.start_date?.slice(0,10), sortable: true },
     {
       name: 'Remaining Session',
-      selector: row => {
+      cell: row => {
         const plan = plans.find(p => p.id === row.pt_session_plan_id);
         const max = plan ? plan.max_session : '...';
         const sisa = typeof row.remaining_session === 'number' ? row.remaining_session : '...';

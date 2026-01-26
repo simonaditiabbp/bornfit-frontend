@@ -17,10 +17,10 @@ export default function ClassPurchaseDataTable({
   const columns = [
     { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px', center: "true" },
     { name: 'User', selector: row => row.user?.name || '-', sortable: true, cell: row => <span className="font-semibold">{row.user?.name || '-'}</span> },
-    { name: 'Class', selector: row => row.class?.name || '-', sortable: true },
-    { name: 'Price', selector: row => row.price, sortable: true },
+    { name: 'Class', cell: row => row.class?.name || '-', sortable: true },
+    { name: 'Price', cell: row => row.price, sortable: true },
     { name: 'Purchase Date',
-      selector: row => {
+      cell: row => {
         if (!row.purchase_date) return '-';
         const d = new Date(row.purchase_date);
         d.setHours(d.getHours() + 7);

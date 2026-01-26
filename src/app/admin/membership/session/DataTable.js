@@ -17,7 +17,7 @@ export default function MembershipSessionDataTable({ data, pagination = false, p
       sortable: true,
       cell: row => <span className="font-semibold">{row.user?.name || '-'}</span>,
     },
-    { name: 'Plan', selector: row => row.membershipPlan?.name || '-', sortable: true },
+    { name: 'Plan', cell: row => row.membershipPlan?.name || '-', sortable: true },
     { name: 'Start Date', selector: row => row.start_date?.slice(0,10) || '-', sortable: true },
     { name: 'End Date', selector: row => row.end_date?.slice(0,10) || '-', sortable: true },
     {

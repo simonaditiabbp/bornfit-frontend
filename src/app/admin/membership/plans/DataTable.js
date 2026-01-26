@@ -27,7 +27,7 @@ export default function MembershipPlansDataTable({
       cell: row => <span className="font-semibold">{row.name}</span>,
     },
     { name: 'Duration', selector: row => `${row.duration_value} ${row.duration_unit}`, sortable: true },
-    { name: 'Price', selector: row => row.price?.toLocaleString('id-ID'), sortable: true },
+    { name: 'Price', cell: row => row.price?.toLocaleString('id-ID'), sortable: true },
     { name: 'Description', selector: row => row.description, sortable: true },
     {
       name: 'Actions',

@@ -40,6 +40,8 @@ export default function StyledDataTable(props) {
         fontSize: '0.875rem',
         paddingLeft: '16px',
         paddingRight: '16px',
+        whiteSpace: 'normal',
+        wordWrap: 'break-word',
       },
     },
     rows: {
