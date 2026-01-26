@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -17,6 +18,7 @@ dayjs.extend(timezone);
 
 export default function AdminDashboardPage() {
   const { theme } = useTheme();
+  const router = useRouter();
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalMember: 0,
@@ -292,7 +294,9 @@ export default function AdminDashboardPage() {
         {/* ================= LEFT SIDE (6 SMALL CARDS) ================= */}
         <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6 mt-7">
           {/* Active Membership */}
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6 flex items-center gap-4">
+          <div 
+            onClick={() => router.push('/admin/membership/session?filter=active')}
+            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6 flex items-center gap-4 cursor-pointer hover:shadow-lg transition-shadow">
             <div className="flex-shrink-0 bg-yellow-100 dark:bg-gray-300 rounded-full p-3">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"
                 className="w-10 h-10 text-yellow-600">
@@ -310,7 +314,9 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Freeze Membership */}
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6 flex items-center gap-4">
+          <div 
+            onClick={() => router.push('/admin/membership/session?filter=frozen')}
+            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6 flex items-center gap-4 cursor-pointer hover:shadow-lg transition-shadow">
             <div className="flex-shrink-0 bg-blue-100 dark:bg-gray-300 rounded-full p-3">
               <FaSnowflake size={40} className="text-blue-500" />
             </div>
@@ -325,7 +331,9 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Expired Membership */}
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6 flex items-center gap-4">
+          <div 
+            onClick={() => router.push('/admin/membership/session?filter=expired')}
+            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6 flex items-center gap-4 cursor-pointer hover:shadow-lg transition-shadow">
             <div className="flex-shrink-0 bg-red-100 dark:bg-gray-300 rounded-full p-3">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5}
                 stroke="currentColor" className="w-10 h-10 text-red-600">
@@ -344,7 +352,9 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Conduct PT Today */}
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6 flex items-center gap-4">
+          <div 
+            onClick={() => router.push('/admin/pt/booking?bookingTimeFilter=today')}
+            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6 flex items-center gap-4 cursor-pointer hover:shadow-lg transition-shadow">
             <div className="flex-shrink-0 bg-green-100 dark:bg-gray-300 rounded-full p-3">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5}
                 stroke="currentColor" className="w-10 h-10 text-green-600">
@@ -363,7 +373,9 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Active PT Client */}
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6 flex items-center gap-4">
+          <div 
+            onClick={() => router.push('/admin/pt/session?filter=active')}
+            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6 flex items-center gap-4 cursor-pointer hover:shadow-lg transition-shadow">
             <div className="flex-shrink-0 bg-amber-100 dark:bg-gray-300 rounded-full p-3">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
                 className="w-10 h-10 text-amber-600">
@@ -383,7 +395,9 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Inactive PT Client */}
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6 flex items-center gap-4">
+          <div 
+            onClick={() => router.push('/admin/pt/session?filter=expired')}
+            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6 flex items-center gap-4 cursor-pointer hover:shadow-lg transition-shadow">
             <div className="flex-shrink-0 bg-gray-200 dark:bg-gray-300 rounded-full p-3">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5}
                 stroke="currentColor" className="w-10 h-10 text-gray-600">

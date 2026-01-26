@@ -2,7 +2,7 @@
 import PTSessionDataTable from "./DataTable";
 import {QRCodeCanvas, QRCodeSVG } from 'qrcode.react';
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import api from '@/utils/fetchClient';
 import BackendErrorFallback from "@/components/BackendErrorFallback";
 import { jsPDF } from "jspdf";
@@ -10,9 +10,18 @@ import { FaChalkboardTeacher, FaPlus, FaSyncAlt } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainer, PageHeader, LoadingText, StyledDataTable } from '@/components/admin';
 
 export default function PTSessionListPage() {
+  const searchParams = useSearchParams();
   const [qrSession, setQrSession] = useState(null);
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  // Initialize statusFilter from URL parameter
+  const [statusFilter, setStatusFilter] = useState(() => {
+    const filterParam = searchParams.get('filter');
+    if (filterParam && ['active', 'expired', 'pending', 'inactive'].includes(filterParam)) {
+      return filterParam === 'inactive' ? 'expired' : filterParam;
+    }
+    return 'all';
+  });
   const [plans, setPlans] = useState([]);
   const [members, setMembers] = useState([]);
   const [trainers, setTrainers] = useState([]);
@@ -51,6 +60,9 @@ export default function PTSessionListPage() {
         if (search && search.trim() !== '') {
           params.append('search', search);
         }
+        if (statusFilter && statusFilter !== 'all') {
+          params.append('status', statusFilter);
+        }
         const sessionData = await api.get(`/api/personaltrainersessions/paginated?${params.toString()}`);
         const arr = sessionData.data?.sessions || [];
         setSessions(arr);
@@ -64,7 +76,7 @@ export default function PTSessionListPage() {
       setLoading(false);
     };
     fetchSessions();
-  }, [page, perPage, search]);
+  }, [page, perPage, search, statusFilter]);
 
   const handleChangePage = (newPage) => {
     const pageNum = typeof newPage === 'number' ? newPage : (Array.isArray(newPage) ? newPage[0] : Number(newPage));
@@ -103,6 +115,10 @@ export default function PTSessionListPage() {
           params.append('search', search);
         }
         
+        if (statusFilter && statusFilter !== 'all') {
+          params.append('status', statusFilter);
+        }
+        
         const sessionData = await api.get(`/api/personaltrainersessions/paginated?${params.toString()}`);
         setSessions(sessionData.data?.sessions || []);
         setTotalRows(sessionData.data?.total || 0);
@@ -137,8 +153,21 @@ export default function PTSessionListPage() {
               placeholder="Search member/plan/status..."
               value={searchInput}
               onChange={e => setSearchInput(e.target.value)}
-              className="w-full max-w-xs p-2 border text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 border-gray-300 dark:border-amber-200 rounded focus:outline-none text-base"
+              className="w-full max-w-xs p-2 border text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-500 rounded focus:outline-none focus:border-amber-500 text-base"
             />
+            <select
+              value={statusFilter}
+              onChange={e => {
+                setStatusFilter(e.target.value);
+                if (page !== 1) setPage(1);
+              }}
+              className="p-2 border text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-500 rounded focus:outline-none text-base"
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="expired">Expired</option>
+              <option value="pending">Pending</option>
+            </select>
             <button
               onClick={handleRefreshStatus}
               disabled={refreshing}

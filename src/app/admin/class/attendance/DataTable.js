@@ -16,9 +16,9 @@ export default function ClassAttendanceDataTable({
 
   const columns = [
     { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px', center: "true" },
-    { name: 'Member', selector: row => row.member?.name || '', sortable: true },
-    { name: 'Class', selector: row => `${row.class.event_plan.name} - ${row.class.instructor.name}` || '', sortable: true },
-    { name: 'Checked-in Time', selector: row => row.checked_in_at ? new Date(new Date(row.checked_in_at).getTime() - 7 * 60 * 60 * 1000).toLocaleString('en-GB', { hour12: false }) : '', sortable: true },
+    { name: 'Member', cell: row => row.member?.name || '', sortable: true },
+    { name: 'Class', cell: row => `${row.class.event_plan.name} - ${row.class.instructor.name}` || '', sortable: true },
+    { name: 'Checked-in Time', cell: row => row.checked_in_at ? new Date(new Date(row.checked_in_at).getTime() - 7 * 60 * 60 * 1000).toLocaleString('en-GB', { hour12: false }) : '', sortable: true },
     {
       name: 'Aksi',
       cell: row => (
