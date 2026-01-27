@@ -22,8 +22,20 @@ export default function LoginPage() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) {
-      router.replace('/admin/dashboard');
+    const userStr = localStorage.getItem('user');
+    if (token && userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user.role === 'admin') {
+          router.replace('/admin/dashboard');
+        } else if (user.role === 'finance') {
+          router.replace('/admin/report/revenue');
+        } else if (user.role === 'opscan') {
+          router.replace('/checkin');
+        }
+      } catch (err) {
+        // Invalid user data, stay on login
+      }
     }
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -59,7 +71,7 @@ export default function LoginPage() {
         } else if (res.status === 401) {
           setError('Incorrect password. Please try again.');
         } else if (res.status === 403) {
-          setError('Access denied. Only admin & opscan can login.');
+          setError('Access denied. Only admin, opscan & finance can login.');
         } else {
           setError(dataRes.message || 'Login failed. Please try again.');
         }
@@ -75,6 +87,8 @@ export default function LoginPage() {
       
       if (data.user.role === "admin") {
         router.push('/admin/dashboard');
+      } else if (data.user.role === "finance") {
+        router.push('/admin/report/revenue');
       } else if (data.user.role === "opscan") {
         router.push('/checkin');
       }

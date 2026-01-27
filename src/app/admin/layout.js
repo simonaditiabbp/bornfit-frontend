@@ -51,8 +51,8 @@ export default function AdminLayout({ children }) {
       try {
         const userData = JSON.parse(userStr);
         
-        // Only admin role can access admin pages
-        if (userData.role !== 'admin') {
+        // Only admin and finance role can access admin pages
+        if (userData.role !== 'admin' && userData.role !== 'finance') {
           if (userData.role === 'opscan') {
             router.replace('/checkin');
           } else {
@@ -63,6 +63,11 @@ export default function AdminLayout({ children }) {
         
         setUser(userData);
         setIsAuthorized(true);
+        
+        // Auto-open report dropdown for finance role
+        if (userData.role === 'finance') {
+          setReportDropdownOpen(true);
+        }
       } catch (error) {
         console.error("Failed to parse user data:", error);
         router.replace('/login');
@@ -176,6 +181,7 @@ export default function AdminLayout({ children }) {
               </a>
             </li>
 
+            {user?.role === 'admin' && (
             <li>
               <Link
                 href="/admin/dashboard"
@@ -184,7 +190,9 @@ export default function AdminLayout({ children }) {
                 <span className={navTextClass}>Dashboard</span>
               </Link>
             </li>
+            )}
 
+            {user?.role === 'admin' && (
             <li>
               <Link
                 href="/admin/users"
@@ -193,7 +201,9 @@ export default function AdminLayout({ children }) {
                 <span className={navTextClass}>User Data</span>
               </Link>
             </li>
+            )}
             {/* Membership Dropdown */}
+            {user?.role === 'admin' && (
             <li>
               <button
                 className={`flex items-center w-full py-2 px-4 text-base transition duration-75 rounded-lg font-bold ${membershipDropdownOpen ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"}`}
@@ -263,7 +273,9 @@ export default function AdminLayout({ children }) {
                 </ul>
               )}
             </li>
+            )}
             {/* PT Session Dropdown */}
+            {user?.role === 'admin' && (
             <li>
               <button
                 type="button"
@@ -312,8 +324,10 @@ export default function AdminLayout({ children }) {
                 </ul>
               )}
             </li>
+            )}
 
             {/* Class Session Dropdown */}
+            {user?.role === 'admin' && (
             <li>
               <button
                 type="button"
@@ -374,6 +388,7 @@ export default function AdminLayout({ children }) {
                 </ul>
               )}
             </li>
+            )}
 
             {/* Report Dropdown */}
             <li>
@@ -447,6 +462,7 @@ export default function AdminLayout({ children }) {
             </li>
 
             {/* Schedule Dropdown */}
+            {user?.role === 'admin' && (
             <li>
               <button
                 type="button"
@@ -489,8 +505,10 @@ export default function AdminLayout({ children }) {
                 </ul>
               )}
             </li>
+            )}
 
             {/* Settings Dropdown */}
+            {user?.role === 'admin' && (
             <li>
               <button
                 type="button"
@@ -542,6 +560,7 @@ export default function AdminLayout({ children }) {
                 </ul>
               )}
             </li>
+            )}
 
             {/* <li>
               <Link 
@@ -553,6 +572,7 @@ export default function AdminLayout({ children }) {
               </Link>
             </li> */}
 
+            {user?.role === 'admin' && (
             <li>
               <Link 
                 href="/checkin" 
@@ -562,7 +582,9 @@ export default function AdminLayout({ children }) {
                 <span className={navTextClass}>Checkin</span>
               </Link>
             </li>
+            )}
 
+            {user?.role === 'admin' && (
             <li>
               <Link 
                 href="/admin/history" 
@@ -572,6 +594,7 @@ export default function AdminLayout({ children }) {
                 <span className={navTextClass}>History</span>
               </Link>
             </li>
+            )}
 
           </ul>
 

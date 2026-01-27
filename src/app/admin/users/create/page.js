@@ -85,8 +85,8 @@ export default function CreateUserPage() {
     setLoading(true);
     try {
       // Validasi sesuai role
-      if ((form.role === "admin" || form.role === "opscan") && !form.password) {
-        setError("Password is required for admin & opscan role");
+      if ((form.role === "admin" || form.role === "opscan" || form.role === "finance") && !form.password) {
+        setError("Password is required for admin, opscan & finance role");
         setLoading(false);
         return;
       }
@@ -282,9 +282,10 @@ export default function CreateUserPage() {
             <option value="admin">Admin</option>
             <option value="trainer">Trainer</option>
             <option value="instructor">Instructor</option>
+            <option value="finance">Finance</option>
           </select>
         </div>
-        {(form.role === "admin" || form.role === "opscan") && (
+        {(form.role === "admin" || form.role === "opscan" || form.role === "finance") && (
           <div>
             <label className="block font-medium text-gray-800 dark:text-gray-200 mb-1">Password <span className="text-red-600">*</span></label>
             <input type="password" name="password" value={form.password} onChange={handleChange} required className="w-full border border-gray-300 dark:border-gray-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 p-2 rounded focus:ring-0 outline-none" />
