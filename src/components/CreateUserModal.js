@@ -124,8 +124,8 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
         return;
       }
 
-      if ((form.role === "admin" || form.role === "opscan") && !form.password) {
-        setError("Password is required for admin & opscan role");
+      if ((form.role === "admin" || form.role === "opscan" || form.role === "finance") && !form.password) {
+        setError("Password is required for admin, opscan & finance role");
         setLoading(false);
         return;
       }
@@ -292,12 +292,13 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
                 { value: 'opscan', label: 'Opscan' },
                 { value: 'admin', label: 'Admin' },
                 { value: 'trainer', label: 'Trainer' },
-                { value: 'instructor', label: 'Instructor' }
+                { value: 'instructor', label: 'Instructor' },
+                { value: 'finance', label: 'Finance' }
               ]}
               required
             />
 
-            {(form.role === "admin" || form.role === "opscan") && (
+            {(form.role === "admin" || form.role === "opscan" || form.role === "finance") && (
               <FormInput
                 label="Password"
                 name="password"

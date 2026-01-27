@@ -355,6 +355,7 @@ export default function UserDetailPage() {
                   { value: 'opscan', label: 'Opscan' },
                   { value: 'trainer', label: 'Trainer' },
                   { value: 'instructor', label: 'Instructor' },
+                  { value: 'finance', label: 'Finance' },
                 ]}
               />
               <FormInput
