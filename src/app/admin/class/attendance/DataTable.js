@@ -20,6 +20,33 @@ export default function ClassAttendanceDataTable({
     { name: 'Class', cell: row => `${row.class.event_plan.name} - ${row.class.instructor.name}` || '', sortable: true },
     { name: 'Checked-in Time', cell: row => row.checked_in_at ? new Date(new Date(row.checked_in_at).getTime() - 7 * 60 * 60 * 1000).toLocaleString('en-GB', { hour12: false }) : '', sortable: true },
     {
+      name: 'Status',
+      cell: row => {
+        const status = row.status?.toLowerCase();
+
+        const styleMap = {
+          booked:   "bg-blue-100 text-blue-700",
+          cancelled:  "bg-red-100 text-red-700",
+          checked_in:  "bg-green-100 text-green-700",
+        };
+
+        const label = status
+          ? status.charAt(0).toUpperCase() + status.slice(1)
+          : "";
+
+        return (
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-bold ${
+              styleMap[status] || "bg-gray-100 text-gray-700"
+            }`}
+          >
+            {label}
+          </span>
+        );
+      },
+      sortable: true
+    },
+    {
       name: 'Aksi',
       cell: row => (
         <Link href={`/admin/class/attendance/edit?id=${row.id}`} className="bg-gray-600 dark:bg-blue-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-700 dark:hover:bg-blue-700">Detail</Link>
