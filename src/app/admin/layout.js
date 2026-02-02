@@ -162,13 +162,13 @@ export default function AdminLayout({ children }) {
       
       <aside 
         id="logo-sidebar"
-        className={`fixed top-0 left-0 z-40 h-screen pt-12 sm:pt-0 transition-all duration-300 bg-slate-50 dark:bg-gray-900 border-r border-slate-300 dark:border-gray-700 sm:translate-x-0 
+        className={`fixed top-0 left-0 z-40 h-screen pt-12 sm:pt-0 transition-all duration-300 bg-white dark:bg-gray-900 border-r border-slate-200 dark:border-gray-700 sm:translate-x-0 
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
           ${isCollapsed ? "w-20" : "w-64"}
         `}
         aria-label="Sidebar"
       >
-        <div className="justify-between h-full px-3 pb-4 overflow-y-auto bg-slate-50 dark:bg-gray-900 flex flex-col">
+        <div className="justify-between h-full px-3 pb-4 overflow-y-auto  dark:bg-gray-900 flex flex-col">
           <ul className="space-y-1 font-medium flex-grow">
 
             <li className="mb-4 border-b-2 border-slate-300 dark:border-gray-600 pb-3 pt-2 justify-center flex">
