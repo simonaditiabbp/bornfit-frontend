@@ -99,7 +99,7 @@ export default function PTSessionReportPage() {
         {/* Download Buttons */}
         <div className="space-y-4">
           <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200">Download Reports</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Bookings</h3>
               <div className="flex gap-2">
@@ -111,7 +111,7 @@ export default function PTSessionReportPage() {
                 </button>
               </div>
             </div>
-            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+            {/* <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Attendance</h3>
               <div className="flex gap-2">
                 <button onClick={() => handleDownload('attendance', 'csv')} disabled={downloading !== ''} className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold disabled:bg-gray-600">
@@ -121,7 +121,7 @@ export default function PTSessionReportPage() {
                   <FaFileExcel className="inline mr-1" /> Excel
                 </button>
               </div>
-            </div>
+            </div> */}
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Trainer Performance</h3>
               <div className="flex gap-2">

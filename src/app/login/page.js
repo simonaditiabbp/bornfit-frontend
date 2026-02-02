@@ -246,8 +246,8 @@ export default function LoginPage() {
               <div className="relative z-10 flex items-center justify-center gap-3">
                 {loading ? (
                   <>
-                    <Loader2 className="w-6 h-6 animate-spin" />
-                    <span>Loading</span>
+                    <Loader2 className="w-6 h-6 animate-spin text-gray-800 dark:text-white" />
+                    <span className="text-gray-800 dark:text-white">Loading</span>
                   </>
                 ) : (
                   <>
