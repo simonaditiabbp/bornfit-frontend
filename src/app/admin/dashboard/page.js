@@ -7,9 +7,10 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import BackendErrorFallback from '../../../components/BackendErrorFallback';
-import { FaSnowflake } from 'react-icons/fa';
+import { FaSnowflake, FaChartBar } from 'react-icons/fa';
 import { useTheme } from '@/contexts/ThemeContext';
 import api from '@/utils/fetchClient';
+import { PageBreadcrumb } from '@/components/admin';
 
 const ApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
@@ -231,6 +232,12 @@ export default function AdminDashboardPage() {
       {/* <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 p-6 mb-8">
         <h1 className="text-3xl font-bold text-amber-600 dark:text-amber-300">Dashboard</h1>
       </div> */}
+
+      <PageBreadcrumb 
+        items={[
+          { icon: <FaChartBar     className="w-3 h-3" />, label: 'Dashboard' }
+        ]}
+      />
 
       {/* Weekly check-in chart */}
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6 mb-5">
