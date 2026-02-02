@@ -16,7 +16,7 @@ export default function InsertAttendancePage() {
     class_id: "",
     member_id: "",
     checked_in_at: nowPlus7.toISOString().slice(0,16),
-    status: "Booked",
+    status: "booked",
     created_by: "",
     updated_by: ""
   };
