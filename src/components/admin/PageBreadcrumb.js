@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { FaAngleRight } from 'react-icons/fa';
+import { useBreadcrumb } from '@/contexts/BreadcrumbContext';
 
 /**
  * Reusable Breadcrumb Component
@@ -13,42 +14,19 @@ import { FaAngleRight } from 'react-icons/fa';
  * ]
  */
 export default function PageBreadcrumb({ items = [] }) {
-  if (!items || items.length === 0) return null;
+  const { setBreadcrumbItems } = useBreadcrumb();
+  
+  useEffect(() => {
+    // Set breadcrumb items ke context saat component mount
+    setBreadcrumbItems(items);
+    
+    // Clear breadcrumb saat component unmount
+    return () => setBreadcrumbItems([]);
+  }, [items, setBreadcrumbItems]);
 
-  return (
-    <div className="bg-white dark:bg-gray-800 flex py-3 px-5 text-lg border-b border-gray-300 dark:border-gray-600">
-      <nav className="flex items-center mt-4" aria-label="Breadcrumb">
-        {items.map((item, index) => {
-          const isLast = index === items.length - 1;
-          
-          return (
-            <div key={index} className="inline-flex items-center">
-              {index > 0 && (
-                <FaAngleRight className="mx-2 text-gray-500 text-xs" />
-              )}
-              
-              {item.icon && (
-                <span className={isLast ? "text-gray-700 dark:text-amber-300 mr-2" : "text-gray-600 dark:text-gray-400 mr-2"}>
-                  {item.icon}
-                </span>
-              )}
-              
-              {item.href ? (
-                <Link 
-                  href={item.href} 
-                  className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-amber-300 transition-colors"
-                >
-                  {item.label}
-                </Link>
-              ) : (
-                <span className="text-sm font-bold dark:font-medium text-black dark:text-amber-300">
-                  {item.label}
-                </span>
-              )}
-            </div>
-          );
-        })}
-      </nav>
-    </div>
-  );
+  // Component ini tidak render apa-apa, hanya set context
+  return null;
+  //     </nav>
+  //   </div>
+  // );
 }

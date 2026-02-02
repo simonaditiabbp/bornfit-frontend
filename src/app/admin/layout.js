@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { FaTachometerAlt, FaUsers, FaDumbbell, FaClipboardList, FaCalendarCheck, FaBarcode, FaCheckCircle, FaSignOutAlt, FaBars, FaAngleRight, FaAngleDoubleLeft, FaMoon, FaAngleDoubleRight, FaUps, FaAngleUp, FaAngleDown, FaCalendar, FaUserCheck, FaChalkboardTeacher, FaShoppingBag, FaExchangeAlt, FaSnowflake, FaIdCard, FaChartLine, FaFileAlt, FaCalendarAlt, FaCog, FaUserTie, FaUserTag, FaHistory } from 'react-icons/fa';
+import { BreadcrumbProvider, useBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
@@ -84,10 +85,10 @@ export default function AdminLayout({ children }) {
   }
 
   return (
-
+  <BreadcrumbProvider>
   <div className="bg-gray-100 dark:bg-gray-800">
     <div>
-      <nav className="fixed top-0 z-50 w-full bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-600">
+      <nav className={`fixed top-0 z-50 w-full bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-600 transition-all duration-300 ${isCollapsed ? 'sm:ml-20 sm:w-[calc(100%-5rem)]' : 'sm:ml-64 sm:w-[calc(100%-16rem)]'}`}>
         <div className="px-3 py-1 lg:px-5 lg:pl-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center justify-start rtl:justify-end">
@@ -98,17 +99,9 @@ export default function AdminLayout({ children }) {
                   <span className="sr-only">Open sidebar</span>
                   <FaBars className="inline-block" />
               </button>
-              <div className="hidden sm:flex">
-                <a href="" className="flex ms-2 md:me-24">
-                  <Image
-                    src={theme === 'dark' ? "/logo.svg" : logoDark}
-                    alt="BornFit Logo"
-                    width={128}
-                    height={128}
-                    className="h-13 w-auto me-3"
-                  />
-                </a>                
-              </div>
+              
+              {/* Breadcrumb di Navbar */}
+              <BreadcrumbDisplay />
             </div>
 
             <div className="flex items-center">
@@ -157,26 +150,35 @@ export default function AdminLayout({ children }) {
       </nav>
     </div>
 
-    <div className="flex pt-12">
+    <div className="flex">
+      {/* Backdrop overlay untuk mobile - klik untuk tutup sidebar */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-gray-900/50 z-30 sm:hidden"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+      
       <aside 
         id="logo-sidebar"
-        className={`fixed top-0 left-0 z-40 h-screen pt-16 transition-all duration-300 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-600 sm:translate-x-0 
+        className={`fixed top-0 left-0 z-40 h-screen pt-12 sm:pt-0 transition-all duration-300 bg-slate-50 dark:bg-gray-900 border-r border-slate-300 dark:border-gray-700 sm:translate-x-0 
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
           ${isCollapsed ? "w-20" : "w-64"}
-        }`}
+        `}
         aria-label="Sidebar"
       >
-        <div className="justify-between h-full px-3 pb-4 overflow-y-auto bg-white dark:bg-gray-800 flex flex-col">
+        <div className="justify-between h-full px-3 pb-4 overflow-y-auto bg-slate-50 dark:bg-gray-900 flex flex-col">
           <ul className="space-y-1 font-medium flex-grow">
 
-            <li className="sm:hidden mb-4 border-b-2 p-1 justify-center flex">
-              <a href="" className="flex ms-2">
+            <li className="mb-4 border-b-2 border-slate-300 dark:border-gray-600 pb-3 pt-2 justify-center flex">
+              <a href="" className={`flex items-center justify-center ${isCollapsed ? 'w-12 h-12' : 'w-32 h-24'}`}>
                 <Image
                   src={theme === 'dark' ? "/logo.svg" : logoDark}
                   alt="BornFit Logo"
                   width={128}
-                  height={128}
-                  className="h-15 w-auto me-3"
+                  height={96}
+                  className={`object-contain ${theme === 'light' ? 'scale-125' : ''}`}
                 />
               </a>
             </li>
@@ -185,8 +187,10 @@ export default function AdminLayout({ children }) {
             <li>
               <Link
                 href="/admin/dashboard"
-                className={`flex items-center py-2 px-4 gap-2 rounded-lg font-semibold ${pathname.startsWith("/admin/dashboard") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"}`}>
-                <FaTachometerAlt className="inline-block transition duration-75"/> 
+                className={`flex items-center py-3 px-3 gap-3 rounded-xl font-semibold transition-all duration-200 group ${pathname.startsWith("/admin/dashboard") ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"}`}>
+                <div className={`flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200 ${pathname.startsWith("/admin/dashboard") ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                  <FaTachometerAlt className="text-base transition duration-200"/> 
+                </div>
                 <span className={navTextClass}>Dashboard</span>
               </Link>
             </li>
@@ -196,8 +200,10 @@ export default function AdminLayout({ children }) {
             <li>
               <Link
                 href="/admin/users"
-                className={`flex items-center py-2 px-4 gap-2 rounded-lg font-semibold ${pathname.startsWith("/admin/users") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"}`}>
-                <FaUsers className="inline-block transition duration-75" /> 
+                className={`flex items-center py-3 px-3 gap-3 rounded-xl font-semibold transition-all duration-200 group ${pathname.startsWith("/admin/users") ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"}`}>
+                <div className={`flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200 ${pathname.startsWith("/admin/users") ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                  <FaUsers className="text-base transition duration-200" /> 
+                </div>
                 <span className={navTextClass}>User Data</span>
               </Link>
             </li>
@@ -206,16 +212,18 @@ export default function AdminLayout({ children }) {
             {user?.role === 'admin' && (
             <li>
               <button
-                className={`flex items-center w-full py-2 px-4 text-base transition duration-75 rounded-lg font-bold ${membershipDropdownOpen ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"}`}
+                className={`flex items-center w-full py-3 px-3 gap-3 text-base transition-all duration-200 rounded-xl font-semibold group ${membershipDropdownOpen ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"}`}
                 type="button"
                 aria-expanded={membershipDropdownOpen}
                 aria-controls="membership-dropdown"
                 onClick={() => setMembershipDropdownOpen((open) => !open)}
                 data-collapse-toggle="membership-dropdown"
               >
-                <FaIdCard className="inline-block transition duration-75" /> 
-                <span className={`${navTextClass} flex-1 ms-3 text-left rtl:text-right whitespace-nowrap`}>Membership</span>
-                <span className={`${membershipDropdownOpen} w-3 h-3 transition-transform duration-300`}>
+                <div className={`flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200 ${membershipDropdownOpen ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                  <FaIdCard className="text-base transition duration-200" /> 
+                </div>
+                <span className={`${navTextClass} flex-1 text-left rtl:text-right whitespace-nowrap`}>Membership</span>
+                <span className={`w-3 h-3 transition-transform duration-300`}>
                   {membershipDropdownOpen ? (
                     <FaAngleUp />
                   ) : (
@@ -224,13 +232,15 @@ export default function AdminLayout({ children }) {
                 </span>
               </button>
               {membershipDropdownOpen && (
-                <ul id="pt-session-dropdown" className={`py-2 space-y-2 ${isCollapsed ? 'pl-0 text-center' : 'pl-6 border-l-2 border-gray-300 dark:border-gray-600'}`}>
+                <ul id="pt-session-dropdown" className={`py-2 space-y-2 ${isCollapsed ? 'pl-0 text-center' : 'pl-6 border-l-2 border-amber-500/40 dark:border-amber-500/40'}`}>
                   <li>
                     <Link
                       href="/admin/membership/session"
-                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/membership/session") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                      className={`flex items-center w-full py-2.5 px-3 gap-2.5 rounded-xl font-semibold transition-all duration-200 group ${pathname.startsWith("/admin/membership/session") ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"} ${isCollapsed ? 'justify-center' : ''}`}
                     >
-                      <FaCalendarCheck className="inline-block transition duration-75 mr-2" /> 
+                      <div className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200 ${pathname.startsWith("/admin/membership/session") ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                        <FaCalendarCheck className="text-sm transition duration-200" />
+                      </div>
                       <span className={navTextClass}>Details</span>
                     </Link>
                   </li>
@@ -255,18 +265,22 @@ export default function AdminLayout({ children }) {
                   <li>
                     <Link
                       href="/admin/membership/transfer"
-                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/membership/transfer") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                      className={`flex items-center w-full py-2.5 px-3 gap-2.5 rounded-xl font-semibold transition-all duration-200 group ${pathname.startsWith("/admin/membership/transfer") ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"} ${isCollapsed ? 'justify-center' : ''}`}
                     >
-                      <FaExchangeAlt className="inline-block transition duration-75 mr-2" /> 
+                      <div className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200 ${pathname.startsWith("/admin/membership/transfer") ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                        <FaExchangeAlt className="text-sm transition duration-200" />
+                      </div>
                       <span className={navTextClass}>Transfer</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/admin/membership/freeze"
-                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/membership/freeze") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                      className={`flex items-center w-full py-2.5 px-3 gap-2.5 rounded-xl font-semibold transition-all duration-200 group ${pathname.startsWith("/admin/membership/freeze") ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"} ${isCollapsed ? 'justify-center' : ''}`}
                     >
-                      <FaSnowflake  className="inline-block transition duration-75 mr-2" /> 
+                      <div className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200 ${pathname.startsWith("/admin/membership/freeze") ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                        <FaSnowflake className="text-sm transition duration-200" />
+                      </div>
                       <span className={navTextClass}>Freeze</span>
                     </Link>
                   </li>
@@ -279,15 +293,17 @@ export default function AdminLayout({ children }) {
             <li>
               <button
                 type="button"
-                className={`flex items-center w-full py-2 px-4 text-base transition duration-75 rounded-lg font-bold ${ptDropdownOpen ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"}`}
+                className={`flex items-center w-full py-3 px-3 gap-3 text-base transition-all duration-200 rounded-xl font-semibold group ${ptDropdownOpen ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"}`}
                 aria-expanded={ptDropdownOpen}
                 aria-controls="pt-session-dropdown"
                 onClick={() => setPtDropdownOpen((open) => !open)}
                 data-collapse-toggle="pt-session-dropdown"
               >
-                <FaChalkboardTeacher className="inline-block transition duration-75" />
+                <div className={`flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200 ${ptDropdownOpen ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                  <FaChalkboardTeacher className="text-base transition duration-200" />
+                </div>
                 <span className={`${navTextClass} flex-1 ms-3 text-left rtl:text-right whitespace-nowrap`}>PT Session</span>
-                <span className={`${dropdownArrowClass} w-3 h-3 transition-transform duration-300`}>
+                <span className={`${ptDropdownOpen} w-3 h-3 transition-transform duration-300`}>
                   {ptDropdownOpen ? (
                     <FaAngleUp />
                   ) : (
@@ -296,12 +312,14 @@ export default function AdminLayout({ children }) {
                 </span>
               </button>
               {ptDropdownOpen && (
-                <ul id="pt-session-dropdown" className={`py-2 space-y-2 ${isCollapsed ? 'pl-0 text-center' : 'pl-6 border-l-2 border-gray-300 dark:border-gray-600'}`}>
+                <ul id="pt-session-dropdown" className={`py-2 space-y-2 ${isCollapsed ? 'pl-0 text-center' : 'pl-6 border-l-2 border-amber-500/40 dark:border-amber-500/40'}`}>
                   <li>
                     <Link 
                       href="/admin/pt/session" 
-                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/pt/session") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}>
-                      <FaCalendarCheck className="inline-block transition duration-75 mr-2" />
+                      className={`flex items-center w-full py-2.5 px-3 gap-2.5 rounded-xl font-semibold transition-all duration-200 group ${pathname.startsWith("/admin/pt/session") ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"} ${isCollapsed ? 'justify-center' : ''}`}>
+                      <div className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200 ${pathname.startsWith("/admin/pt/session") ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                        <FaCalendarCheck className="text-sm transition duration-200" />
+                      </div>
                       <span className={navTextClass}>Details</span>
                     </Link>
                   </li>
@@ -316,8 +334,10 @@ export default function AdminLayout({ children }) {
                   <li>
                     <Link 
                       href="/admin/pt/booking" 
-                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/pt/booking") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}>
-                      <FaCheckCircle className="inline-block transition duration-75 mr-2" />
+                      className={`flex items-center w-full py-2.5 px-3 gap-2.5 rounded-xl font-semibold transition-all duration-200 group ${pathname.startsWith("/admin/pt/booking") ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"} ${isCollapsed ? 'justify-center' : ''}`}>
+                      <div className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200 ${pathname.startsWith("/admin/pt/booking") ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                        <FaCheckCircle className="text-sm transition duration-200" />
+                      </div>
                       <span className={navTextClass}>Booking</span>
                     </Link>
                   </li>
@@ -331,15 +351,17 @@ export default function AdminLayout({ children }) {
             <li>
               <button
                 type="button"
-                className={`flex items-center w-full py-2 px-4 text-base transition duration-75 rounded-lg font-bold ${classDropdownOpen ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"}`}
+                className={`flex items-center w-full py-3 px-3 gap-3 text-base transition-all duration-200 rounded-xl font-semibold group ${classDropdownOpen ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"}`}
                 aria-expanded={classDropdownOpen}
                 aria-controls="class-session-dropdown"
                 onClick={() => setClassDropdownOpen((open) => !open)}
                 data-collapse-toggle="class-session-dropdown"
               >
-                <FaDumbbell className="inline-block transition duration-75" />
+                <div className={`flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200 ${classDropdownOpen ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                  <FaDumbbell className="text-base transition duration-200" />
+                </div>
                 <span className={`${navTextClass} flex-1 ms-3 text-left rtl:text-right whitespace-nowrap`}>Class Session</span>
-                <span className={`${dropdownArrowClass} w-3 h-3 transition-transform duration-300`}>
+                <span className={`${classDropdownOpen} w-3 h-3 transition-transform duration-300`}>
                   {classDropdownOpen ? (
                     <FaAngleUp />
                   ) : (
@@ -348,14 +370,16 @@ export default function AdminLayout({ children }) {
                 </span>
               </button>
               {classDropdownOpen && (
-                <ul id="class-session-dropdown" className={`py-2 space-y-2 ${isCollapsed ? 'pl-0 text-center' : 'pl-6 border-l-2 border-gray-300 dark:border-gray-600'}`}>
+                <ul id="class-session-dropdown" className={`py-2 space-y-2 ${isCollapsed ? 'pl-0 text-center' : 'pl-6 border-l-2 border-amber-500/40 dark:border-amber-500/40'}`}>
                   <li>
                     <Link
                       href="/admin/class/session"
-                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/class/session") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"}`}
+                      className={`flex items-center w-full py-2.5 px-3 gap-2.5 rounded-xl font-semibold transition-all duration-200 group ${pathname.startsWith("/admin/class/session") ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"} ${isCollapsed ? 'justify-center' : ''}`}
                     >
-                    <FaCalendarCheck className="inline-block transition duration-75 mr-2" /> 
-                    <span className={navTextClass}>Details</span>
+                      <div className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200 ${pathname.startsWith("/admin/class/session") ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                        <FaCalendarCheck className="text-sm transition duration-200" />
+                      </div>
+                      <span className={navTextClass}>Details</span>
                     </Link>
                   </li>
                   {/* <li>
@@ -370,18 +394,22 @@ export default function AdminLayout({ children }) {
                   <li>
                     <Link
                       href="/admin/class/attendance"
-                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/class/attendance") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"}`}
+                      className={`flex items-center w-full py-2.5 px-3 gap-2.5 rounded-xl font-semibold transition-all duration-200 group ${pathname.startsWith("/admin/class/attendance") ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"} ${isCollapsed ? 'justify-center' : ''}`}
                     >
-                      <FaCheckCircle className="inline-block transition duration-75 mr-2" /> 
+                      <div className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200 ${pathname.startsWith("/admin/class/attendance") ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                        <FaCheckCircle className="text-sm transition duration-200" />
+                      </div>
                       <span className={navTextClass}>Attendance</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/admin/class/classpurchase"
-                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/class/classpurchase") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"}`}
+                      className={`flex items-center w-full py-2.5 px-3 gap-2.5 rounded-xl font-semibold transition-all duration-200 group ${pathname.startsWith("/admin/class/classpurchase") ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"} ${isCollapsed ? 'justify-center' : ''}`}
                     >
-                      <FaShoppingBag className="inline-block transition duration-75 mr-2" /> 
+                      <div className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200 ${pathname.startsWith("/admin/class/classpurchase") ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                        <FaShoppingBag className="text-sm transition duration-200" />
+                      </div>
                       <span className={navTextClass}>Class Purchase</span>
                     </Link>
                   </li>
@@ -394,15 +422,17 @@ export default function AdminLayout({ children }) {
             <li>
               <button
                 type="button"
-                className={`flex items-center w-full py-2 px-4 text-base transition duration-75 rounded-lg font-bold ${reportDropdownOpen ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"}`}
+                className={`flex items-center w-full py-3 px-3 gap-3 text-base transition-all duration-200 rounded-xl font-semibold group ${reportDropdownOpen ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"}`}
                 aria-expanded={reportDropdownOpen}
                 aria-controls="report-dropdown"
                 onClick={() => setReportDropdownOpen((open) => !open)}
                 data-collapse-toggle="report-dropdown"
               >
-                <FaChartLine className="inline-block transition duration-75" />
+                <div className={`flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200 ${reportDropdownOpen ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                  <FaChartLine className="text-base transition duration-200" />
+                </div>
                 <span className={`${navTextClass} flex-1 ms-3 text-left rtl:text-right whitespace-nowrap`}>Reports</span>
-                <span className={`${dropdownArrowClass} w-3 h-3 transition-transform duration-300`}>
+                <span className={`${reportDropdownOpen} w-3 h-3 transition-transform duration-300`}>
                   {reportDropdownOpen ? (
                     <FaAngleUp />
                   ) : (
@@ -411,49 +441,59 @@ export default function AdminLayout({ children }) {
                 </span>
               </button>
               {reportDropdownOpen && (
-                <ul id="report-dropdown" className={`py-2 space-y-2 ${isCollapsed ? 'pl-0 text-center' : 'pl-6 border-l-2 border-gray-300 dark:border-gray-600'}`}>
+                <ul id="report-dropdown" className={`py-2 space-y-2 ${isCollapsed ? 'pl-0 text-center' : 'pl-6 border-l-2 border-amber-500/40 dark:border-amber-500/40'}`}>
                   <li>
                     <Link
                       href="/admin/report/revenue"
-                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/report/revenue") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                      className={`flex items-center w-full py-2.5 px-3 gap-2.5 rounded-xl font-semibold transition-all duration-200 group ${pathname.startsWith("/admin/report/revenue") ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"} ${isCollapsed ? 'justify-center' : ''}`}
                     >
-                      <FaChartLine className="inline-block transition duration-75 mr-2" /> 
+                      <div className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200 ${pathname.startsWith("/admin/report/revenue") ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                        <FaChartLine className="text-sm transition duration-200" />
+                      </div>
                       <span className={navTextClass}>Revenue</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/admin/report/checkin"
-                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/report/checkin") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                      className={`flex items-center w-full py-2.5 px-3 gap-2.5 rounded-xl font-semibold transition-all duration-200 group ${pathname.startsWith("/admin/report/checkin") ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"} ${isCollapsed ? 'justify-center' : ''}`}
                     >
-                      <FaUserCheck className="inline-block transition duration-75 mr-2" /> 
+                      <div className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200 ${pathname.startsWith("/admin/report/checkin") ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                        <FaUserCheck className="text-sm transition duration-200" />
+                      </div>
                       <span className={navTextClass}>Check-in</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/admin/report/membership"
-                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/report/membership") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                      className={`flex items-center w-full py-2.5 px-3 gap-2.5 rounded-xl font-semibold transition-all duration-200 group ${pathname.startsWith("/admin/report/membership") ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"} ${isCollapsed ? 'justify-center' : ''}`}
                     >
-                      <FaIdCard className="inline-block transition duration-75 mr-2" /> 
+                      <div className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200 ${pathname.startsWith("/admin/report/membership") ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                        <FaIdCard className="text-sm transition duration-200" />
+                      </div>
                       <span className={navTextClass}>Membership</span>
                     </Link>
                   </li>                                   
                   <li>
                     <Link
                       href="/admin/report/pt-session"
-                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/report/pt-session") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                      className={`flex items-center w-full py-2.5 px-3 gap-2.5 rounded-xl font-semibold transition-all duration-200 group ${pathname.startsWith("/admin/report/pt-session") ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"} ${isCollapsed ? 'justify-center' : ''}`}
                     >
-                      <FaChalkboardTeacher className="inline-block transition duration-75 mr-2" /> 
+                      <div className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200 ${pathname.startsWith("/admin/report/pt-session") ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                        <FaChalkboardTeacher className="text-sm transition duration-200" />
+                      </div>
                       <span className={navTextClass}>PT Session</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/admin/report/class"
-                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/report/class") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                      className={`flex items-center w-full py-2.5 px-3 gap-2.5 rounded-xl font-semibold transition-all duration-200 group ${pathname.startsWith("/admin/report/class") ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"} ${isCollapsed ? 'justify-center' : ''}`}
                     >
-                      <FaDumbbell className="inline-block transition duration-75 mr-2" /> 
+                      <div className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200 ${pathname.startsWith("/admin/report/class") ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                        <FaDumbbell className="text-sm transition duration-200" />
+                      </div>
                       <span className={navTextClass}>Class</span>
                     </Link>
                   </li>
@@ -466,15 +506,17 @@ export default function AdminLayout({ children }) {
             <li>
               <button
                 type="button"
-                className={`flex items-center w-full py-2 px-4 text-base transition duration-75 rounded-lg font-bold ${scheduleDropdownOpen ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"}`}
+                className={`flex items-center w-full py-3 px-3 gap-3 text-base transition-all duration-200 rounded-xl font-semibold group ${scheduleDropdownOpen ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"}`}
                 aria-expanded={scheduleDropdownOpen}
                 aria-controls="schedule-dropdown"
                 onClick={() => setScheduleDropdownOpen((open) => !open)}
                 data-collapse-toggle="schedule-dropdown"
               >
-                <FaCalendarAlt className="inline-block transition duration-75" />
+                <div className={`flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200 ${scheduleDropdownOpen ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                  <FaCalendarAlt className="text-base transition duration-200" />
+                </div>
                 <span className={`${navTextClass} flex-1 ms-3 text-left rtl:text-right whitespace-nowrap`}>Schedule</span>
-                <span className={`${dropdownArrowClass} w-3 h-3 transition-transform duration-300`}>
+                <span className={`${scheduleDropdownOpen} w-3 h-3 transition-transform duration-300`}>
                   {scheduleDropdownOpen ? (
                     <FaAngleUp />
                   ) : (
@@ -483,22 +525,26 @@ export default function AdminLayout({ children }) {
                 </span>
               </button>
               {scheduleDropdownOpen && (
-                <ul id="schedule-dropdown" className={`py-2 space-y-2 ${isCollapsed ? 'pl-0 text-center' : 'pl-6 border-l-2 border-gray-300 dark:border-gray-600'}`}>
+                <ul id="schedule-dropdown" className={`py-2 space-y-2 ${isCollapsed ? 'pl-0 text-center' : 'pl-6 border-l-2 border-amber-500/40 dark:border-amber-500/40'}`}>
                   <li>
                     <Link
                       href="/admin/staff-schedule"
-                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/staff-schedule") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                      className={`flex items-center w-full py-2.5 px-3 gap-2.5 rounded-xl font-semibold transition-all duration-200 group ${pathname.startsWith("/admin/staff-schedule") ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"} ${isCollapsed ? 'justify-center' : ''}`}
                     >
-                      <FaUserCheck className="inline-block transition duration-75 mr-2" /> 
+                      <div className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200 ${pathname.startsWith("/admin/staff-schedule") ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                        <FaUserCheck className="text-sm transition duration-200" />
+                      </div>
                       <span className={navTextClass}>Staff Schedule</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/admin/class-schedule"
-                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/class-schedule") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                      className={`flex items-center w-full py-2.5 px-3 gap-2.5 rounded-xl font-semibold transition-all duration-200 group ${pathname.startsWith("/admin/class-schedule") ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"} ${isCollapsed ? 'justify-center' : ''}`}
                     >
-                      <FaDumbbell className="inline-block transition duration-75 mr-2" /> 
+                      <div className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200 ${pathname.startsWith("/admin/class-schedule") ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                        <FaDumbbell className="text-sm transition duration-200" />
+                      </div>
                       <span className={navTextClass}>Class Schedule</span>
                     </Link>
                   </li>
@@ -512,15 +558,17 @@ export default function AdminLayout({ children }) {
             <li>
               <button
                 type="button"
-                className={`flex items-center w-full py-2 px-4 text-base transition duration-75 rounded-lg font-bold ${settingsDropdownOpen ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"}`}
+                className={`flex items-center w-full py-3 px-3 gap-3 text-base transition-all duration-200 rounded-xl font-semibold group ${settingsDropdownOpen ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"}`}
                 aria-expanded={settingsDropdownOpen}
                 aria-controls="settings-dropdown"
                 onClick={() => setSettingsDropdownOpen((open) => !open)}
                 data-collapse-toggle="settings-dropdown"
               >
-                <FaCog className="inline-block transition duration-75" />
+                <div className={`flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200 ${settingsDropdownOpen ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                  <FaCog className="text-base transition duration-200" />
+                </div>
                 <span className={`${navTextClass} flex-1 ms-3 text-left rtl:text-right whitespace-nowrap`}>Settings</span>
-                <span className={`${dropdownArrowClass} w-3 h-3 transition-transform duration-300`}>
+                <span className={`${settingsDropdownOpen} w-3 h-3 transition-transform duration-300`}>
                   {settingsDropdownOpen ? (
                     <FaAngleUp />
                   ) : (
@@ -529,31 +577,37 @@ export default function AdminLayout({ children }) {
                 </span>
               </button>
               {settingsDropdownOpen && (
-                <ul id="settings-dropdown" className={`py-2 space-y-2 ${isCollapsed ? 'pl-0 text-center' : 'pl-6 border-l-2 border-gray-300 dark:border-gray-600'}`}>
+                <ul id="settings-dropdown" className={`py-2 space-y-2 ${isCollapsed ? 'pl-0 text-center' : 'pl-6 border-l-2 border-amber-500/40 dark:border-amber-500/40'}`}>
                   <li>
                     <Link
                       href="/admin/membership/plans"
-                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/membership/plans") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                      className={`flex items-center w-full py-2.5 px-3 gap-2.5 rounded-xl font-semibold transition-all duration-200 group ${pathname.startsWith("/admin/membership/plans") ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"} ${isCollapsed ? 'justify-center' : ''}`}
                     >
-                      <FaIdCard  className="inline-block transition duration-75 mr-2" /> 
+                      <div className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200 ${pathname.startsWith("/admin/membership/plans") ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                        <FaIdCard className="text-sm transition duration-200" />
+                      </div>
                       <span className={navTextClass}>Membership Plans</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/admin/pt/plans"
-                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/pt/plans") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                      className={`flex items-center w-full py-2.5 px-3 gap-2.5 rounded-xl font-semibold transition-all duration-200 group ${pathname.startsWith("/admin/pt/plans") ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"} ${isCollapsed ? 'justify-center' : ''}`}
                     >
-                      <FaChalkboardTeacher className="inline-block transition duration-75 mr-2" /> 
+                      <div className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200 ${pathname.startsWith("/admin/pt/plans") ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                        <FaChalkboardTeacher className="text-sm transition duration-200" />
+                      </div>
                       <span className={navTextClass}>PT Plans</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/admin/class/plans"
-                      className={`flex items-center w-full p-2 rounded-lg font-semibold transition duration-75 ${pathname.startsWith("/admin/class/plans") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"} ${isCollapsed ? 'justify-center' : ''}`}
+                      className={`flex items-center w-full py-2.5 px-3 gap-2.5 rounded-xl font-semibold transition-all duration-200 group ${pathname.startsWith("/admin/class/plans") ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"} ${isCollapsed ? 'justify-center' : ''}`}
                     >
-                      <FaDumbbell className="inline-block transition duration-75 mr-2" /> 
+                      <div className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200 ${pathname.startsWith("/admin/class/plans") ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                        <FaDumbbell className="text-sm transition duration-200" />
+                      </div>
                       <span className={navTextClass}>Class Plans</span>
                     </Link>
                   </li>
@@ -576,9 +630,11 @@ export default function AdminLayout({ children }) {
             <li>
               <Link 
                 href="/checkin" 
-                className="flex items-center py-2 px-4 gap-2 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"
+                className="flex items-center py-3 px-3 gap-3 rounded-xl font-semibold transition-all duration-200 group hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"
               >
-                <FaBarcode className="inline-block transition duration-75" /> 
+                <div className="flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200 bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20">
+                  <FaBarcode className="text-base transition duration-200" /> 
+                </div>
                 <span className={navTextClass}>Checkin</span>
               </Link>
             </li>
@@ -588,9 +644,11 @@ export default function AdminLayout({ children }) {
             <li>
               <Link 
                 href="/admin/history" 
-                className={`flex items-center py-2 px-4 gap-2 rounded-lg font-semibold ${pathname.startsWith("/admin/history") ? "bg-gray-600 text-white dark:bg-amber-300 dark:text-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-amber-300"}`}
+                className={`flex items-center py-3 px-3 gap-3 rounded-xl font-semibold transition-all duration-200 group ${pathname.startsWith("/admin/history") ? "bg-amber-50 dark:bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-400" : "hover:bg-slate-200 dark:hover:bg-gray-700/50 text-slate-700 dark:text-gray-300"}`}
               >
-                <FaHistory className="inline-block transition duration-75" /> 
+                <div className={`flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200 ${pathname.startsWith("/admin/history") ? "bg-amber-500/20" : "bg-slate-200 dark:bg-gray-700 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/20"}`}>
+                  <FaHistory className="text-base transition duration-200" /> 
+                </div>
                 <span className={navTextClass}>History</span>
               </Link>
             </li>
@@ -602,7 +660,7 @@ export default function AdminLayout({ children }) {
             <button 
                 id="sidebar-toggle" 
                 onClick={() => setIsCollapsed(!isCollapsed)}
-                className="w-full flex items-center justify-center p-4 text-gray-700 dark:text-amber-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 group"
+                className="w-full flex items-center justify-center p-4 text-slate-700 dark:text-amber-300 rounded-lg hover:bg-slate-200 dark:hover:bg-gray-700 group"
               >
                 {isCollapsed ? (
                     <FaAngleDoubleRight className="w-6 h-6 transition-transform duration-300" />
@@ -614,8 +672,51 @@ export default function AdminLayout({ children }) {
         </div>
       </aside>        
         
-      <main className={`flex-1 overflow-x-hidden bg-gray-50 dark:bg-gray-900 min-h-screen transition-all duration-300 ease-in-out ${isCollapsed ? 'sm:ml-20' : 'sm:ml-64'}`}>{children}</main>
+      <main className={`flex-1 overflow-x-hidden bg-gray-50 dark:bg-gray-900 min-h-screen transition-all duration-300 ease-in-out pt-12 ${isCollapsed ? 'sm:ml-20' : 'sm:ml-64'}`}>{children}</main>
     </div>
   </div>
+  </BreadcrumbProvider>
+  );
+}
+
+// Komponen untuk menampilkan breadcrumb di navbar
+function BreadcrumbDisplay() {
+  const { breadcrumbItems } = useBreadcrumb();
+  
+  if (!breadcrumbItems || breadcrumbItems.length === 0) return null;
+
+  return (
+    <nav className="hidden sm:flex items-center ml-4" aria-label="Breadcrumb">
+      {breadcrumbItems.map((item, index) => {
+        const isLast = index === breadcrumbItems.length - 1;
+        
+        return (
+          <div key={index} className="inline-flex items-center">
+            {index > 0 && (
+              <FaAngleRight className="mx-2 text-gray-400 dark:text-gray-500 text-xs" />
+            )}
+            
+            {item.icon && (
+              <span className={isLast ? "text-gray-700 dark:text-amber-400 mr-1.5" : "text-gray-500 dark:text-gray-400 mr-1.5"}>
+                {item.icon}
+              </span>
+            )}
+            
+            {item.href ? (
+              <Link 
+                href={item.href} 
+                className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-amber-300 transition-colors"
+              >
+                {item.label}
+              </Link>
+            ) : (
+              <span className="text-sm font-semibold text-gray-800 dark:text-amber-400">
+                {item.label}
+              </span>
+            )}
+          </div>
+        );
+      })}
+    </nav>
   );
 }
