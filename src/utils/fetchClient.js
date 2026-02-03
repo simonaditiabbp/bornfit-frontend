@@ -65,8 +65,8 @@ class FetchClient {
 
       console.log("err:", err);
       
-      // Retry on network error
-      if (retryCount < this.maxRetries) {
+      // Only retry GET requests to avoid duplicate writes (POST/PUT/DELETE)
+      if (retryCount < this.maxRetries && method === 'GET') {
         console.log(`🔄 Retry ${retryCount + 1}/${this.maxRetries} for ${url}`);
         await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1))); // exponential backoff
         return this.request(method, url, body, extraConfig, retryCount + 1);
@@ -108,9 +108,10 @@ class FetchClient {
 
     // Handle other errors
     if (!response.ok) {
-      // Retry on server errors (500, 502, 503)
+      // Only retry GET requests on server errors (500, 502, 503, 504) to avoid duplicate writes
       if (
         retryCount < this.maxRetries &&
+        method === 'GET' &&
         [500, 502, 503, 504].includes(response.status)
       ) {
         console.log(`🔄 Retry ${retryCount + 1}/${this.maxRetries} for ${url} (${response.status})`);
