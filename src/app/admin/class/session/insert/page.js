@@ -32,14 +32,14 @@ export default function ClassSessionInsertPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [dataPlans, dataMember, dataInstructor] = await Promise.all([
+        const [dataPlans, dataMember, dataInstructorTrainer] = await Promise.all([
           api.get('/api/eventplans?is_active=true&limit=10000'),
           api.get('/api/users/?role=member&membership=active&limit=10000'),
-          api.get('/api/users/?role=instructor&limit=10000')
+          api.get('/api/users/?role=instructor,trainer&limit=10000')
         ]);
         setPlans(dataPlans.data.plans || []);
         setMembers(dataMember.data.users || []);
-        setInstructors(dataInstructor.data.users || []);
+        setInstructors(dataInstructorTrainer.data.users || []);
       } catch {}
     };
     fetchData();
@@ -126,7 +126,6 @@ export default function ClassSessionInsertPage() {
         // Recurring class
         payload = {
           event_plan_id: Number(form.event_plan_id),
-          instructor_id: Number(form.instructor_id),
           class_type: form.class_type,
           notes: form.notes,
           is_recurring: true,
@@ -136,6 +135,14 @@ export default function ClassSessionInsertPage() {
           valid_from: `${form.valid_from}T00:00:00.000Z`,
           valid_until: `${form.valid_until}T23:59:59.999Z`,
         };
+        if (form.instructor_id) {
+          const selectedUser = instructors.find(u => u.id === Number(form.instructor_id));
+          if (selectedUser?.role === 'instructor') {
+            payload.instructor_id = Number(form.instructor_id);
+          } else if (selectedUser?.role === 'trainer') {
+            payload.trainer_id = Number(form.instructor_id);
+          }
+        }
       } else {
         // Single class - combine date and time properly
         const start_datetime = new Date(`${form.class_date}T${form.start_time}:00`);
@@ -143,7 +150,6 @@ export default function ClassSessionInsertPage() {
         
         payload = {
           event_plan_id: Number(form.event_plan_id),
-          instructor_id: Number(form.instructor_id),
           class_date: start_time_iso, // Use start_time as class_date
           start_time: start_time_iso,
           class_type: form.class_type,
@@ -151,6 +157,14 @@ export default function ClassSessionInsertPage() {
           notes: form.notes,
           is_recurring: false,
         };
+        if (form.instructor_id) {
+          const selectedUser = instructors.find(u => u.id === Number(form.instructor_id));
+          if (selectedUser?.role === 'instructor') {
+            payload.instructor_id = Number(form.instructor_id);
+          } else if (selectedUser?.role === 'trainer') {
+            payload.trainer_id = Number(form.instructor_id);
+          }
+        }
       }
       
       await api.post('/api/classes', payload);
@@ -200,20 +214,19 @@ export default function ClassSessionInsertPage() {
           />
 
           <FormInput
-            label="Instructor"
+            label="Instructor / Trainer"
             name="instructor_id"
             type="searchable-select"
-            placeholder='Search Instructor'
-            value={ selectedInstructor ? { value: selectedInstructor.id, label: selectedInstructor.name }
+            placeholder='Search Instructor or Trainer'
+            value={ selectedInstructor ? { value: selectedInstructor.id, label: `${selectedInstructor.name} (${selectedInstructor.role})` }
                   : null }
             onChange={(opt) =>
               setForm(prev => ({ ...prev, instructor_id: opt?.value || '' }))
             }
             options={instructors.map(u => ({
               value: u.id,
-              label: u.name
+              label: `${u.name} (${u.role})`
             }))}
-            required
           />
           
           <FormInput

@@ -14,10 +14,31 @@ export default function ClassSessionDataTable({ data, plans = [], members = [], 
       const plan = plans.find(p => p.id === row.event_plan_id);
       return plan ? (plan.name || `Plan #${plan.id}`) : row.event_plan_id;
     }, sortable: true },
-    { name: 'Instructor', cell: row => {
+    { name: 'Instructor / Trainer', cell: row => {
+      // Check if has instructor or trainer data from backend
+      if (row.instructor) {
+        return (
+          <div className="flex flex-col">
+            <span className="font-semibold">{row.instructor.name}</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">(instructor)</span>
+          </div>
+        );
+      }
+      if (row.trainer) {
+        return (
+          <div className="flex flex-col">
+            <span className="font-semibold">{row.trainer.name}</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">(trainer)</span>
+          </div>
+        );
+      }
+      // Fallback: search in instructors list
       const ins = instructors.find(t => t.id === row.instructor_id);
-      return ins ? ins.name : row.instructor_id;
-    }, sortable: true },
+      if (ins) return ins.name;
+      const trainer = instructors.find(t => t.id === row.trainer_id);
+      if (trainer) return trainer.name;
+      return '-';
+    }, sortable: true, width: '180px' },
     { 
       name: 'Schedule Type', 
       cell: row => {
