@@ -214,7 +214,7 @@ export default function ClassReportPage() {
                 <th className="px-4 py-3">Class Date</th>
                 <th className="px-4 py-3">Class Name</th>
                 <th className="px-4 py-3">Event Plan</th>
-                <th className="px-4 py-3">Instructor</th>
+                <th className="px-4 py-3">Instructor / Trainer</th>
                 <th className="px-4 py-3">Type</th>
                 <th className="px-4 py-3">Attendance</th>
                 <th className="px-4 py-3">Revenue</th>
@@ -234,7 +234,10 @@ export default function ClassReportPage() {
                       <div>{item.event_plan_name}</div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">{item.access_type}</div>
                     </td>
-                    <td className="px-4 py-3">{item.instructor_name}</td>
+                    <td className="px-4 py-3">
+                      <div>{item.instructor_name}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">({item.instructor_role})</div>
+                    </td>
                     <td className="px-4 py-3 text-white">
                       <span className={`px-2 py-1 rounded text-xs font-semibold ${
                         item.class_type === 'Membership Only' ? 'bg-blue-600' :
