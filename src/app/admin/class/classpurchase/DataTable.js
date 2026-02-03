@@ -17,7 +17,15 @@ export default function ClassPurchaseDataTable({
   const columns = [
     { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px', center: "true" },
     { name: 'User', selector: row => row.user?.name || '-', sortable: true, cell: row => <span className="font-semibold">{row.user?.name || '-'}</span> },
-    { name: 'Class', cell: row => row.class?.name || '-', sortable: true },
+    { name: 'Class', cell: row => {
+      const instructorOrTrainer = row.class?.instructor?.name 
+        ? `${row.class.instructor.name} (Instructor)` 
+        : row.class?.trainer?.name 
+        ? `${row.class.trainer.name} (Trainer)` 
+        : '';
+      const className = row.class?.event_plan?.name || row.class?.name || '-';
+      return instructorOrTrainer ? `${className} - ${instructorOrTrainer}` : className;
+    }, sortable: true },
     { name: 'Price', cell: row => row.price, sortable: true },
     { name: 'Purchase Date',
       cell: row => {

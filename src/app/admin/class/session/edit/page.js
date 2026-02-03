@@ -58,14 +58,14 @@ export default function ClassSessionEditPage() {
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
-        const [dataPlans, dataMember, dataInstructor] = await Promise.all([
+        const [dataPlans, dataMember, dataInstructorTrainer] = await Promise.all([
           api.get('/api/eventplans?limit=10000'),
           api.get('/api/users?role=member&membership=active&limit=10000'),
-          api.get('/api/users?role=instructor&limit=10000')
+          api.get('/api/users?role=instructor,trainer&limit=10000')
         ]);
         setPlans(dataPlans.data.plans || []);
         setMembers(dataMember.data.users || []);
-        setInstructors(dataInstructor.data.users || []);
+        setInstructors(dataInstructorTrainer.data.users || []);
       } catch {}
     };
     fetchDropdownData();
@@ -90,7 +90,7 @@ export default function ClassSessionEditPage() {
           
           setForm({
             event_plan_id: data.event_plan_id || "",
-            instructor_id: data.instructor_id || "",
+            instructor_id: data.instructor_id || data.trainer_id || "",
             class_type: data.class_type || "membership_only",
             notes: data.notes || "",
             is_recurring: true,
@@ -103,7 +103,7 @@ export default function ClassSessionEditPage() {
         } else {
           setForm({
             event_plan_id: data.event_plan_id || "",
-            instructor_id: data.instructor_id || "",
+            instructor_id: data.instructor_id || data.trainer_id || "",
             class_date: data.class_date ? data.class_date.slice(0, 10) : "",
             start_time: data.start_time ? data.start_time.slice(11, 16) : "",
             end_time: data.end_time ? data.end_time.slice(11, 16) : "",
@@ -143,7 +143,7 @@ export default function ClassSessionEditPage() {
       
       setForm({
         event_plan_id: session.event_plan_id || "",
-        instructor_id: session.instructor_id || "",
+        instructor_id: session.instructor_id || session.trainer_id || "",
         class_type: session.class_type || "membership_only",
         notes: session.notes || "",
         is_recurring: true,
@@ -156,7 +156,7 @@ export default function ClassSessionEditPage() {
     } else {
       setForm({
         event_plan_id: session.event_plan_id || "",
-        instructor_id: session.instructor_id || "",
+        instructor_id: session.instructor_id || session.trainer_id || "",
         class_date: session.class_date ? session.class_date.slice(0, 10) : "",
         start_time: session.start_time ? session.start_time.slice(11, 16) : "",
         end_time: session.end_time ? session.end_time.slice(11, 16) : "",
@@ -211,7 +211,6 @@ export default function ClassSessionEditPage() {
         // Recurring class update - will regenerate all children
         payload = {
           event_plan_id: Number(form.event_plan_id),
-          instructor_id: Number(form.instructor_id),
           class_type: form.class_type,
           notes: form.notes,
           is_recurring: true,
@@ -222,6 +221,14 @@ export default function ClassSessionEditPage() {
           valid_until: `${form.valid_until}T23:59:59.999Z`,
           id: Number(id),
         };
+        if (form.instructor_id) {
+          const selectedUser = instructors.find(u => u.id === Number(form.instructor_id));
+          if (selectedUser?.role === 'instructor') {
+            payload.instructor_id = Number(form.instructor_id);
+          } else if (selectedUser?.role === 'trainer') {
+            payload.trainer_id = Number(form.instructor_id);
+          }
+        }
       } else {
         // Single class update
         const class_date_iso = form.class_date ? `${form.class_date}T${form.start_time}:00.000Z` : "";
@@ -230,7 +237,6 @@ export default function ClassSessionEditPage() {
         
         payload = {
           event_plan_id: Number(form.event_plan_id),
-          instructor_id: Number(form.instructor_id),
           class_date: class_date_iso,
           start_time: start_time_iso,
           end_time: end_time_iso,
@@ -240,6 +246,14 @@ export default function ClassSessionEditPage() {
           is_recurring: false,
           id: Number(id),
         };
+        if (form.instructor_id) {
+          const selectedUser = instructors.find(u => u.id === Number(form.instructor_id));
+          if (selectedUser?.role === 'instructor') {
+            payload.instructor_id = Number(form.instructor_id);
+          } else if (selectedUser?.role === 'trainer') {
+            payload.trainer_id = Number(form.instructor_id);
+          }
+        }
       }
       
       await api.put(`/api/classes/${id}`, payload);
@@ -347,21 +361,20 @@ export default function ClassSessionEditPage() {
             required
           />
           <FormInput
-            label="Instructor"
+            label="Instructor / Trainer"
             name="instructor_id"
             type="searchable-select"
-            placeholder='Search Instructor'
+            placeholder='Search Instructor or Trainer'
             disabled={!edit}
-            value={ selectedInstructor ? { value: selectedInstructor.id, label: selectedInstructor.name }
+            value={ selectedInstructor ? { value: selectedInstructor.id, label: `${selectedInstructor.name} (${selectedInstructor.role})` }
                   : null }
             onChange={(opt) =>
               setForm(prev => ({ ...prev, instructor_id: opt?.value || '' }))
             }
             options={instructors.map(u => ({
               value: u.id,
-              label: u.name
+              label: `${u.name} (${u.role})`
             }))}
-            required
           />
           {/* Single Class Fields */}
           {!isRecurring && (

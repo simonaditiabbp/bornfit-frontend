@@ -76,7 +76,7 @@ export default function EditAttendancePage() {
           if (cls.is_recurring && !cls.parent_class_id) return false;
           if (cls.class_date) {
             const classDate = new Date(cls.class_date);
-            return classDate;// >= today;
+            return classDate >= today;
           }
           return true;
         });
@@ -182,7 +182,9 @@ export default function EditAttendancePage() {
   function formatClassDisplay(cls) {
     let display = cls.event_plan.name || `Class #${cls.id}`;
     if (cls.instructor && cls.instructor.name) {
-      display += ` - ${cls.instructor.name}`;
+      display += ` - ${cls.instructor.name} (Instructor)`;
+    } else if (cls.trainer && cls.trainer.name) {
+      display += ` - ${cls.trainer.name} (Trainer)`;
     }
     /*if (cls.class_date) {
       // Parse date without timezone conversion
@@ -406,7 +408,10 @@ export default function EditAttendancePage() {
                           <div className={`${theme === 'light' ? 'text-gray-800' : 'text-gray-200'} font-medium`}>{cls.event_plan.name || `Class #${cls.id}`}</div>
                           <div className={`${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} text-sm mt-1`}>
                             {cls.instructor?.name && (
-                              <span>👤 {cls.instructor.name}</span>
+                              <span>👤 {cls.instructor.name} (Instructor)</span>
+                            )}
+                            {cls.trainer?.name && (
+                              <span>👤 {cls.trainer.name} (Trainer)</span>
                             )}
                           </div>
                           <div className={`${theme === 'light' ? 'text-gray-800' : 'text-gray-400'} text-sm mt-1`}>

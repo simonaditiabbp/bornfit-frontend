@@ -17,7 +17,15 @@ export default function ClassAttendanceDataTable({
   const columns = [
     { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px', center: "true" },
     { name: 'Member', cell: row => row.member?.name || '', sortable: true },
-    { name: 'Class', cell: row => `${row.class.event_plan.name} - ${row.class.instructor.name}` || '', sortable: true },
+    { name: 'Class', cell: row => {
+      console.log("APAN NIH: ", row.class);
+      const instructorOrTrainer = row.class.instructor 
+        ? `${row.class.instructor.name} (Instructor)` 
+        : row.class.trainer 
+        ? `${row.class.trainer.name} (Trainer)` 
+        : '';
+      return `${row.class.event_plan.name}${instructorOrTrainer ? ' - ' + instructorOrTrainer : ''}`;
+    }, sortable: true },
     { name: 'Checked-in Time', cell: row => row.checked_in_at ? new Date(new Date(row.checked_in_at).getTime() - 7 * 60 * 60 * 1000).toLocaleString('en-GB', { hour12: false }) : '', sortable: true },
     {
       name: 'Status',

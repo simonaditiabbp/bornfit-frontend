@@ -137,7 +137,7 @@ export default function ClassPurchaseInsertPage() {
                 ? {
                     value: selectedClass.id,
                     label: `${selectedClass.event_plan?.name || selectedClass.name} - 
-                    ${selectedClass.instructor?.name || ''} 
+                    ${selectedClass.instructor?.name ? `${selectedClass.instructor.name} (Instructor)` : selectedClass.trainer?.name ? `${selectedClass.trainer.name} (Trainer)` : ''} 
                     (${new Date(selectedClass.start_time)?.toLocaleDateString('id-ID', { weekday: 'long', timeZone: 'UTC' })}, 
                     ${selectedClass.start_time?.replace('T', ' ').replace('.000Z', '')} - 
                     ${new Date(selectedClass.end_time)?.toLocaleDateString('id-ID', { weekday: 'long', timeZone: 'UTC' })}, 
@@ -151,7 +151,7 @@ export default function ClassPurchaseInsertPage() {
             options={classes.map(cls => ({
               value: cls.id,
               label: `${cls.event_plan?.name || cls.name} - 
-              ${cls.instructor?.name || ''} 
+              ${cls.instructor?.name ? `${cls.instructor.name} (Instructor)` : cls.trainer?.name ? `${cls.trainer.name} (Trainer)` : ''} 
               (${new Date(cls.start_time)?.toLocaleDateString('id-ID', { weekday: 'long', timeZone: 'UTC' })}, 
               ${cls.start_time?.replace('T', ' ').replace('.000Z', '')} - 
               ${new Date(cls.end_time)?.toLocaleDateString('id-ID', { weekday: 'long', timeZone: 'UTC' })}, 
