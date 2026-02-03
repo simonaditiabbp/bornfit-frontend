@@ -13,6 +13,7 @@ export default function FormInput({
   placeholder = '',
   className = '',
   options = [], // for select
+  isLoading = true, // for searchable-select loading state
   ...props 
 }) {
   const baseInputClass = disabled
@@ -35,7 +36,10 @@ export default function FormInput({
           onChange={onChange}
           options={options}
           isDisabled={disabled}
-          placeholder={placeholder || 'Ketik untuk mencari...'}
+          isLoading={isLoading}
+          loadingMessage={() => 'Loading data...'}
+          noOptionsMessage={() => options.length === 0 && !isLoading ? 'No data available' : 'No results found'}
+          placeholder={placeholder || 'Type to search...'}
           classNamePrefix="react-select"
           required={required}
           styles={{
