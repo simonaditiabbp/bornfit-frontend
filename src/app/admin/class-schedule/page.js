@@ -38,7 +38,7 @@ export default function ClassSchedulePage() {
 
   const fetchInstructors = async () => {
     try {
-      const data = await api.get('/api/users?exclude_role=member&limit=10000');
+      const data = await api.get('/api/users?role=instructor,trainer&limit=10000');
       if (data.success) {
         setInstructors(data.data?.users || []);
       }
@@ -57,7 +57,13 @@ export default function ClassSchedulePage() {
         url += `&event_plan_id=${selectedEventPlan}`;
       }
       if (selectedInstructor !== 'all') {
-        url += `&instructor_id=${selectedInstructor}`;
+        // Check if selected user is instructor or trainer
+        const selectedUser = instructors.find(u => u.id === Number(selectedInstructor));
+        if (selectedUser?.role === 'instructor') {
+          url += `&instructor_id=${selectedInstructor}`;
+        } else if (selectedUser?.role === 'trainer') {
+          url += `&trainer_id=${selectedInstructor}`;
+        }
       }
       
       const data = await api.get(url);
@@ -365,15 +371,15 @@ export default function ClassSchedulePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Instructor:</label>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Instructor / Trainer:</label>
               <select
                 value={selectedInstructor}
                 onChange={(e) => setSelectedInstructor(e.target.value)}
                 className="w-full bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 text-gray-800 dark:text-gray-200 rounded px-3 py-2"
               >
-                <option value="all">All Instructors</option>
+                <option value="all">All Instructors / Trainers</option>
                 {instructors.map(instructor => (
-                  <option key={instructor.id} value={instructor.id}>{instructor.name}</option>
+                  <option key={instructor.id} value={instructor.id}>{instructor.name} ({instructor.role === 'instructor' ? 'Instructor' : 'Trainer'})</option>
                 ))}
               </select>
             </div>
@@ -456,12 +462,14 @@ export default function ClassSchedulePage() {
                               viewMode === 'month' ? 'p-1 text-[10px]' : 'p-2 text-xs'
                             }`}
                             style={{ backgroundColor: getSlotBadgeColor(cls) }}
-                            title={`${cls.event_plan.name}\n${cls.instructor.name}\n${formatTime(cls.start_time)} - ${formatTime(cls.end_time)}\n${cls.total_attendances}/${cls.event_plan.max_visitor} attendees`}
+                            title={`${cls.event_plan.name}\n${cls.instructor?.name ? `${cls.instructor.name} (Instructor)` : cls.trainer?.name ? `${cls.trainer.name} (Trainer)` : ''}\n${formatTime(cls.start_time)} - ${formatTime(cls.end_time)}\n${cls.total_attendances}/${cls.event_plan.max_visitor} attendees`}
                           >
                             <div className="font-bold text-white truncate">{cls.event_plan.name}</div>
                             {viewMode !== 'month' && (
                               <>
-                                <div className="text-white/90 text-xs truncate">{cls.instructor.name}</div>
+                                <div className="text-white/90 text-xs truncate">
+                                  {cls.instructor?.name ? `${cls.instructor.name} (I)` : cls.trainer?.name ? `${cls.trainer.name} (T)` : ''}
+                                </div>
                                 <div className="text-white/70 text-xs">{formatTime(cls.start_time)}</div>
                                 <div className="flex items-center gap-1 text-white/90 text-xs mt-1">
                                   <FaUsers className="text-xs" />
