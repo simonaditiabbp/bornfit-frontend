@@ -45,7 +45,7 @@ export default function InsertMembershipSessionPage() {
         const [usersData, plansData, staffData] = await Promise.all([
           api.get('/api/users?role=member&limit=10000'),
           api.get('/api/membership-plans?limit=10000'),
-          api.get('/api/users?exclude_role=member&limit=10000')
+          api.get('/api/users?role=admin,trainer,instructor,opscan&limit=10000')
         ]);
         setUsers(usersData.data?.users || []);
         setPlans(plansData.data?.membershipPlans || []);

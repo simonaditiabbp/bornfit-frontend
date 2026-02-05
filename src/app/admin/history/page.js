@@ -593,7 +593,21 @@ export default function HistoryPage() {
                                 </pre>
                             </div>
 
-                            {((selectedLog.action.toUpperCase() == "BULK_SEND" || selectedLog.action.toUpperCase() == "BULK_SEND_EMAIL" || selectedLog.action.toUpperCase() == "BULK_SEND_RENEWAL_EMAIL") && selectedLog.response_data) && (
+                            {(
+                                (
+                                    // Tampilkan jika action BUKAN fetch, insert, update, delete
+                                    (selectedLog.action.toUpperCase() !== "FETCH" && 
+                                     selectedLog.action.toUpperCase() !== "INSERT" && 
+                                     selectedLog.action.toUpperCase() !== "UPDATE" && 
+                                     selectedLog.action.toUpperCase() !== "DELETE" && 
+                                     selectedLog.action.toUpperCase() !== "LOGIN")
+                                    ||
+                                    // ATAU jika action UPDATE dengan entity PERSONAL_TRAINER_SESSION atau MEMBERSHIP
+                                    (selectedLog.action.toUpperCase() === "UPDATE" && 
+                                     (selectedLog.entity.toUpperCase() === "PERSONAL_TRAINER_SESSION" || 
+                                      selectedLog.entity.toUpperCase() === "MEMBERSHIP"))
+                                ) && 
+                                selectedLog.response_data) && (
                                 <div>
                                     <div className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">Response Data</div>
                                     <pre className="bg-gray-100 dark:bg-gray-900 p-4 rounded text-xs overflow-x-auto">
