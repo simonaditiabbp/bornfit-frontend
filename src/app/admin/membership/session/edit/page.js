@@ -31,7 +31,7 @@ export default function EditMembershipSessionPage() {
         const [sessionData, usersData, usersDataStaff, plansData] = await Promise.all([
           api.get(`/api/memberships/${id}`),
           api.get('/api/users?role=member&limit=10000'),
-          api.get('/api/users?exclude_role=member&limit=10000'),
+          api.get('/api/users?role=admin,trainer,instructor,opscan&limit=10000'),
           api.get('/api/membership-plans?&limit=10000')
         ]);
         setForm(sessionData.data || null);
