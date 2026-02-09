@@ -7,6 +7,8 @@ import BackendErrorFallback from '../../../../components/BackendErrorFallback';
 import { FaAngleLeft, FaAngleRight, FaUser, FaEnvelope } from 'react-icons/fa';
 import Link from 'next/link';
 import Webcam from 'react-webcam';
+import Swal from 'sweetalert2';
+import toast from 'react-hot-toast';
 import SendQRCodeModal from '../../../../components/SendQRCodeModal';
 import api from '@/utils/fetchClient';
 import { PageBreadcrumb, FormInput, FormInputGroup, PageContainer, PageHeader, LoadingText } from '@/components/admin';
@@ -14,8 +16,6 @@ import { PageBreadcrumb, FormInput, FormInputGroup, PageContainer, PageHeader, L
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function UserDetailPage() {
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const params = useParams();
   const { id } = params;
   const [user, setUser] = useState(null);
@@ -82,8 +82,6 @@ export default function UserDetailPage() {
   };
 
   const handleSave = async () => {
-    setError("");
-    setSuccess("");
     let userUpdateSuccess = false;
     try {
       let res, data;
@@ -133,7 +131,7 @@ export default function UserDetailPage() {
       }
       if (!res.ok) {
         if (res.status === 409 && data.code === "EMAIL_EXISTS") {
-          setError("Email is already registered!");
+          toast.error('Email is already registered!');
           return;
         }
         throw new Error(data.message || "Failed to update user");
@@ -147,24 +145,36 @@ export default function UserDetailPage() {
         // Ambil ulang data user terbaru agar preview langsung update
         const userRes = await api.get(`/api/users/${id}`);
         setUser(userRes.data);
-        setSuccess("User updated successfully!");
+        toast.success('User updated successfully!');
       }
     } catch (err) {
-      setError(err.data?.message || "Failed to update user");
+      toast.error(err.data?.message || 'Failed to update user');
       console.log("error: ", err);
     }
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this user?')) return;
+    const result = await Swal.fire({
+      title: '⚠️ Delete Confirmation',
+      html: `Are you sure you want to delete user <strong>${user?.name || 'this user'}</strong>?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Delete!',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true
+    });
+
+    if (!result.isConfirmed) return;
+    
     try {
       await api.delete(`/api/users/${id}`);
-      setSuccess("User deleted successfully!");
-      router.replace('/admin/users');
+      toast.success('User deleted successfully!');
+      router.replace('/admin/users')
     } catch (err) {
-      setError(err.data?.message || 'Failed to delete user');
+      toast.error(err.data?.message || 'Failed to delete user');
       console.log("error: ", err);
-      alert('Failed to delete user. Please try again.');
     }
   };
 
@@ -355,7 +365,6 @@ export default function UserDetailPage() {
                   { value: 'opscan', label: 'Opscan' },
                   { value: 'trainer', label: 'Trainer' },
                   { value: 'instructor', label: 'Instructor' },
-                  { value: 'finance', label: 'Finance' },
                 ]}
               />
               <FormInput
@@ -405,8 +414,6 @@ export default function UserDetailPage() {
                 )}
               </div>
             </div>
-            {error && <div className="text-red-600 font-semibold mt-2">{error}</div>}
-            {success && <div className="text-green-600 font-semibold mt-2">{success}</div>}
             {/* ACTION BUTTONS */}
             <div className="flex justify-between mt-8 ">
               <div className="bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-800 dark:text-white px-6 py-2 rounded-lg font-semibold transition">

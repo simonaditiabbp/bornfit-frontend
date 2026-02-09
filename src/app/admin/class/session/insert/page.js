@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FaDumbbell } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 import { PageBreadcrumb, PageContainerInsert, FormActions, FormInput } from '@/components/admin';
 import api from '@/utils/fetchClient';
 
@@ -71,14 +72,10 @@ export default function ClassSessionInsertPage() {
     }
   }, [form.event_plan_id, form.recurrence_start_time, form.is_recurring, plans]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const router = useRouter();
 
   const handleReset = () => {
     setForm(initialFormState);
-    setSuccess("");
-    setError("");
   };
 
   const handleSave = async (e) => {
@@ -87,38 +84,36 @@ export default function ClassSessionInsertPage() {
     // Validasi untuk recurring class
     if (form.is_recurring) {
       if (!form.valid_from) {
-        setError("Valid From date is required for recurring classes");
+        toast.error("Valid From date is required for recurring classes");
         return;
       }
       if (!form.valid_until) {
-        setError("Valid Until date is required for recurring classes");
+        toast.error("Valid Until date is required for recurring classes");
         return;
       }
       if (form.recurrence_days.length === 0) {
-        setError("Please select at least one day for recurring classes");
+        toast.error("Please select at least one day for recurring classes");
         return;
       }
       if (!form.recurrence_start_time) {
-        setError("Start time is required for recurring classes");
+        toast.error("Start time is required for recurring classes");
         return;
       }
       if (!form.recurrence_end_time) {
-        setError("End time is required for recurring classes");
+        toast.error("End time is required for recurring classes");
         return;
       }
       if (new Date(form.valid_from) > new Date(form.valid_until)) {
-        setError("Valid From date cannot be later than Valid Until date");
+        toast.error("Valid From date cannot be later than Valid Until date");
         return;
       }
       if (new Date(form.valid_until) < new Date()) {
-        setError("Valid Until date cannot be in the past");
+        toast.error("Valid Until date cannot be in the past");
         return;
       }
     }
     
     setLoading(true);
-    setError("");
-    setSuccess("");
     try {
       let payload = {};
       
@@ -168,14 +163,14 @@ export default function ClassSessionInsertPage() {
       }
       
       await api.post('/api/classes', payload);
-      setSuccess("Successfully saved!");
+      toast.success('Class session created successfully!');
       router.push("/admin/class/session");
     } catch (err) {
       if (err.status >= 400 && err.status <= 499) {
-        setError("Please make sure all required fields are filled in correctly");
-        console.log("Bad Request: ", err.data.message ? err.data.message : "Bad Request");
+        toast.error(err.data?.message || "Please make sure all required fields are filled in correctly");
+        console.log("Bad Request: ", err.data?.message ? err.data.message : "Bad Request");
       } else {
-        setError("Server error occurred. Please try again later.");
+        toast.error("Server error occurred. Please try again later.");
       }
     }
     setLoading(false);
@@ -360,8 +355,6 @@ export default function ClassSessionInsertPage() {
             <label className="block mb-1 text-gray-800 dark:text-gray-200 font-medium text-sm">Notes</label>
             <textarea name="notes" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className="w-full border border-gray-300 dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-medium text-sm" />
           </div>
-          {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
-          {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}
           <FormActions
             onReset={handleReset}
             cancelHref="/admin/class/session"

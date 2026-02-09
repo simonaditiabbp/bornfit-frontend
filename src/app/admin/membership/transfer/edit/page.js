@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import BackendErrorFallback from "../../../../../components/BackendErrorFallback";
 import { FaIdCard } from 'react-icons/fa';
+import Swal from 'sweetalert2';
+import toast from 'react-hot-toast';
 import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
 import api from '@/utils/fetchClient';
 import LoadingSpin from "@/components/admin/LoadingSpin";
@@ -16,8 +18,6 @@ export default function TransferMembershipEditPage() {
   const [formLoading, setFormLoading] = useState(false);
   const [backendError, setBackendError] = useState(false);
   const [edit, setEdit] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
   const router = useRouter();
   const params = useSearchParams();
   const id = params.get('id');
@@ -82,14 +82,10 @@ export default function TransferMembershipEditPage() {
 
   const handleEdit = () => {
     setEdit(true);
-    setSuccess("");
-    setError("");
   };
 
   const handleCancel = () => {
     setEdit(false);
-    setSuccess("");
-    setError("");
     setForm({
       from_membership_id: transfer.from_membership_id || "",
       from_user_id: transfer.from_user_id || "",
@@ -103,8 +99,6 @@ export default function TransferMembershipEditPage() {
 
   const handleSave = async () => {
     setFormLoading(true);
-    setError("");
-    setSuccess("");
     try {
       await api.put(`/api/membership-transfers/${id}`, {
         from_membership_id: Number(form.from_membership_id),
@@ -115,58 +109,98 @@ export default function TransferMembershipEditPage() {
         reason: form.reason || null,
         status: form.status
       });
-      setSuccess("Transfer Membership Updated!");
+      toast.success('Membership transfer updated successfully!');
       setEdit(false);
+      // router.push('/admin/membership/transfer');
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (err) {
-      setError(err.data?.message || 'Failed to update membership transfer');
+      toast.error(err.data?.message || 'Failed to update membership transfer');
       console.log("error: ", err);
     }
     setFormLoading(false);
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this transfer?')) return;
+    const result = await Swal.fire({
+      title: '⚠️ Delete Confirmation',
+      html: 'Are you sure you want to delete this transfer?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Delete!',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true
+    });
+
+    if (!result.isConfirmed) return;
+    
     setFormLoading(true);
     try {
       await api.delete(`/api/membership-transfers/${id}`);
+      toast.success('Membership transfer deleted successfully!');
       router.push('/admin/membership/transfer');
     } catch (err) {
-      setError(err.data?.message || 'Failed to delete membership transfer');
+      toast.error(err.data?.message || 'Failed to delete membership transfer');
       console.log("error: ", err);
     }
     setFormLoading(false);
   };
 
   const handleApprove = async () => {
-    if (!confirm('Approve transfer ini? Membership akan dipindahkan ke user tujuan.')) return;
+    const result = await Swal.fire({
+      title: '✅ Approve Transfer',
+      html: 'Are you sure you want to approve this transfer?<br><br><span style="color: #059669;">The membership will be transferred to the target user.</span>',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#059669',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Approve!',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true
+    });
+
+    if (!result.isConfirmed) return;
+    
     setFormLoading(true);
-    setError("");
-    setSuccess("");
     try {
       await api.post(`/api/membership-transfers/${id}/approve`);
-      setSuccess("Transfer berhasil diapprove!");
+      toast.success('Transfer approved successfully!', { duration: 5000 });
       setTimeout(() => {
         window.location.reload();
-      }, 1500);
+      }, 1000);
     } catch (err) {
-      setError("Gagal approve transfer");
+      toast.error(err.data?.message || 'Failed to approve transfer');
     }
     setFormLoading(false);
   };
 
   const handleReject = async () => {
-    if (!confirm('Reject transfer ini?')) return;
+    const result = await Swal.fire({
+      title: '❌ Reject Transfer',
+      html: 'Are you sure you want to reject this transfer?<br><br><span style="color: #f97316;">This will cancel the transfer request.</span>',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#f97316',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Reject!',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true
+    });
+
+    if (!result.isConfirmed) return;
+    
     setFormLoading(true);
-    setError("");
-    setSuccess("");
     try {
       await api.post(`/api/membership-transfers/${id}/reject`);
-      setSuccess("Transfer berhasil direject!");
+      toast.success('Transfer rejected successfully!');
       setTimeout(() => {
         window.location.reload();
-      }, 1500);
+      }, 1000);
     } catch (err) {
-      setError("Gagal reject transfer");
+      toast.error(err.data?.message || 'Failed to reject transfer');
     }
     setFormLoading(false);
   };
@@ -303,9 +337,6 @@ export default function TransferMembershipEditPage() {
               disabled={!edit}
             />
           </div>
-
-          {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
-          {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}
           
           <div className="flex gap-3 mt-8 justify-start">
             {!edit ? (

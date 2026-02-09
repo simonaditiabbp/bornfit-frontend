@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaIdCard } from 'react-icons/fa';
+import Swal from 'sweetalert2';
+import toast from 'react-hot-toast';
 import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
 import api from '@/utils/fetchClient';
 import LoadingSpin from '@/components/admin/LoadingSpin';
@@ -14,8 +16,6 @@ export default function EditMembershipSessionPage() {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [edit, setEdit] = useState(false);
   const [showAdditional, setShowAdditional] = useState(false);
   const router = useRouter();
@@ -39,7 +39,7 @@ export default function EditMembershipSessionPage() {
         setStaff(usersDataStaff.data?.users || []);
         setPlans(plansData.data?.membershipPlans || []);
       } catch (err) {
-        setError('Gagal fetch data');
+        console.log('Failed to fetch data:', err);
       }
       setLoading(false);
     };
@@ -50,8 +50,6 @@ export default function EditMembershipSessionPage() {
 
   const handleSave = async () => {
     setFormLoading(true);
-    setError('');
-    setSuccess('');
     try {
       let startDateIso = form.start_date;
       if (startDateIso && startDateIso.length === 10) {
@@ -75,24 +73,38 @@ export default function EditMembershipSessionPage() {
         is_active: form.is_active,
         final_price: Number(form.final_price)
       });
-      setSuccess('Session updated');
+      toast.success('Membership session updated successfully!');
       setEdit(false);
-      // setTimeout(() => window.location.reload(), 500);
+      router.push('/admin/membership/session');
     } catch (err) {
-      setError(err.data?.message || 'Failed to update membership session');
+      toast.error(err.data?.message || 'Failed to update membership session');
       console.log("error: ", err);
     }
     setFormLoading(false);
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this session?')) return;
+    const result = await Swal.fire({
+      title: '⚠️ Delete Confirmation',
+      html: 'Are you sure you want to delete this membership session?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Delete!',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true
+    });
+
+    if (!result.isConfirmed) return;
+    
     setFormLoading(true);
     try {
       await api.delete(`/api/memberships/${id}`);
+      toast.success('Membership session deleted successfully!');
       router.push('/admin/membership/session');
     } catch (err) {
-      setError(err.data?.message || 'Failed to delete membership session');
+      toast.error(err.data?.message || 'Failed to delete membership session');
       console.log("error: ", err);
     }
     setFormLoading(false);
@@ -344,8 +356,6 @@ export default function EditMembershipSessionPage() {
                 />
               </>
             )}
-          {success && <div className="text-green-400 mb-2">{success}</div>}
-          {error && <div className="text-red-400 mb-2">{error}</div>}
           <div className="flex gap-3 mt-8 justify-start">
             {!edit ? (
               <>

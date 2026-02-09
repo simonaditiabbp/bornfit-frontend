@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Webcam from "react-webcam";
 import { useRouter } from "next/navigation";
+import toast from 'react-hot-toast';
 import BackendErrorFallback from '../../../../components/BackendErrorFallback';
 import api from '@/utils/fetchClient';
 
@@ -43,8 +44,6 @@ export default function CreateUserPage() {
   const [photo, setPhoto] = useState(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const webcamRef = useRef(null);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [backendError, setBackendError] = useState(false);
   const router = useRouter();
@@ -80,13 +79,11 @@ export default function CreateUserPage() {
 
   const handleSubmit = async (e, redirectMembership = false) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
     setLoading(true);
     try {
       // Validasi sesuai role
       if ((form.role === "admin" || form.role === "opscan" || form.role === "finance") && !form.password) {
-        setError("Password is required for admin, opscan & finance role");
+        toast.error('Password is required for admin, opscan & finance role');
         setLoading(false);
         return;
       }
@@ -145,13 +142,13 @@ export default function CreateUserPage() {
       const data = dataUser.data;
       if (!res.ok) {
         if (res.status === 409 && dataUser.code === "EMAIL_EXISTS") {
-          setError("Email is already registered");
+          toast.error('Email is already registered');
           setLoading(false);
           return;
         }
         throw new Error(dataUser.message || "Failed to create user");
       }
-      setSuccess("User created successfully!");
+      toast.success('User created successfully!');
       setForm({
         name: "",
         email: "",
@@ -163,12 +160,12 @@ export default function CreateUserPage() {
       setPhoto(null);
       if (redirectMembership && data && data.id) {
         // Redirect to membership session insert, pass member id
-        router.push(`/admin/membership/session/insert?member_id=${data.id}`);
+        setTimeout(() => router.push(`/admin/membership/session/insert?member_id=${data.id}`), 1500);
       } else {
-        setTimeout(() => router.push("/admin/users"), 1200);
+        setTimeout(() => router.push("/admin/users"), 1500);
       }
     } catch (err) {
-      setError(err.data?.message || "Failed to create user");
+      toast.error(err.data?.message || 'Failed to create user');
       console.log("error: ", err);
     } finally {
       setLoading(false);
@@ -365,8 +362,6 @@ export default function CreateUserPage() {
             </div>
           )}
         </div>
-        {error && <div className="text-red-600 font-semibold">{error}</div>}
-        {success && <div className="text-green-600 font-semibold">{success}</div>}
         <div className="flex gap-3 mt-6">
           <button type="submit" className="flex-1 bg-gray-600 dark:bg-blue-600 text-white py-2 rounded font-bold hover:bg-gray-700 dark:hover:bg-blue-700 transition-colors" disabled={loading}>
             {loading ? "Saving..." : "Create User"}

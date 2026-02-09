@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import BackendErrorFallback from "../../../../../components/BackendErrorFallback";
 import { FaCog } from 'react-icons/fa';
+import Swal from 'sweetalert2';
+import toast from 'react-hot-toast';
 import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
 import LoadingSpin from "@/components/admin/LoadingSpin";
 import api from '@/utils/fetchClient';
@@ -13,8 +15,6 @@ export default function ClassPlanEditPage() {
   const [loading, setLoading] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
   const [backendError, setBackendError] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
   const [edit, setEdit] = useState(false);
   const router = useRouter();
   const params = useSearchParams();
@@ -56,40 +56,51 @@ export default function ClassPlanEditPage() {
 
   const handleEdit = () => {
     setEdit(true);
-    setSuccess("");
-    setError("");
   };
 
   const handleCancel = () => {
     setEdit(false);
-    setSuccess("");
-    setError("");
     setForm(initialForm);
   };
 
   const handleSave = async () => {
     setFormLoading(true);
-    setError("");
-    setSuccess("");
     try {
       await api.put(`/api/eventplans/${id}`, form);
-      setSuccess('Plan updated');
+      toast.success('Class plan updated successfully!');
       setEdit(false);
+      router.push('/admin/class/plans');
     } catch (err) {
-      setError(err.data?.message || 'Failed to update plan');
+      toast.error(err.data?.message || 'Failed to update class plan');
       console.log("error: ", err);
     }
     setFormLoading(false);
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this plan?')) return;
+    const planName = form.name || 'this plan';
+    
+    const result = await Swal.fire({
+      title: '⚠️ Delete Confirmation',
+      html: `Are you sure you want to delete class plan:<br><strong>"${planName}"</strong>?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Delete!',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true
+    });
+
+    if (!result.isConfirmed) return;
+    
     setFormLoading(true);
     try {
       await api.delete(`/api/eventplans/${id}`);
+      toast.success('Class plan deleted successfully!');
       router.push('/admin/class/plans');
     } catch (err) {
-      setError(err.data?.message || 'Failed to delete plan');
+      toast.error(err.data?.message || 'Failed to delete class plan');
       console.log("error: ", err);
     }
     setFormLoading(false);
@@ -118,8 +129,6 @@ export default function ClassPlanEditPage() {
             Back
           </ActionButton>
         </div>     
-        {success && <div className="text-green-400 mb-2">{success}</div>}
-        {error && <div className="text-red-400 mb-2">{error}</div>}
         <div className="space-y-4 mb-4">
           <FormInput
             label="Plan Name"

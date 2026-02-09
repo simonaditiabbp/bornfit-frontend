@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FaCog } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 import api from '@/utils/fetchClient';
 import { PageBreadcrumb, PageContainerInsert, FormActions, FormInput, FormInputGroup } from '@/components/admin';
 
@@ -38,9 +39,10 @@ export default function PTPlanInsertPage() {
     setLoading(true);
     try {
       await api.post('/api/ptsessionplans', form);
+      toast.success('PT session plan created successfully!');
       router.push("/admin/pt/plans");
     } catch (err) {
-      setError(err.data?.message || 'Failed to create plan');
+      toast.error(err.data?.message || 'Failed to create PT session plan');
       console.log("error: ", err);
     }
     setLoading(false);

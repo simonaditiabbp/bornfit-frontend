@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaIdCard } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 import api from '@/utils/fetchClient';
 import { PageBreadcrumb, PageContainerInsert, FormActions, FormInput, FormInputGroup } from '@/components/admin';
 
@@ -29,14 +30,12 @@ export default function InsertMembershipSessionPage() {
   const [staff, setStaff] = useState([]);
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [showAdditional, setShowAdditional] = useState(false);
   const router = useRouter();
 
   const handleReset = () => {
     setForm(initialFormState);
     setShowAdditional(false);
-    setError('');
   };
 
   useEffect(() => {
@@ -60,7 +59,6 @@ export default function InsertMembershipSessionPage() {
   const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
-    setError('');
     try {
       let startDateIso = form.start_date;
       if (startDateIso && startDateIso.length === 10) {
@@ -80,18 +78,19 @@ export default function InsertMembershipSessionPage() {
         referral_user_member_id: form.referral_user_member_id ? Number(form.referral_user_member_id) : null,
         referral_user_staff_id: form.referral_user_staff_id ? Number(form.referral_user_staff_id) : null,          
       });
+      toast.success('Membership session created successfully!');
       router.push('/admin/membership/session');
     } catch (err) {
-      setError(err.data?.message || 'Failed to add membership session');
+      toast.error(err.data?.message || 'Failed to add membership session');
       console.log("error: ", err);
     }
     setLoading(false);
   };
 
-  const selectedUser = users.length > 0 && form.user_id ? users.find(u => u.id === form.user_id) ?? null : null;
-  const selectedPlan = plans.length > 0 && form.membership_plan_id ? plans.find(p => p.id === form.membership_plan_id) ?? null : null;
-  const selectedStaffRefferal = staff.length > 0 && form.referral_user_staff_id ? staff.find(s => s.id === form.referral_user_staff_id) ?? null : null;
-  const selectedMemberReferral = users.length > 0 && form.referral_user_member_id ? users.find(u => u.id === form.referral_user_member_id) ?? null : null;
+  const selectedUser = users.length > 0 && form.user_id ? users.find(u => u.id === Number(form.user_id)) ?? null : null;
+  const selectedPlan = plans.length > 0 && form.membership_plan_id ? plans.find(p => p.id === Number(form.membership_plan_id)) ?? null : null;
+  const selectedStaffRefferal = staff.length > 0 && form.referral_user_staff_id ? staff.find(s => s.id === Number(form.referral_user_staff_id)) ?? null : null;
+  const selectedMemberReferral = users.length > 0 && form.referral_user_member_id ? users.find(u => u.id === Number(form.referral_user_member_id)) ?? null : null;
 
   return (
     <div>
@@ -281,7 +280,6 @@ export default function InsertMembershipSessionPage() {
                 />
               </>
             )}
-          {error && <div className="text-red-400 mb-2">{error}</div>}
 
             <FormActions
               onReset={handleReset}

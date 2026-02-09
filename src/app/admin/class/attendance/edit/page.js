@@ -2,6 +2,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FaDumbbell, FaTimes } from 'react-icons/fa';
+import Swal from 'sweetalert2';
+import toast from 'react-hot-toast';
 import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
 import LoadingSpin from "@/components/admin/LoadingSpin";
 import BackendErrorFallback from '@/components/BackendErrorFallback';
@@ -15,8 +17,6 @@ export default function EditAttendancePage() {
   const [loading, setLoading] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
   const [backendError, setBackendError] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [edit, setEdit] = useState(false);
   const [classSearch, setClassSearch] = useState("");
   const [memberSearch, setMemberSearch] = useState("");
@@ -254,14 +254,10 @@ export default function EditAttendancePage() {
   const handleEdit = (e) => {
     e.preventDefault();
     setEdit(true);
-    setSuccess("");
-    setError("");
   };
 
   const handleCancel = () => {
     setEdit(false);
-    setSuccess("");
-    setError("");
     setForm(initialForm);
     // Reset search to initial values
     if (initialForm && classes.length > 0 && members.length > 0) {
@@ -275,8 +271,6 @@ export default function EditAttendancePage() {
   const handleSave = async (e) => {
     e.preventDefault();
     setFormLoading(true);
-    setError("");
-    setSuccess("");
     try {
       let checkedInAtIso = form.checked_in_at;
       if (checkedInAtIso && checkedInAtIso.length === 16) {
@@ -301,43 +295,60 @@ export default function EditAttendancePage() {
       
       // Check if member was added to waiting list
       if (response.data?.is_waiting_list) {
-        alert(`⚠️ ${response.message || 'The class is already full, the member has been moved to the waiting list'}\n\nThe member will be automatically promoted if someone cancels their booking.`);
+        await Swal.fire({
+          icon: 'warning',
+          title: 'Moved to Waiting List',
+          html: `${response.message || 'The class is already full, the member has been moved to the waiting list'}<br><br>The member will be automatically promoted if someone cancels their booking.`,
+          confirmButtonColor: '#f59e0b',
+        });
       }
       
       // Check if someone was promoted from waiting list
       if (response.data?.promoted) {
-        alert(`✅ A member from the waiting list has been automatically promoted to a booking.`);
+        toast.success('A member from the waiting list has been automatically promoted to a booking.', { duration: 5000 });
       }
       
-      setSuccess(response.message || "Attendance updated");
+      toast.success(response.message || 'Attendance updated successfully!');
       setEdit(false);
       // Update initial form with new values
       setInitialForm(form);
-    } catch (err) {      
-      setError(err.data?.message || 'Failed to update attendance');
+      router.push("/admin/class/attendance");
+    } catch (err) {
+      toast.error(err.data?.message || 'Failed to update attendance');
       console.log("error: ", err);
-      // Show alert for better visibility
-      if (err.data?.message) {
-        alert(`Error: ${err.data.message}`);
-      }
     }
     setFormLoading(false);
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this attendance?')) return;
+    const result = await Swal.fire({
+      title: '⚠️ Delete Confirmation',
+      html: 'Are you sure you want to delete this attendance?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Delete!',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true
+    });
+
+    if (!result.isConfirmed) return;
+    
     setFormLoading(true);
     try {
       const response = await api.delete(`/api/classattendances/${id}`);
       
       // Check if someone was promoted from waiting list after deletion
       if (response.data?.promoted) {
-        alert(`✅ Attendance deleted successfully!\n\nA member from the waiting list has been automatically promoted to a booking.`);
+        toast.success('Attendance deleted! A member from the waiting list has been automatically promoted.', { duration: 5000 });
+      } else {
+        toast.success('Attendance deleted successfully!');
       }
       
-      router.push('/admin/class/attendance');
+      router.push("/admin/class/attendance");
     } catch (err) {
-      setError(err.data?.message || 'Failed to delete attendance');
+      toast.error(err.data?.message || 'Failed to delete attendance');
       console.log("error: ", err);
     }
     setFormLoading(false);
@@ -536,8 +547,6 @@ export default function EditAttendancePage() {
               helperText="Optional: Leave empty to auto-calculate position"
             />
           )}
-          {success && <div className="text-green-400 mb-2">{success}</div>}
-          {error && <div className="text-red-400 mb-2">{error}</div>}
           <div className="flex gap-3 mt-8 justify-start">
             {!edit ? (
               <>

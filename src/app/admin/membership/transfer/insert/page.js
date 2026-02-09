@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FaIdCard } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 import api from '@/utils/fetchClient';
 import { PageBreadcrumb, PageContainerInsert, FormActions, FormInput } from '@/components/admin';
 
@@ -21,15 +22,11 @@ export default function TransferMembershipInsertPage() {
   const [form, setForm] = useState(initialFormState);
   
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const router = useRouter();
 
   const handleReset = () => {
     setForm(initialFormState);
     setMemberships([]);
-    setError("");
-    setSuccess("");
   };
 
   // Fetch members on mount
@@ -72,8 +69,6 @@ export default function TransferMembershipInsertPage() {
   const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-    setSuccess("");
 
     try {
       await api.post('/api/membership-transfers', {
@@ -85,12 +80,10 @@ export default function TransferMembershipInsertPage() {
         reason: form.reason || null
       });
       
-      setSuccess("Berhasil transfer membership");
-      setTimeout(() => {
-        router.push("/admin/membership/transfer");
-      }, 1500);
+      toast.success('Membership transfer created successfully!');
+      router.push("/admin/membership/transfer");
     } catch (err) {
-      setError(err.data?.message || 'Failed to create membership transfer');
+      toast.error(err.data?.message || 'Failed to create membership transfer');
       console.log("error: ", err);
     }
     setLoading(false);
@@ -197,9 +190,6 @@ export default function TransferMembershipInsertPage() {
             onChange={e => setForm({ ...form, reason: e.target.value })}
             placeholder="Reason for transfer..."
           />
-
-          {success && <div className="text-green-400 font-semibold mb-2 text-center">{success}</div>}
-          {error && <div className="text-red-400 font-semibold mb-2 text-center">{error}</div>}
 
           <FormActions
             onReset={handleReset}

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FaCog } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 import { PageBreadcrumb, PageContainerInsert, FormActions, FormInput } from '@/components/admin';
 import api from '@/utils/fetchClient';
 
@@ -21,12 +22,10 @@ export default function ClassPlanInsertPage() {
   
   const [form, setForm] = useState(initialFormState);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const router = useRouter();
 
   const handleReset = () => {
     setForm(initialFormState);
-    setError("");
   };
 
   function handleChange(e) {
@@ -51,7 +50,6 @@ export default function ClassPlanInsertPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
-    setError("");
     try {
       const payload = {
         name: form.name,
@@ -66,9 +64,10 @@ export default function ClassPlanInsertPage() {
         is_active: form.is_active
       };
       await api.post('/api/eventplans', payload);
+      toast.success('Class plan created successfully!');
       router.push("/admin/class/plans");
     } catch (err) {
-      setError(err.data?.message || 'Failed to add plan');
+      toast.error(err.data?.message || 'Failed to create class plan');
       console.log("error: ", err);
     }
     setLoading(false);
@@ -86,7 +85,6 @@ export default function ClassPlanInsertPage() {
 
       <PageContainerInsert>
         <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-amber-300 text-center">Create Class Plan</h1>
-        {error && <div className="text-red-400 mb-2">{error}</div>}
         <form onSubmit={handleSubmit}>
           <FormInput
             label="Plan Name"

@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaCog } from 'react-icons/fa';
+import Swal from 'sweetalert2';
+import toast from 'react-hot-toast';
 import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
 import api from '@/utils/fetchClient';
 import LoadingSpin from '@/components/admin/LoadingSpin';
@@ -29,8 +31,6 @@ export default function EditMembershipPlanPage() {
   });
   const [loading, setLoading] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [edit, setEdit] = useState(false);
   const router = useRouter();
   const params = useSearchParams();
@@ -48,7 +48,7 @@ export default function EditMembershipPlanPage() {
         const planData = await api.get(`/api/membership-plans/${id}`);
         setForm(planData.data || null);
       } catch (err) {
-        setError('Gagal fetch data');
+        toast.error('Failed to load membership plan data');
       }
       setLoading(false);
     };
@@ -84,7 +84,6 @@ export default function EditMembershipPlanPage() {
   const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
-    setError('');
     try {
       let availableFromIso = form.available_from;
       if (availableFromIso && availableFromIso.length === 10) {
@@ -120,22 +119,40 @@ export default function EditMembershipPlanPage() {
         always_available: Boolean(form.always_available),
         level: Number(form.level)
       });
+      toast.success('Membership plan updated successfully!');
+      setEdit(false);
       router.push('/admin/membership/plans');
     } catch (err) {
-      setError(err.data?.message || 'Failed to update plan');
+      toast.error(err.data?.message || 'Failed to update membership plan');
       console.log("error: ", err);
     }
     setLoading(false);
   };
 
   const handleDelete = async () => {
-    if (!confirm('Yakin ingin menghapus plan ini?')) return;
+    const planName = form.name || 'plan ini';
+
+    const result = await Swal.fire({
+      title: '⚠️ Delete Confirmation',
+      html: `Are you sure you want to delete membership plan:<br><strong>"${planName}"</strong>?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Delete!',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true
+    });
+
+    if (!result.isConfirmed) return;
+    
     setFormLoading(true);
     try {
       await api.delete(`/api/membership-plans/${id}`);
+      toast.success('Membership plan deleted successfully!');
       router.push('/admin/membership/plans');
     } catch (err) {
-      setError(err.data?.message || 'Failed to delete plan');
+      toast.error(err.data?.message || 'Failed to delete membership plan');
       console.log("error: ", err);
     }
     setFormLoading(false);
@@ -158,8 +175,6 @@ export default function EditMembershipPlanPage() {
           <h1 className="text-3xl font-bold text-gray-800 dark:text-amber-300">Edit Membership Plan</h1>
           <ActionButton href="/admin/membership/plans" variant="gray">Back</ActionButton>
         </div>
-        {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
-        {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}
           
           <div className="space-y-4 mb-4">
             <FormInput
@@ -252,7 +267,6 @@ export default function EditMembershipPlanPage() {
                 disabled={!edit}
               />
             )}
-           {console.log('Rendering available_from:', form.available_from)}
            <div className="flex gap-2">
               <div className="flex-1">
                   <FormInput
