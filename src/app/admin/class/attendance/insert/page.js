@@ -17,6 +17,7 @@ export default function InsertAttendancePage() {
     member_id: "",
     checked_in_at: nowPlus7.toISOString().slice(0,16),
     status: "booked",
+    waiting_list_position: "",
     created_by: "",
     updated_by: ""
   };
@@ -243,44 +244,36 @@ export default function InsertAttendancePage() {
     setError("");
     
     try {
-      // Check class capacity before submitting
-      const selectedClass = classes.find(c => c.id == form.class_id);
-      if (selectedClass) {
-        // Fetch class attendance count for the specific class
-        const attendanceData = await api.get('/api/classattendances?limit=10000');
-        // Filter attendance untuk class yang dipilih saja dan exclude yang Cancelled
-        const currentAttendance = attendanceData.data?.attendances?.filter(
-          a => a.class_id === form.class_id && a.status !== 'Cancelled'
-        ).length || 0;
-        
-        // Fetch event plan to get max_visitor
-        const planData = await api.get(`/api/eventplans/${selectedClass.event_plan_id}`);
-        const maxVisitor = planData.data?.max_visitor || 0;
-
-        if (maxVisitor > 0 && currentAttendance >= maxVisitor) {
-          setError(
-            `Class is full! Maximum capacity: ${maxVisitor} people, current attendance: ${currentAttendance} people`
-          );
-          setLoading(false);
-          alert(
-            `This class is already full!\n\nMaximum capacity: ${maxVisitor} people\nCurrent number of participants: ${currentAttendance} people\n\nPlease choose another class or contact the admin to increase the capacity.`
-          );
-          return;
-        }
-      }
-      
       // Format checked_in_at to ISO-8601 (add seconds and Z)
       let checkedInAtIso = form.checked_in_at;
       if (checkedInAtIso && checkedInAtIso.length === 16) {
         checkedInAtIso = checkedInAtIso + ':00.000Z';
       }
       
-      await api.post('/api/classattendances', {
+      const payload = {
         class_id: Number(form.class_id),
         member_id: Number(form.member_id),
         checked_in_at: checkedInAtIso,
         status: form.status,
-      });
+      };
+      
+      // Only include waiting_list_position if status is waiting_list and position is provided
+      if (form.status === 'waiting_list' && form.waiting_list_position) {
+        payload.waiting_list_position = Number(form.waiting_list_position);
+      }
+      
+      const response = await api.post('/api/classattendances', payload);
+      
+      // Check if backend added to waiting list (when class is full)
+      if (response.data.status === 'waiting_list' || response.data.is_waiting_list) {
+        const position = response.data.waiting_list_position;
+        alert(
+          `⚠️ Class is full!\n\n` +
+          `Member has been added to the waiting list.\n` +
+          `Position: #${position}\n\n` +
+          `They will be automatically promoted when a spot becomes available.`
+        );
+      }
       
       router.push("/admin/class/attendance");
     } catch (err) {
@@ -448,9 +441,21 @@ export default function InsertAttendancePage() {
             options={[
               { value: 'booked', label: 'Booked' },
               { value: 'checked_in', label: 'Checked-in' },
-              { value: 'cancelled', label: 'Cancelled' }
+              { value: 'cancelled', label: 'Cancelled' },
+              { value: 'waiting_list', label: 'Waiting List' }
             ]}
           />
+          {form.status === 'waiting_list' && (
+            <FormInput
+              label="Waiting List Position"
+              name="waiting_list_position"
+              type="number"
+              placeholder="Leave empty for auto-assign"
+              value={form.waiting_list_position}
+              onChange={handleChange}
+              helperText="Optional: Leave empty to auto-calculate position"
+            />
+          )}
           {error && <div className="text-red-400 mb-2">{error}</div>}
           <FormActions
             onReset={handleReset}
