@@ -18,7 +18,6 @@ export default function ClassAttendanceDataTable({
     { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px', center: "true" },
     { name: 'Member', cell: row => row.member?.name || '', sortable: true },
     { name: 'Class', cell: row => {
-      console.log("APAN NIH: ", row.class);
       const instructorOrTrainer = row.class.instructor 
         ? `${row.class.instructor.name} (Instructor)` 
         : row.class.trainer 

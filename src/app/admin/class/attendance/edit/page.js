@@ -41,6 +41,7 @@ export default function EditAttendancePage() {
           member_id: data.member_id || "",
           checked_in_at: data.checked_in_at ? data.checked_in_at.slice(0, 16) : "",
           status: data.status || "Booked",
+          waiting_list_position: data.waiting_list_position || "",
           created_by: data.created_by || "",
           updated_by: data.updated_by || ""
         };
@@ -277,52 +278,48 @@ export default function EditAttendancePage() {
     setError("");
     setSuccess("");
     try {
-      // Check class capacity before submitting (only if class_id changed)
-      const selectedClass = classes.find(c => c.id == form.class_id);
-      if (selectedClass && form.class_id !== initialForm.class_id) {
-        // Fetch class attendance count for the specific class
-        const attendanceData = await api.get('/api/classattendances?limit=10000');
-        // Filter attendance untuk class yang dipilih saja, exclude yang Cancelled, dan exclude current attendance
-        const currentAttendance = attendanceData.data?.attendances?.filter(
-          a => a.class_id === form.class_id && a.status !== 'Cancelled' && a.id !== parseInt(id)
-        ).length || 0;
-        
-        // Fetch event plan to get max_visitor
-        const planData = await api.get(`/api/eventplans/${selectedClass.event_plan_id}`);
-        const maxVisitor = planData.data?.max_visitor || 0;
-
-        if (maxVisitor > 0 && currentAttendance >= maxVisitor) {
-          setError(`Class is full! Maximum capacity: ${maxVisitor} people, Current: ${currentAttendance} people`);
-          setFormLoading(false);
-          alert(
-            `Class is full!\n\n` +
-            `Maximum capacity: ${maxVisitor} people\n` +
-            `Current number of participants: ${currentAttendance} people\n\n` +
-            `Please choose another class or contact the admin to increase the capacity.`
-          );
-          return;
-        }
-      }
-      
       let checkedInAtIso = form.checked_in_at;
       if (checkedInAtIso && checkedInAtIso.length === 16) {
         checkedInAtIso = checkedInAtIso + ':00.000Z';
       }
-      await api.put(`/api/classattendances/${id}`, {
+      
+      const payload = {
         class_id: Number(form.class_id),
         member_id: Number(form.member_id),
         checked_in_at: checkedInAtIso,
         status: form.status,
         created_by: form.created_by,
         updated_by: form.updated_by
-      });
-      setSuccess("Attendance updated");
+      };
+      
+      // Include waiting_list_position if status is waiting_list
+      if (form.status === 'waiting_list' && form.waiting_list_position) {
+        payload.waiting_list_position = Number(form.waiting_list_position);
+      }
+      
+      const response = await api.put(`/api/classattendances/${id}`, payload);
+      
+      // Check if member was added to waiting list
+      if (response.data?.is_waiting_list) {
+        alert(`⚠️ ${response.message || 'The class is already full, the member has been moved to the waiting list'}\n\nThe member will be automatically promoted if someone cancels their booking.`);
+      }
+      
+      // Check if someone was promoted from waiting list
+      if (response.data?.promoted) {
+        alert(`✅ A member from the waiting list has been automatically promoted to a booking.`);
+      }
+      
+      setSuccess(response.message || "Attendance updated");
       setEdit(false);
       // Update initial form with new values
       setInitialForm(form);
     } catch (err) {      
       setError(err.data?.message || 'Failed to update attendance');
       console.log("error: ", err);
+      // Show alert for better visibility
+      if (err.data?.message) {
+        alert(`Error: ${err.data.message}`);
+      }
     }
     setFormLoading(false);
   };
@@ -331,7 +328,13 @@ export default function EditAttendancePage() {
     if (!confirm('Are you sure you want to delete this attendance?')) return;
     setFormLoading(true);
     try {
-      await api.delete(`/api/classattendances/${id}`);
+      const response = await api.delete(`/api/classattendances/${id}`);
+      
+      // Check if someone was promoted from waiting list after deletion
+      if (response.data?.promoted) {
+        alert(`✅ Attendance deleted successfully!\n\nA member from the waiting list has been automatically promoted to a booking.`);
+      }
+      
       router.push('/admin/class/attendance');
     } catch (err) {
       setError(err.data?.message || 'Failed to delete attendance');
@@ -517,9 +520,22 @@ export default function EditAttendancePage() {
             options={[
               { value: 'booked', label: 'Booked' },
               { value: 'checked_in', label: 'Checked-in' },
-              { value: 'cancelled', label: 'Cancelled' }
+              { value: 'cancelled', label: 'Cancelled' },
+              { value: 'waiting_list', label: 'Waiting List' }
             ]}
           />
+          {form.status === 'waiting_list' && (
+            <FormInput
+              label="Waiting List Position"
+              name="waiting_list_position"
+              type="number"
+              placeholder="Leave empty for auto-assign"
+              value={form.waiting_list_position}
+              onChange={e => setForm(f => ({ ...f, waiting_list_position: e.target.value }))}
+              disabled={!edit}
+              helperText="Optional: Leave empty to auto-calculate position"
+            />
+          )}
           {success && <div className="text-green-400 mb-2">{success}</div>}
           {error && <div className="text-red-400 mb-2">{error}</div>}
           <div className="flex gap-3 mt-8 justify-start">
