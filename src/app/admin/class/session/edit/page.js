@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import BackendErrorFallback from "../../../../../components/BackendErrorFallback";
 import { FaDumbbell } from 'react-icons/fa';
+import Swal from 'sweetalert2';
+import toast from 'react-hot-toast';
 import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
 import LoadingSpin from "@/components/admin/LoadingSpin";
 import api from '@/utils/fetchClient';
@@ -18,8 +20,6 @@ export default function ClassSessionEditPage() {
   const [formLoading, setFormLoading] = useState(false);
   const [backendError, setBackendError] = useState(false);
   const [edit, setEdit] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
   const [isRecurring, setIsRecurring] = useState(false);
   const router = useRouter();
   const params = useSearchParams();
@@ -123,14 +123,10 @@ export default function ClassSessionEditPage() {
 
   const handleEdit = () => {
     setEdit(true);
-    setSuccess("");
-    setError("");
   };
 
   const handleCancel = () => {
     setEdit(false);
-    setSuccess("");
-    setError("");
     
     // Reset form based on recurring or single
     if (session.is_recurring) {
@@ -172,38 +168,36 @@ export default function ClassSessionEditPage() {
     // Validasi untuk recurring class
     if (form.is_recurring) {
       if (!form.valid_from) {
-        setError("Valid From date is required for recurring classes");
+        toast.error("Valid From date is required for recurring classes");
         return;
       }
       if (!form.valid_until) {
-        setError("Valid Until date is required for recurring classes");
+        toast.error("Valid Until date is required for recurring classes");
         return;
       }
       if (form.recurrence_days.length === 0) {
-        setError("Please select at least one day for recurring classes");
+        toast.error("Please select at least one day for recurring classes");
         return;
       }
       if (!form.recurrence_start_time) {
-        setError("Start time is required for recurring classes");
+        toast.error("Start time is required for recurring classes");
         return;
       }
       if (!form.recurrence_end_time) {
-        setError("End time is required for recurring classes");
+        toast.error("End time is required for recurring classes");
         return;
       }
       if (new Date(form.valid_from) > new Date(form.valid_until)) {
-        setError("Valid From date cannot be later than Valid Until date");
+        toast.error("Valid From date cannot be later than Valid Until date");
         return;
       }
       if (new Date(form.valid_until) < new Date()) {
-        setError("Valid Until date cannot be in the past");
+        toast.error("Valid Until date cannot be in the past");
         return;
       }
     }
     
     setFormLoading(true);
-    setError("");
-    setSuccess("");
     try {
       let payload = {};
       
@@ -259,9 +253,9 @@ export default function ClassSessionEditPage() {
       await api.put(`/api/classes/${id}`, payload);
       
       if (form.is_recurring) {
-        setSuccess("Recurring class pattern berhasil diupdate! Semua class instances telah di-regenerate.");
+        toast.success('Recurring class pattern updated! All class instances have been regenerated.', { duration: 5000 });
       } else {
-        setSuccess("Class berhasil diupdate!");
+        toast.success('Class session updated successfully!');
       }
       setEdit(false);
       
@@ -270,27 +264,40 @@ export default function ClassSessionEditPage() {
         window.location.reload();
       }, 1500);
     } catch (err) {
-      setError(err.data?.message || 'Failed to update class');
+      toast.error(err.data?.message || 'Failed to update class session');
       console.log("error: ", err);
     }
     setFormLoading(false);
   };
 
   const handleDelete = async () => {
-    let confirmMessage = 'Yakin ingin menghapus class ini?';
+    let confirmHtml = 'Are you sure you want to delete this class session?';
     
     if (isRecurring && session?.generated_instances) {
-      confirmMessage = `⚠️ PERHATIAN!\n\nIni adalah recurring class pattern dengan ${session.generated_instances} class instances yang sudah ter-generate.\n\nMenghapus recurring pattern ini akan menghapus SEMUA ${session.generated_instances} class instances sekaligus!\n\nYakin ingin melanjutkan?`;
+      confirmHtml = `<strong>⚠️ WARNING!</strong><br><br>This is a recurring class pattern with <strong>${session.generated_instances}</strong> generated instances.<br><br>Deleting this recurring pattern will delete <strong>ALL ${session.generated_instances}</strong> class instances!<br><br><span style="color: #ef4444;">This action cannot be undone!</span>`;
     }
     
-    if (!confirm(confirmMessage)) return;
+    const result = await Swal.fire({
+      title: '⚠️ Delete Confirmation',
+      html: confirmHtml,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Delete!',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true
+    });
+
+    if (!result.isConfirmed) return;
     
     setFormLoading(true);
     try {
       await api.delete(`/api/classes/${id}`);
+      toast.success('Class session deleted successfully!');
       router.push('/admin/class/session');
     } catch (err) {
-      setError(err.data?.message || 'Failed to delete class');
+      toast.error(err.data?.message || 'Failed to delete class session');
       console.log("error: ", err);
     }
     setFormLoading(false);
@@ -528,8 +535,6 @@ export default function ClassSessionEditPage() {
             disabled={!edit}
           />
         </div>
-        {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
-        {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}
         <div className="flex gap-3 mt-8 justify-start">
           {!edit ? (
             <>

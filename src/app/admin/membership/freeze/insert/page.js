@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FaIdCard } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 import api from '@/utils/fetchClient';
 import { PageBreadcrumb, PageContainerInsert, FormActions, FormInput, FormInputGroup } from '@/components/admin';
 
@@ -28,16 +29,12 @@ export default function FreezeMembershipInsertPage() {
   const [form, setForm] = useState(initialFormState);
   
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const router = useRouter();
 
   const handleReset = () => {
     setForm(initialFormState);
     setSelectedMemberId("");
     setMemberships([]);
-    setError("");
-    setSuccess("");
   };
 
   // Fetch members on mount
@@ -89,8 +86,6 @@ export default function FreezeMembershipInsertPage() {
   const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-    setSuccess("");
 
     try {
       await api.post('/api/membership-freezes', {
@@ -102,12 +97,10 @@ export default function FreezeMembershipInsertPage() {
         reason: form.reason || null
       });
       
-      setSuccess("Berhasil freeze membership");
-      setTimeout(() => {
-        router.push("/admin/membership/freeze");
-      }, 1500);
+      toast.success('Membership frozen successfully!');
+      router.push("/admin/membership/freeze");
     } catch (err) {
-      setError(err.data?.message || 'Failed to freeze membership');
+      toast.error(err.data?.message || 'Failed to freeze membership');
       console.log("error: ", err);
     }
     setLoading(false);
@@ -231,9 +224,6 @@ export default function FreezeMembershipInsertPage() {
             onChange={e => setForm({ ...form, reason: e.target.value })}
             placeholder="Reason for freezing..."
           />
-
-          {success && <div className="text-green-400 font-semibold mb-2 text-center">{success}</div>}
-          {error && <div className="text-red-400 font-semibold mb-2 text-center">{error}</div>}
 
           <FormActions
             onReset={handleReset}

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaDumbbell } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 import { PageBreadcrumb, PageContainerInsert, FormActions, FormInput } from '@/components/admin';
 import api from '@/utils/fetchClient';
 
@@ -21,14 +22,12 @@ export default function ClassPurchaseInsertPage() {
   // const [purchaseDate, setPurchaseDate] = useState('');
   const [loading, setLoading] = useState(false);
   const [fetchingData, setFetchingData] = useState(false);
-  const [error, setError] = useState('');
   const router = useRouter();
 
   const handleReset = () => {
     setUserId('');
     setClassId('');
     setPrice('');
-    setError('');
   };
 
   // Fetch all users
@@ -73,16 +72,16 @@ export default function ClassPurchaseInsertPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
     try {
       await api.post('/api/classpurchases', {
         user_id: parseInt(userId, 10),
         class_id: parseInt(classId, 10),
         price: parseInt(price, 10),
       });
+      toast.success('Class purchase created successfully!');
       router.push('/admin/class/classpurchase');
     } catch (err) {
-      setError(err.data?.message || 'Failed to add class purchase');
+      toast.error(err.data?.message || 'Failed to create class purchase');
       console.log("error: ", err);
     }
     setLoading(false);
@@ -166,7 +165,6 @@ export default function ClassPurchaseInsertPage() {
             onChange={e => setPrice(e.target.value)}
             required
           />
-          {error && <div className="text-red-400 mb-2 text-center">{error}</div>}
           <FormActions
             onReset={handleReset}
             cancelHref="/admin/class/classpurchase"

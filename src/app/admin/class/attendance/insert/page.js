@@ -2,6 +2,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FaDumbbell, FaSearch, FaTimes } from 'react-icons/fa';
+import Swal from 'sweetalert2';
+import toast from 'react-hot-toast';
 import { PageBreadcrumb, PageContainerInsert, FormActions, FormInput } from '@/components/admin';
 import api from '@/utils/fetchClient';
 
@@ -24,7 +26,6 @@ export default function InsertAttendancePage() {
 
   const [form, setForm] = useState(initialFormState);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [classes, setClasses] = useState([]);
   const [members, setMembers] = useState([]);
   const [classSearch, setClassSearch] = useState("");
@@ -43,7 +44,6 @@ export default function InsertAttendancePage() {
     });
     setClassSearch("");
     setMemberSearch("");
-    setError("");
   };
 
   // Fetch all classes with pagination
@@ -241,7 +241,6 @@ export default function InsertAttendancePage() {
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
-    setError("");
     
     try {
       // Format checked_in_at to ISO-8601 (add seconds and Z)
@@ -267,17 +266,19 @@ export default function InsertAttendancePage() {
       // Check if backend added to waiting list (when class is full)
       if (response.data.status === 'waiting_list' || response.data.is_waiting_list) {
         const position = response.data.waiting_list_position;
-        alert(
-          `⚠️ Class is full!\n\n` +
-          `Member has been added to the waiting list.\n` +
-          `Position: #${position}\n\n` +
-          `They will be automatically promoted when a spot becomes available.`
-        );
+        await Swal.fire({
+          icon: 'warning',
+          title: 'Class is Full!',
+          html: `Member has been added to the <strong>waiting list</strong>.<br><br>Position: <strong>#${position}</strong><br><br>They will be automatically promoted when a spot becomes available.`,
+          confirmButtonColor: '#f59e0b',
+        });
+      } else {
+        toast.success('Attendance added successfully!');
       }
       
       router.push("/admin/class/attendance");
     } catch (err) {
-      setError(err.data?.message || 'Failed to add attendance');
+      toast.error(err.data?.message || 'Failed to add attendance');
       console.log("error: ", err);
     }
     setLoading(false);
@@ -456,7 +457,6 @@ export default function InsertAttendancePage() {
               helperText="Optional: Leave empty to auto-calculate position"
             />
           )}
-          {error && <div className="text-red-400 mb-2">{error}</div>}
           <FormActions
             onReset={handleReset}
             cancelHref="/admin/class/attendance"

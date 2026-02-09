@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaCog } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 import api from '@/utils/fetchClient';
 import { PageBreadcrumb, PageContainerInsert, FormActions, FormInput, FormInputGroup } from '@/components/admin';
 
@@ -33,12 +34,10 @@ export default function InsertMembershipPlanPage() {
   
   const [form, setForm] = useState(initialFormState);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const router = useRouter();
 
   const handleReset = () => {
     setForm(initialFormState);
-    setError('');
   };
 
   const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
@@ -70,7 +69,6 @@ export default function InsertMembershipPlanPage() {
   const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
-    setError('');
     try {
       let availableFromIso = form.available_from;
       if (availableFromIso && availableFromIso.length === 10) {
@@ -105,9 +103,10 @@ export default function InsertMembershipPlanPage() {
         always_available: Boolean(form.always_available),
         level: Number(form.level)
       });
+      toast.success('Membership plan created successfully!');
       router.push('/admin/membership/plans');
     } catch (err) {
-      setError(err.data?.message || 'Failed to create plan');
+      toast.error(err.data?.message || 'Failed to create membership plan');
       console.log("error: ", err);
     }
     setLoading(false);
@@ -125,7 +124,6 @@ export default function InsertMembershipPlanPage() {
 
       <PageContainerInsert>
         <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-amber-300 text-center">Create Membership Plan</h1>
-        {error && <div className="text-red-400 mb-2">{error}</div>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <FormInput
             label="Plan Name"

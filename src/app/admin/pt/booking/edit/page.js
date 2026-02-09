@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import api from '@/utils/fetchClient';
 import { FaChalkboardTeacher } from 'react-icons/fa';
+import Swal from 'sweetalert2';
+import toast from 'react-hot-toast';
 import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
 import LoadingSpin from '@/components/admin/LoadingSpin';
 
@@ -42,8 +44,6 @@ export default function PTBookingEditPage() {
   const [loading, setLoading] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
   const [edit, setEdit] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
   const formatDateToISO = (val) => val ? (val.length === 16 ? val + ":00.000Z" : val) : "";
 
   useEffect(() => {
@@ -73,14 +73,10 @@ export default function PTBookingEditPage() {
 
   const handleEdit = () => {
     setEdit(true);
-    setSuccess("");
-    setError("");
   };
 
   const handleCancel = () => {
     setEdit(false);
-    setSuccess("");
-    setError("");
     setForm({
       user_member_id: booking.user_member_id,
       personal_trainer_session_id: booking.personal_trainer_session_id,
@@ -91,10 +87,8 @@ export default function PTBookingEditPage() {
 
   const handleSave = async () => {
     setFormLoading(true);
-    setError("");
-    setSuccess("");
     if (!form.user_member_id || !form.personal_trainer_session_id || !form.booking_time || !form.status) {
-      setError("Semua field wajib diisi.");
+      toast.error('All fields are required.');
       setFormLoading(false);
       return;
     }
@@ -105,23 +99,38 @@ export default function PTBookingEditPage() {
         booking_time: formatDateToISO(form.booking_time),
         status: form.status
       });
-      setSuccess("Booking successfully updated!");
+      toast.success('PT booking updated successfully!');
       setEdit(false);
+      router.push('/admin/pt/booking');
     } catch (err) {
-      setError(err.data?.message || 'Failed to update booking');
+      toast.error(err.data?.message || 'Failed to update PT booking');
       console.log("error: ", err);
     }
     setFormLoading(false);
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this booking?')) return;
+    const result = await Swal.fire({
+      title: '⚠️ Delete Confirmation',
+      html: 'Are you sure you want to delete this PT booking?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Delete!',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true
+    });
+
+    if (!result.isConfirmed) return;
+    
     setFormLoading(true);
     try {
       await api.delete(`/api/ptsessionbookings/${id}`);
+      toast.success('PT booking deleted successfully!');
       router.push('/admin/pt/booking');
     } catch (err) {
-      setError(err.data?.message || "Failed to delete booking");
+      toast.error(err.data?.message || 'Failed to delete PT booking');
       console.log("error: ", err);
     }
     setFormLoading(false);
@@ -207,8 +216,6 @@ export default function PTBookingEditPage() {
             disabled={!edit}
           />
         </div>
-        {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
-        {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}
         <div className="flex gap-3 mt-8 justify-start">
           {!edit ? (
             <>

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaChalkboardTeacher } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 import api from '@/utils/fetchClient';
 import { PageBreadcrumb, PageContainerInsert, FormInput, FormActions } from '@/components/admin';
 
@@ -26,14 +27,10 @@ export default function PTBookingCreatePage() {
   
   const [form, setForm] = useState(initialFormState);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   
   const handleReset = () => {
     setForm(initialFormState);
     setPTSessions([]);
-    setError('');
-    setSuccess('');
   };
   
   // Fetch members for dropdown
@@ -64,10 +61,8 @@ export default function PTBookingCreatePage() {
   
   const handleSubmit = async e => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
     if (!form.user_member_id || !form.personal_trainer_session_id || !form.booking_time || !form.status) {
-      setError("Semua field wajib diisi.");
+      toast.error('All fields are required.');
       return;
     }
     setLoading(true);
@@ -78,10 +73,10 @@ export default function PTBookingCreatePage() {
         booking_time: formatDateToISO(form.booking_time),
         status: form.status
       });
-      setSuccess("Booking successfully!");
-      setTimeout(() => router.push('/admin/pt/booking'), 1200);
+      toast.success('PT booking created successfully!');
+      router.push('/admin/pt/booking');
     } catch (err) {
-      setError(err.data?.message || 'Failed to create PT booking');
+      toast.error(err.data?.message || 'Failed to create PT booking');
       console.log("error: ", err);
     }
     setLoading(false);
@@ -151,8 +146,7 @@ export default function PTBookingCreatePage() {
               { value: 'completed', label: 'Completed' }
             ]}
           />
-          {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}
-          {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
+
           <FormActions
             onSubmit={() => {}}
             onReset={handleReset}

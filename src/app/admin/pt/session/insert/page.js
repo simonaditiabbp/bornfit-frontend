@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FaChalkboardTeacher } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 import api from '@/utils/fetchClient';
 import { PageBreadcrumb, PageContainerInsert, FormInput, FormActions } from '@/components/admin';
 
@@ -37,21 +38,15 @@ export default function PTSessionInsertPage() {
   
   const [form, setForm] = useState(initialFormState);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const router = useRouter();
   
   const handleReset = () => {
     setForm(initialFormState);
-    setError('');
-    setSuccess('');
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-    setSuccess("");
     try {
       await api.post('/api/personaltrainersessions', {
         pt_session_plan_id: Number(form.pt_session_plan_id),
@@ -60,10 +55,10 @@ export default function PTSessionInsertPage() {
         start_date: formatDateToISO(form.start_date),
         // status: form.status
       });
-      setSuccess("Session successfully added!");
-      setTimeout(() => router.push("/admin/pt/session"), 1200);
+      toast.success('PT session created successfully!');
+      router.push("/admin/pt/session");
     } catch (err) {
-      setError(err.data?.message || 'Failed to insert session');
+      toast.error(err.data?.message || 'Failed to create PT session');
       console.log("error: ", err);
     }
     setLoading(false);
@@ -148,8 +143,6 @@ export default function PTSessionInsertPage() {
             ]}
             required
           /> */}
-          {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
-          {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}       
           <FormActions
             onReset={handleReset}
             cancelHref="/admin/pt/session"

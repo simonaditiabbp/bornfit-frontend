@@ -4,6 +4,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import api from '@/utils/fetchClient';
 import BackendErrorFallback from "../../../../../components/BackendErrorFallback";
 import { FaChalkboardTeacher } from 'react-icons/fa';
+import Swal from 'sweetalert2';
+import toast from 'react-hot-toast';
 import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
 import LoadingSpin from "@/components/admin/LoadingSpin";
 
@@ -18,8 +20,6 @@ export default function PTSessionEditPage() {
   const [formLoading, setFormLoading] = useState(false);
   const [backendError, setBackendError] = useState(false);
   const [edit, setEdit] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
   const router = useRouter();
   const params = useSearchParams();
   const id = params.get('id');
@@ -65,14 +65,10 @@ export default function PTSessionEditPage() {
 
   const handleEdit = () => {
     setEdit(true);
-    setSuccess("");
-    setError("");
   };
 
   const handleCancel = () => {
     setEdit(false);
-    setSuccess("");
-    setError("");
     setForm({
       pt_session_plan_id: session.pt_session_plan_id,
       user_member_id: session.user_member_id,
@@ -84,8 +80,6 @@ export default function PTSessionEditPage() {
 
   const handleSave = async () => {
     setFormLoading(true);
-    setError("");
-    setSuccess("");
     try {
       await api.put(`/api/personaltrainersessions/${id}`, {
         pt_session_plan_id: Number(form.pt_session_plan_id),
@@ -95,24 +89,38 @@ export default function PTSessionEditPage() {
         status: form.status,
         id: Number(id)
       });
-      setSuccess("Session successfully updated!");
+      toast.success('PT session updated successfully!');
       setEdit(false);
       setTimeout(() => window.location.reload(), 500);
     } catch (err) {
-      setError(err.data?.message || 'Failed to update session');
+      toast.error(err.data?.message || 'Failed to update PT session');
       console.log("error: ", err);
     }
     setFormLoading(false);
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this session?')) return;
+    const result = await Swal.fire({
+      title: '⚠️ Delete Confirmation',
+      html: 'Are you sure you want to delete this PT session?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Delete!',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true
+    });
+
+    if (!result.isConfirmed) return;
+    
     setFormLoading(true);
     try {
       await api.delete(`/api/personaltrainersessions/${id}`);
+      toast.success('PT session deleted successfully!');
       router.push('/admin/pt/session');
     } catch (err) {
-      setError(err.data?.message || "Failed to delete session");
+      toast.error(err.data?.message || 'Failed to delete PT session');
       console.log("error: ", err);
     }
     setFormLoading(false);
@@ -219,8 +227,6 @@ export default function PTSessionEditPage() {
             disabled={!edit}
           />
         </div>
-        {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
-        {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}
         <div className="flex gap-3 mt-8 justify-start">
           {!edit ? (
             <>

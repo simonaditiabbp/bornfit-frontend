@@ -4,6 +4,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import api from '@/utils/fetchClient';
 import BackendErrorFallback from "../../../../../components/BackendErrorFallback";
 import { FaCog } from 'react-icons/fa';
+import Swal from 'sweetalert2';
+import toast from 'react-hot-toast';
 import { PageBreadcrumb, PageContainerInsert, ActionButton, FormInput } from '@/components/admin';
 import LoadingSpin from "@/components/admin/LoadingSpin";
 
@@ -13,8 +15,6 @@ export default function PTPlanEditPage() {
   const [formLoading, setFormLoading] = useState(false);
   const [backendError, setBackendError] = useState(false);
   const [edit, setEdit] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
   const [editForm, setEditForm] = useState(null);
   const router = useRouter();
   const params = useSearchParams();
@@ -55,33 +55,46 @@ export default function PTPlanEditPage() {
 
   const handleCancel = () => {
     setEdit(false);
-    setSuccess("");
-    setError("");
   };
 
   const handleSave = async (form) => {
     setFormLoading(true);
-    setError("");
-    setSuccess("");
     try {
       await api.put(`/api/ptsessionplans/${id}`, { ...form });
-      setSuccess("Plan updated successfully!");
+      toast.success('PT session plan updated successfully!');
       setEdit(false);
+      router.push("/admin/pt/plans");
     } catch (err) {
-      setError(err.data?.message || 'Failed to update plan');
+      toast.error(err.data?.message || 'Failed to update PT session plan');
       console.log("error: ", err);
     }
     setFormLoading(false);
   };
 
   const handleDelete = async () => {
-    if (!confirm('Yakin ingin menghapus plan ini?')) return;
+    const planName = editForm?.name || 'this plan';
+    
+    const result = await Swal.fire({
+      title: '⚠️ Delete Confirmation',
+      html: `Are you sure you want to delete PT session plan:<br><strong>"${planName}"</strong>?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Delete!',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true
+    });
+
+    if (!result.isConfirmed) return;
+    
     setFormLoading(true);
     try {
       await api.delete(`/api/ptsessionplans/${id}`);
-      router.push('/admin/pt/plans');
+      toast.success('PT session plan deleted successfully!');
+      router.push("/admin/pt/plans");
     } catch (err) {
-      setError(err.data?.message || "Failed to delete plan");
+      toast.error(err.data?.message || 'Failed to delete PT session plan');
       console.log("error: ", err);
     }
     setFormLoading(false);
@@ -182,8 +195,6 @@ export default function PTPlanEditPage() {
                 />
               </div>
             </div>
-            {success && <div className="text-green-400 font-semibold mb-2">{success}</div>}
-            {error && <div className="text-red-400 font-semibold mb-2">{error}</div>}
             <div className="flex gap-3 mt-8 justify-start">
               {!edit ? (
                 <>

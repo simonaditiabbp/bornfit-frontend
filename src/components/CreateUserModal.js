@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import Webcam from "react-webcam";
 import { useRouter } from "next/navigation";
+import toast from 'react-hot-toast';
 import api from '@/utils/fetchClient';
 import { FormInput, FormInputGroup } from '@/components/admin';
 
@@ -42,8 +43,6 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
   const [photo, setPhoto] = useState(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const webcamRef = useRef(null);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [qrInput, setQrInput] = useState("");
 
@@ -63,8 +62,6 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
       membership: { start_date: "", end_date: "" },
     });
     setPhoto(null);
-    setError("");
-    setSuccess("");
     setQrInput("");
     onClose();
   };
@@ -110,22 +107,20 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
     setLoading(true);
     try {
 
       const token = localStorage.getItem("token");
       
       if (!token) {
-        setError("Sesi habis atau Anda belum login. Silakan login ulang.");
+        toast.error('Session expired or not logged in. Please login again.');
         setLoading(false);
         setTimeout(() => router.push('/login'), 2000); 
         return;
       }
 
       if ((form.role === "admin" || form.role === "opscan" || form.role === "finance") && !form.password) {
-        setError("Password is required for admin, opscan & finance role");
+        toast.error('Password is required for admin, opscan & finance role');
         setLoading(false);
         return;
       }
@@ -171,8 +166,7 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
         ? "User created successfully! QR code has been sent to email." 
         : "User created successfully! No email provided, QR code not sent.";
       
-      setSuccess(successMessage);
-      if (onRefresh) onRefresh(); // Refresh data di parent
+      toast.success(successMessage, { duration: 5000 });
       
       // Redirect based on role
       if (form.role === "member" && data.data.id) {
@@ -180,18 +174,20 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
         setTimeout(() => {
           handleCloseInternal();
           router.push(`/admin/membership/session/insert?member_id=${data.data.id}`);
-        }, 1200);
+        }, 1500);
       } else {
         // Non-member: redirect to users list
         setTimeout(() => {
           handleCloseInternal();
           router.push("/admin/users");
           window.location.reload();
-        }, 1200);
+        }, 1500);
       }
 
+      // if (onRefresh) onRefresh(); // Refresh data di parent
+
     } catch (err) {
-      setError(err.data?.message || 'Failed to create user');
+      toast.error(err.data?.message || 'Failed to create user');
       console.log("error: ", err);
     } finally {
       setLoading(false);
@@ -364,9 +360,6 @@ export default function CreateUserModal({ isOpen, onClose, onRefresh }) {
               )}
             </div>
 
-            {error && <div className="bg-red-50 text-red-600 p-3 rounded border border-red-200 text-sm font-semibold">{error}</div>}
-            {success && <div className="bg-green-50 text-green-600 p-3 rounded border border-green-200 text-sm font-semibold">{success}</div>}
-            
             <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-600 mt-4">
                 <button 
                     type="button" 

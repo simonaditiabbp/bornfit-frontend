@@ -2,6 +2,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaDumbbell } from 'react-icons/fa';
+import Swal from 'sweetalert2';
+import toast from 'react-hot-toast';
 import BackendErrorFallback from '../../../../../components/BackendErrorFallback';
 import { PageBreadcrumb, PageContainerInsert, FormInput, ActionButton } from '@/components/admin';
 import LoadingSpin from '@/components/admin/LoadingSpin';
@@ -19,8 +21,6 @@ export default function ClassPurchaseEditPage() {
   const [formLoading, setFormLoading] = useState(false);
   const [backendError, setBackendError] = useState(false);
   const [edit, setEdit] = useState(false);
-  const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
 
   // Fetch all users
   const fetchUsers = async () => {
@@ -65,7 +65,7 @@ export default function ClassPurchaseEditPage() {
         setInitialForm(purchaseForm);
       } catch (err) {
         if (err.isNetworkError) setBackendError(true);
-        else setError(err.data?.message || 'Failed to fetch data');
+        else toast.error(err.data?.message || 'Failed to fetch data');
       }
       setLoading(false);
     };
@@ -76,46 +76,55 @@ export default function ClassPurchaseEditPage() {
   const handleEdit = (e) => {
     e.preventDefault();
     setEdit(true);
-    setSuccess('');
-    setError('');
   };
 
   const handleCancel = () => {
     setEdit(false);
-    setSuccess('');
-    setError('');
     setForm(initialForm);
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
     setFormLoading(true);
-    setError('');
-    setSuccess('');
     try {
       await api.put(`/api/classpurchases/${id}`, {
         user_id: parseInt(form.user_id, 10),
         class_id: parseInt(form.class_id, 10),
         price: parseInt(form.price, 10),
       });
-      setSuccess('Class purchase updated successfully!');
+      toast.success('Class purchase updated successfully!');
       setInitialForm(form);
       setEdit(false);
+      router.push('/admin/class/classpurchase');
     } catch (err) {
-      setError(err.data?.message || 'Failed to update class purchase');
+      toast.error(err.data?.message || 'Failed to update class purchase');
       console.log("error: ", err);
     }
     setFormLoading(false);
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this class purchase?')) return;
+    const result = await Swal.fire({
+      title: '⚠️ Delete Confirmation',
+      html: 'Are you sure you want to delete this class purchase?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Delete!',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true
+    });
+
+    if (!result.isConfirmed) return;
+    
     setFormLoading(true);
     try {
       await api.delete(`/api/classpurchases/${id}`);
+      toast.success('Class purchase deleted successfully!');
       router.push('/admin/class/classpurchase');
     } catch (err) {
-      setError(err.data?.message || 'Failed to delete class purchase');
+      toast.error(err.data?.message || 'Failed to delete class purchase');
       console.log("error: ", err);
     }
     setFormLoading(false);
@@ -207,9 +216,6 @@ export default function ClassPurchaseEditPage() {
             required
             min="0"
           />
-
-          {success && <div className="text-green-400 mb-2">{success}</div>}
-          {error && <div className="text-red-400 mb-2">{error}</div>}
           
           <div className="flex gap-3 mt-6 justify-start">
             {!edit ? (
