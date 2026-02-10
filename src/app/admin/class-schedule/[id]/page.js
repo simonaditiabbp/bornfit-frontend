@@ -24,7 +24,16 @@ export default function ClassDetailPage() {
       const data = await api.get(`/api/classes/${params.id}/details`);
 
       if (data.status === "success") {
-        setClassData(data.data);
+        // Normalize data to ensure all nested objects exist
+        const normalizedData = {
+          ...data.data,
+          event_plan: data.data.event_plan || {},
+          instructor: data.data.instructor || null,
+          trainer: data.data.trainer || null,
+          attendances: data.data.attendances || [],
+          attendances_by_status: data.data.attendances_by_status || { booked: 0, checked_in: 0, cancelled: 0 },
+        };
+        setClassData(normalizedData);
       } else {
         alert('Class not found');
         router.push('/admin/class-schedule');
@@ -114,7 +123,7 @@ export default function ClassDetailPage() {
               <FaArrowLeft />
             </Link>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{classData.name || classData.event_plan.name}</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{classData.name || classData.event_plan?.name || 'Class Detail'}</h1>
               <p className="text-gray-500 dark:text-gray-400 text-sm">Class Details & Attendance</p>
             </div>
           </div>
@@ -142,7 +151,7 @@ export default function ClassDetailPage() {
               <div className="space-y-3">
                 <div>
                   <div className="text-gray-500 dark:text-gray-400 text-sm mb-1">Event Plan</div>
-                  <div className="text-gray-800 dark:text-gray-200 font-semibold">{classData.event_plan.name}</div>
+                  <div className="text-gray-800 dark:text-gray-200 font-semibold">{classData.event_plan?.name || 'N/A'}</div>
                 </div>
 
                 <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
@@ -158,9 +167,15 @@ export default function ClassDetailPage() {
                 <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                   <FaUser className="text-amber-500 dark:text-amber-400" />
                   <div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Instructor</div>
-                    <div className="font-semibold text-gray-800 dark:text-gray-200">{classData.instructor.name}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-500">{classData.instructor.email}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      {classData.instructor ? 'Instructor' : classData.trainer ? 'Trainer' : 'Instructor / Trainer'}
+                    </div>
+                    <div className="font-semibold text-gray-800 dark:text-gray-200">
+                      {classData.instructor?.name || classData.trainer?.name || 'N/A'}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-500">
+                      {classData.instructor?.email || classData.trainer?.email || ''}
+                    </div>
                   </div>
                 </div>
 
@@ -185,18 +200,18 @@ export default function ClassDetailPage() {
               <div className="space-y-3">
                 <div className="flex justify-between items-center p-3 bg-gray-100 dark:bg-gray-700 rounded">
                   <span className="text-gray-700 dark:text-gray-300">Total Capacity</span>
-                  <span className="font-bold text-gray-900 dark:text-gray-200">{classData.event_plan.max_visitor}</span>
+                  <span className="font-bold text-gray-900 dark:text-gray-200">{classData.event_plan?.max_visitor || 0}</span>
                 </div>
 
                 <div className="flex justify-between items-center p-3 bg-gray-100 dark:bg-gray-700 rounded">
                   <span className="text-gray-700 dark:text-gray-300">Total Attendances</span>
-                  <span className="font-bold text-green-600 dark:text-green-400">{classData.total_attendances}</span>
+                  <span className="font-bold text-green-600 dark:text-green-400">{classData.total_attendances || 0}</span>
                 </div>
 
                 <div className="flex justify-between items-center p-3 bg-gray-100 dark:bg-gray-700 rounded">
                   <span className="text-gray-700 dark:text-gray-300">Available Slots</span>
                   <span className={`font-bold ${classData.is_full ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
-                    {classData.available_slots}
+                    {classData.available_slots || 0}
                   </span>
                 </div>
 
@@ -209,21 +224,21 @@ export default function ClassDetailPage() {
                         <FaPending className="text-yellow-600 dark:text-yellow-500" />
                         <span className="text-gray-700 dark:text-gray-300 text-sm">Booked</span>
                       </div>
-                      <span className="text-gray-900 dark:text-gray-200 font-semibold">{classData.attendances_by_status.booked}</span>
+                      <span className="text-gray-900 dark:text-gray-200 font-semibold">{classData.attendances_by_status?.booked || 0}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                         <FaCheckCircle className="text-green-600 dark:text-green-500" />
                         <span className="text-gray-700 dark:text-gray-300 text-sm">Checked In</span>
                       </div>
-                      <span className="text-gray-900 dark:text-gray-200 font-semibold">{classData.attendances_by_status.checked_in}</span>
+                      <span className="text-gray-900 dark:text-gray-200 font-semibold">{classData.attendances_by_status?.checked_in || 0}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                         <FaBan className="text-red-600 dark:text-red-500" />
                         <span className="text-gray-700 dark:text-gray-300 text-sm">Cancelled</span>
                       </div>
-                      <span className="text-gray-900 dark:text-gray-200 font-semibold">{classData.attendances_by_status.cancelled}</span>
+                      <span className="text-gray-900 dark:text-gray-200 font-semibold">{classData.attendances_by_status?.cancelled || 0}</span>
                     </div>
                   </div>
                 </div>
@@ -237,11 +252,11 @@ export default function ClassDetailPage() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-gray-800 dark:text-amber-400 flex items-center gap-2">
                   <FaUsers />
-                  Member Attendances ({classData.attendances.length})
+                  Member Attendances ({classData.attendances?.length || 0})
                 </h2>
               </div>
 
-              {classData.attendances.length === 0 ? (
+              {!classData.attendances || classData.attendances.length === 0 ? (
                 <div className="text-center text-gray-500 dark:text-gray-400 py-10">
                   No attendances yet
                 </div>
@@ -259,12 +274,12 @@ export default function ClassDetailPage() {
                           </div>
                           <div className="flex-1">
                             <div className="font-bold text-gray-900 dark:text-gray-200 mb-1">
-                              {attendance.member.name}
+                              {attendance.member?.name || 'N/A'}
                             </div>
                             <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                              {attendance.member.email}
+                              {attendance.member?.email || ''}
                             </div>
-                            {attendance.member.phone && (
+                            {attendance.member?.phone && (
                               <div className="text-sm text-gray-600 dark:text-gray-400">
                                 📱 {attendance.member.phone}
                               </div>
@@ -293,7 +308,7 @@ export default function ClassDetailPage() {
           <div className="mt-6 bg-white dark:bg-gray-800 rounded-lg p-5 border border-gray-200 dark:border-gray-600 shadow-sm">
             <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
               <FaUsers className="text-amber-500 dark:text-amber-400" />
-              <span className="font-semibold">Manual Check-ins: {classData.total_manual_checkin}</span>
+              <span className="font-semibold">Manual Check-ins: {classData.total_manual_checkin || 0}</span>
             </div>
           </div>
         )}

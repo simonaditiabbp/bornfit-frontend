@@ -35,7 +35,7 @@ export default function StaffScheduleCalendarPage() {
   const fetchStaffMembers = async () => {
     try {
       const data = await api.get('/api/staff-schedules/staff-members?limit=10000');
-      if (data.success) {
+      if (data.status) {
         setStaffMembers(data.data);
       }
     } catch (error) {
@@ -54,7 +54,7 @@ export default function StaffScheduleCalendarPage() {
       }
       
       const data = await api.get(url);
-      if (data.success) {
+      if (data.status) {
         setSchedules(data.data);
       }
     } catch (error) {
@@ -480,7 +480,7 @@ export default function StaffScheduleCalendarPage() {
                     return (
                       <div
                         key={`${day}-${timeSlot}`}
-                        className={`bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 ${
+                        className={`bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 overflow-hidden ${
                           viewMode === 'month' ? 'p-0.5 min-h-[50px]' : 'p-1 min-h-[80px]'
                         }`}
                       >
@@ -493,10 +493,10 @@ export default function StaffScheduleCalendarPage() {
                             style={{ backgroundColor: schedule.color }}
                             title={`${schedule.staff_name}\n${schedule.title}\n${formatTime(schedule.start_time)} - ${formatTime(schedule.end_time)}\n${schedule.description || ''}`}
                           >
-                            <div className="font-bold text-white truncate">{schedule.staff_name}</div>
+                            <div className="font-bold text-white break-words">{schedule.staff_name}</div>
                             {viewMode !== 'month' && (
                               <>
-                                <div className="text-white/90 truncate">{schedule.title}</div>
+                                <div className="text-white/90 break-words line-clamp-2">{schedule.title}</div>
                                 <div className="text-white/70 text-xs">{formatTime(schedule.start_time)}</div>
                               </>
                             )}
