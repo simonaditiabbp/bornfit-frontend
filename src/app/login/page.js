@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import toast from 'react-hot-toast';
 import BackendErrorFallback from '../../components/BackendErrorFallback';
 import { useTheme } from '@/contexts/ThemeContext';
 import logoDark from '@/assets/logodark.png';
@@ -14,7 +15,6 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -63,7 +63,6 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
     try {
       const res = await fetch(`${API_URL}/api/login`, {
         method: 'POST',
@@ -78,34 +77,34 @@ export default function LoginPage() {
         if (res.status === 429) {
           const remainingTime = dataRes.data?.remainingTime;
           if (remainingTime) {
-            setError(`Account/IP locked due to too many failed attempts.\nPlease try again in ${remainingTime} minutes.`);
+            toast.error(`Account/IP locked due to too many failed attempts. Please try again in ${remainingTime} minutes.`, { duration: 5000 });
           } else {
-            setError(dataRes.message || 'Too many requests. Please try again later.');
+            toast.error(dataRes.message || 'Too many requests. Please try again later.', { duration: 4000 });
           }
         }
         // Error dari backend (404, 401, 403, dll)
         else if (res.status === 404) {
           const remaining = dataRes.data?.remainingAttempts;
           if (remaining !== undefined && remaining > 0) {
-            setError(`User not found.\nPlease re-check your input email.\n${remaining} attempts remaining.`);
+            toast.error(`User not found. Please re-check your input email. ${remaining} attempts remaining.`, { duration: 4000 });
           } else if (remaining === 0) {
-            setError(`User not found.\nYour account has been locked due to too many failed attempts.`);
+            toast.error('User not found. Your account has been locked due to too many failed attempts.', { duration: 5000 });
           } else {
-            setError(`User not found.\nPlease re-check your input email.`);
+            toast.error('User not found. Please re-check your input email.', { duration: 4000 });
           }
         } else if (res.status === 401) {
           const remaining = dataRes.data?.remainingAttempts;
           if (remaining !== undefined && remaining > 0) {
-            setError(`Incorrect password. Please try again.\n${remaining} attempts remaining.`);
+            toast.error(`Incorrect password. Please try again. ${remaining} attempts remaining.`, { duration: 4000 });
           } else if (remaining === 0) {
-            setError(`Incorrect password.\nYour account has been locked due to too many failed attempts.`);
+            toast.error('Incorrect password. Your account has been locked due to too many failed attempts.', { duration: 5000 });
           } else {
-            setError('Incorrect password. Please try again.');
+            toast.error('Incorrect password. Please try again.', { duration: 4000 });
           }
         } else if (res.status === 403) {
-          setError('Access denied. Only admin, opscan, trainer, instructor, member & finance can login.');
+          toast.error('Access denied. Only admin, opscan, trainer, instructor, member & finance can login.', { duration: 4000 });
         } else {
-          setError(dataRes.message || 'Login failed. Please try again.');
+          toast.error(dataRes.message || 'Login failed. Please try again.', { duration: 4000 });
         }
         setLoading(false);
         return;
@@ -117,19 +116,27 @@ export default function LoginPage() {
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       
-      if (data.user.role === "admin") {
-        router.push('/admin/dashboard');
-      } else if (data.user.role === "finance") {
-        router.push('/admin/report/revenue');
-      } else if (data.user.role === "trainer") {
-        router.push('/trainer/dashboard');
-      } else if (data.user.role === "instructor") {
-        router.push('/instructor/dashboard');
-      } else if (data.user.role === "member") {
-        router.push('/member/dashboard');
-      } else if (data.user.role === "opscan") {
-        router.push('/checkin');
-      }
+      // Clear session flags on successful login
+      sessionStorage.removeItem('session_expired_toast');
+      sessionStorage.removeItem('auth_error_toast');
+      
+      toast.success('Login successful! Redirecting...');
+      
+      setTimeout(() => {
+        if (data.user.role === "admin") {
+          router.push('/admin/dashboard');
+        } else if (data.user.role === "finance") {
+          router.push('/admin/report/revenue');
+        } else if (data.user.role === "trainer") {
+          router.push('/trainer/dashboard');
+        } else if (data.user.role === "instructor") {
+          router.push('/instructor/dashboard');
+        } else if (data.user.role === "member") {
+          router.push('/member/dashboard');
+        } else if (data.user.role === "opscan") {
+          router.push('/checkin');
+        }
+      }, 1000);
     } catch (err) {
       // Network error atau backend tidak bisa diakses
       console.error('Login error:', err);
@@ -185,12 +192,6 @@ export default function LoginPage() {
           {/* FORMULIR */}
           <form onSubmit={handleSubmit} className="space-y-8">
             
-            {/* Error Alert */}
-            {error && (
-              <div className="bg-red-500/10 border-2 border-red-500/30 dark:border-red-500/50 rounded-2xl p-4 backdrop-blur-sm">
-                <p className="text-red-600 dark:text-red-400 text-sm text-center whitespace-pre-line">{error}</p>
-              </div>
-            )}
 
             <div className="space-y-6">
               

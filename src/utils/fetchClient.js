@@ -8,6 +8,8 @@
  * - Timeout handling
  */
 
+import toast from 'react-hot-toast';
+
 class FetchClient {
   constructor(config = {}) {
     this.baseURL = config.baseURL || "";
@@ -94,7 +96,17 @@ class FetchClient {
       if (typeof window !== 'undefined') {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        window.location.href = "/login";
+        
+        // Only show toast once using sessionStorage flag
+        const sessionExpiredShown = sessionStorage.getItem('session_expired_toast');
+        if (!sessionExpiredShown) {
+          sessionStorage.setItem('session_expired_toast', 'true');
+          toast.error('Session expired. Please login again.', { duration: 4000 });
+        }
+        setTimeout(() => {
+          sessionStorage.removeItem('session_expired_toast');
+          window.location.href = "/login";
+        }, 1500);
       }
       
       const authError = {

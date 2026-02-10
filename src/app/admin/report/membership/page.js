@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { FaIdCard, FaFileCsv, FaFileExcel, FaUsers, FaUserClock, FaUserPlus, FaFilter } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 import BackendErrorFallback from '../../../../components/BackendErrorFallback';
 import api from '@/utils/fetchClient';
 import { PageBreadcrumb } from '@/components/admin';
@@ -53,11 +54,19 @@ export default function MembershipReportPage() {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
+      toast.success('Report downloaded successfully');
     } catch (err) {
       console.error('Download error:', err);
-      if (err?.status === 404) return alert(err.data?.message || 'No data found for selected date range.'), location.reload();
-      if (err?.status === 401) return alert('Your session has expired.'), location.reload();
-      alert('An error occurred while downloading the report.');
+      if (err?.status === 404) {
+        toast.error(err.data?.message || 'No data found for selected date range');
+        return;
+      }
+      if (err?.status === 401) {
+        toast.error('Your session has expired');
+        setTimeout(() => location.reload(), 1500);
+        return;
+      }
+      toast.error('An error occurred while downloading the report');
     }
     setDownloading('');
   };
