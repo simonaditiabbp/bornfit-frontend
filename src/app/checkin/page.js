@@ -275,6 +275,41 @@ export default function BarcodePage() {
     router.push(`/admin/class/classpurchase/insert?user_id=${user.id}&class_id=${classId}`);
   };
 
+  const formatPendingMessage = (message) => {
+  if (!message) return 'Membership not found';
+
+  return message
+    .split(/("pending"|not active)/gi)
+    .map((part, index) => {
+      const lower = part.toLowerCase();
+
+      if (lower.includes('pending')) {
+        return (
+          <span
+            key={index}
+            className="bg-red-100 text-red-700 px-2 py-0.5 rounded font-semibold"
+          >
+            {part}
+          </span>
+        );
+      }
+
+      if (lower.includes('not active')) {
+        return (
+          <span
+            key={index}
+            className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded font-semibold"
+          >
+            {part}
+          </span>
+        );
+      }
+
+      return part;
+    });
+  };
+
+
   // Handle response dari backend (dipakai oleh scan dan manual input)
   const handleQrResponse = async (qr_code) => {
     setLoading(true);
@@ -300,7 +335,7 @@ export default function BarcodePage() {
         } else if (qr_code.startsWith("pt")) {
           setMessage(apiResult.message || 'PT Session not found');
         } else {
-          setMessage(apiResult.message || 'Membership not found');
+          setMessage(formatPendingMessage(apiResult.message) || 'Membership not found');
         }
         setMessageType('error');
       }
@@ -971,14 +1006,53 @@ useEffect(() => {
                 {user?.photo ? (
                   <img src={user.photo.startsWith('http') ? user.photo : `${API_URL?.replace(/\/$/, '')}${user.photo}`} alt="Foto Member" width={300} height={300} className="w-full h-full object-cover scale-105 rounded-xl" />
                 ) : (
-                  <span className="text-gray-500 dark:text-gray-400 text-lg">No photo available</span>
+                  <div className="flex flex-col items-center justify-center gap-4 text-gray-500 dark:text-gray-400">
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="120"
+                      height="120"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="12" cy="8" r="4" /> {/* Head */}
+                      <path d="M4 20c0-4 4-6 8-6s8 2 8 6" /> {/* Body */}
+                    </svg>
+
+                    <span className="text-lg font-medium">
+                      No photo available
+                    </span>
+
+                  </div>
                 )}
               </div>
             </div>
           ) : (
             <div className="flex items-center justify-center h-full">
-              <div className="w-72 h-72 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-2xl border-4 border-red-500 shadow-xl">
-                <svg width="96" height="96" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-alert-triangle text-red-400"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="48" y1="36" x2="48" y2="52"/><line x1="48" y1="68" x2="48.01" y2="68"/></svg>
+              <div className="w-96 h-96 flex flex-col items-center justify-center gap-4 bg-gray-100 dark:bg-gray-700 rounded-2xl border-4 border-red-500 shadow-xl">
+                
+                <svg
+                  viewBox="0 0 24 24"
+                  width="120"
+                  height="120"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-red-400"
+                >
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+
+                <span className="text-gray-500 dark:text-gray-400 text-lg text-center">
+                  No photo available
+                </span>
+
               </div>
             </div>
           )}
@@ -1050,7 +1124,7 @@ useEffect(() => {
                 {renderPTSessionInfo(result)}
               </>
             ) : (
-              <div className="text-gray-500 dark:text-gray-400 text-center">
+              <div className="whitespace-pre-line text-gray-500 dark:text-gray-400 text-center">
                 <p className="mt-2 text-base text-red-500 dark:text-red-400 font-semibold">{message}</p>
                 <p className="mt-2 text-sm text-gray-600 dark:text-gray-500">Please try to check-in again</p>
               </div>
