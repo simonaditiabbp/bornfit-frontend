@@ -317,7 +317,7 @@ export default function BarcodePage() {
     setMessageType('success');
     const { latitude, longitude } = getUserLocation();
     try {
-      const res = await fetch(`${API_URL}/api/checkinptsession/checkin`, {
+      const res = await fetch(`${API_URL}/api/checkins/checkin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, },
         body: JSON.stringify({ qr_code, latitude, longitude }),
@@ -467,7 +467,7 @@ export default function BarcodePage() {
     }
     const fetchLatestCheckin = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/checkinptsession/latest-time/${user.id}`, {
+        const res = await fetch(`${API_URL}/api/checkins/latest-time/${user.id}`, {
           headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
         });
         const data = await res.json();
@@ -619,12 +619,13 @@ export default function BarcodePage() {
                 const { latitude, longitude } = getUserLocation();
                 let qr_code = decodedText;
                 try {
-                  const res = await fetch(`${API_URL}/api/checkinptsession/checkin`, {
+                  const res = await fetch(`${API_URL}/api/checkins/checkin`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, },
                     body: JSON.stringify({ qr_code, latitude, longitude }),
                   });
                   const result = await res.json();
+                  setResult(result);
                   if (res.status === 201 && result.data) {
                     setUser(result.data.user);
                     setMessage(result.message || 'Check-in successful');
