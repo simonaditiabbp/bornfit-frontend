@@ -26,6 +26,14 @@ export default function PTBookingPage() {
   const [total, setTotal] = useState(0);
   const [backendError, setBackendError] = useState(false);
 
+  // Auto-fill search input from URL query parameter
+  useEffect(() => {
+    const searchParam = searchParams.get('search');
+    if (searchParam) {
+      setSearchInput(decodeURIComponent(searchParam));
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     const fetchAll = async () => {
       setLoading(true);
