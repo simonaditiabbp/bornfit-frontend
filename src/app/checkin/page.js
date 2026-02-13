@@ -198,10 +198,12 @@ export default function BarcodePage() {
   const memberSearchDebounceRef = useRef(null);
   
   // Handler for Booking Class button
-  const fetchAvailableClasses = async (page = 1, limit = 10, search = "") => {
+  const fetchAvailableClasses = async (page = 1, limit = 10, search = "", clearMessages = true) => {
     setBookingClassLoading(true);
-    setBookingClassError("");
-    setBookingClassSuccess("");
+    if (clearMessages) {
+      setBookingClassError("");
+      setBookingClassSuccess("");
+    }
     try {
       const params = new URLSearchParams({ page, limit });
       if (search) params.append('search', search);
@@ -275,25 +277,56 @@ export default function BarcodePage() {
       } else {
         checkedInAt = new Date().toISOString();
       }
-      await api.post(`/api/classattendances`, {
+      const response = await api.post(`/api/classattendances`, {
         class_id: classId,
         member_id: user.id,
         status: "Checked-in",
         checked_in_at: checkedInAt
       });
+      
+      // Set success message first
       setBookingClassSuccess("Class booked successfully!");
-      // Refresh data classes untuk update slot
-      fetchAvailableClasses(classPage, classLimit, classSearch);
+      
+      try {
+        await fetchAvailableClasses(classPage, classLimit, classSearch, false); // false = don't clear messages
+      } catch (refreshErr) {
+        console.error("Failed to refresh classes:", refreshErr);
+      }
     } catch (err) {
+      console.error("Booking error:", err);
       setBookingClassError(err.message || "Failed to book class");
+    } finally {
+      setBookingClassLoading(false);
     }
-    setBookingClassLoading(false);
   };
 
   // Handler for buying a class (Silver/other memberships)
-  const handleBuyClass = (classId) => {
-    // Redirect ke halaman class purchase insert dengan user_id dan class_id
-    router.push(`/admin/class/classpurchase/insert?user_id=${user.id}&class_id=${classId}`);
+  const handleBuyClass = async (classId) => {
+    try {
+      // Check if user already purchased this class
+      setBookingClassLoading(true);
+      const response = await api.get(`/api/classpurchases?user_id=${user.id}&class_id=${classId}`);
+      console.log("response: ", response)
+      
+      if (response.data && response.data.length > 0) {
+        // Class already purchased
+        Swal.fire({
+          icon: 'info',
+          title: 'Already Purchased',
+          text: 'You have already purchased this class!',
+          confirmButtonColor: '#3085d6',
+        });
+      } else {
+        // Class not purchased yet, redirect to purchase page
+        router.push(`/admin/class/classpurchase/insert?user_id=${user.id}&class_id=${classId}`);
+      }
+    } catch (error) {
+      console.error('Error checking class purchase:', error);
+      // If error checking, just redirect to purchase page
+      router.push(`/admin/class/classpurchase/insert?user_id=${user.id}&class_id=${classId}`);
+    } finally {
+      setBookingClassLoading(false);
+    }
   };
 
   const formatPendingMessage = (message) => {
@@ -1365,11 +1398,10 @@ useEffect(() => {
                         // Cek apakah user memiliki Gold membership (id=2)
                         // const isGoldMember = user?.membership_plan?.id === 2;
                         const planName = user?.membership_plan?.name?.toLowerCase();
-                        const isGoldMember = planName === "gold" || planName === "platinum";
+                        const isSilverMember = user?.membership_plan?.level == 5 || planName === "silver";
 
                         
-                        if (isGoldMember) {
-                          // Gold member: tampilkan tombol Book
+                        if (!isSilverMember) {
                           return (
                             <button
                               className={`px-4 py-2 rounded-lg font-semibold transition duration-200 ${
