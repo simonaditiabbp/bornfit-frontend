@@ -3,6 +3,8 @@ import { useEffect, useState, useRef } from 'react';
 import Modal from 'react-modal';
 import BookingDataTable from './BookingDataTable';
 import Image from 'next/image';
+import Swal from 'sweetalert2';
+import toast from 'react-hot-toast';
 import { Html5Qrcode } from 'html5-qrcode';
 import { format, differenceInDays, parseISO } from "date-fns";
 import { id, enUS } from "date-fns/locale";
@@ -10,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import BackendErrorFallback from '../../components/BackendErrorFallback';
 import { formatInTimeZone } from "date-fns-tz";
 import { useBirthdayEffect } from '@/hooks/useBirthdayEffect';
+import api from '@/utils/fetchClient';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -17,6 +20,8 @@ export default function BarcodePage() {
     const [result, setResult] = useState(null);
   const manualQrInputRef = useRef(null);
   const [user, setUser] = useState(null); // data member jika ditemukan
+  const [ptSession, setPtSession] = useState(null); // PT session data
+  const [ptSessionStatus, setPtSessionStatus] = useState(null); // 'active' | 'expired' | 'never'
   const [scanMode, setScanMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(''); // pesan dari backend atau status
@@ -47,24 +52,37 @@ export default function BarcodePage() {
     const [bookingPTSuccess, setBookingPTSuccess] = useState("");
     const [ptSearch, setPTSearch] = useState("");
     const ptSearchDebounceRef = useRef(null);
+    const [bookingTimes, setBookingTimes] = useState({}); // Store booking time for each session
+    
+    // Modal state for viewing PT session bookings
+    const [showPTBookingsModal, setShowPTBookingsModal] = useState(false);
+    const [ptBookings, setPTBookings] = useState([]);
+    const [ptBookingsLoading, setPTBookingsLoading] = useState(false);
+    const [ptBookingsError, setPTBookingsError] = useState("");
+    
     // Handler for Booking PT Session button
     const fetchAvailablePTSessions = async (page = 1, limit = 10, search = "") => {
       setBookingPTLoading(true);
       setBookingPTError("");
-      setBookingPTSuccess("");
+      // Don't clear success message to keep it visible after refresh
       try {
         // API sudah sesuai: /api/personaltrainersessions/member/:id
         const params = new URLSearchParams({ page, limit });
         if (search) params.append('search', search);
-        const res = await fetch(`${API_URL}/api/personaltrainersessions/member/${user.id}?${params.toString()}`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-        });
-        const data = await res.json();
-        if (res.ok && Array.isArray(data.data?.sessions)) {
+        const data = await api.get(`/api/personaltrainersessions/member/${user.id}?${params.toString()}`);
+        if (Array.isArray(data.data?.sessions)) {
           setAvailablePTSessions(data.data.sessions);
           setPTTotalRows(data.data.total); // total = jumlah data
           setPTPage(page);
           setPTLimit(limit);
+          
+          // Initialize booking times with current time for all sessions
+          const initialTimes = {};
+          data.data.sessions.forEach(session => {
+            const now = new Date();
+            initialTimes[session.id] = new Date(now.getTime()).toISOString();
+          });
+          setBookingTimes(prev => ({...prev, ...initialTimes}));
         } else {
           setAvailablePTSessions([]);
           setPTTotalRows(0);
@@ -80,6 +98,9 @@ export default function BarcodePage() {
 
     const handleBookingPTSession = () => {
       if (!user?.id) return;
+      setBookingPTError("");
+      setBookingPTSuccess("");
+      setBookingTimes({}); // Reset booking times
       setShowPTModal(true);
       fetchAvailablePTSessions(1, ptLimit, ptSearch);
     };
@@ -108,41 +129,55 @@ export default function BarcodePage() {
       setBookingPTError("");
       setBookingPTSuccess("");
       try {
-        // Cari data session yang dibooking
-        const bookedSession = availablePTSessions.find(s => s.id === sessionId);
-        let bookingTime = null;
-        if (bookedSession && bookedSession.start_date) {
-          // start_date format: "2025-11-28T09:45:00.000Z"
-          bookingTime = bookedSession.start_date;
-        } else {
-          bookingTime = new Date().toISOString();
-        }
-        const res = await fetch(`http://localhost:3002/api/ptsessionbookings`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {})
-          },
-          body: JSON.stringify({
-            user_member_id: user.id,
-            personal_trainer_session_id: sessionId,
-            booking_time: bookingTime,
-            status: "booked"
-          })
+        // Get booking time from input or use current time
+        const bookingTime = bookingTimes[sessionId] || new Date().toISOString();
+        const bookingTimeAdjusted = new Date(new Date(bookingTime).getTime() + 7 * 60 * 60 * 1000).toISOString();
+        
+        await api.post(`/api/ptsessionbookings`, {
+          user_member_id: user.id,
+          personal_trainer_session_id: sessionId,
+          booking_time: bookingTimeAdjusted,
+          status: "booked"
         });
-        if (res.ok) {
-          setBookingPTSuccess("PT session booked successfully!");
-          // fetchAvailablePTSessions(ptPage, ptLimit);
-        } else {
-          const data = await res.json();
-          setBookingPTError(data.message || "Failed to book PT session");
-        }
+        setBookingPTSuccess("PT session booked successfully!");
+        // Refresh data PT sessions untuk update remaining session
+        fetchAvailablePTSessions(ptPage, ptLimit, ptSearch);
       } catch (err) {
         console.log("error: ", err);
-        setBookingPTError("Failed to book PT session");
+        setBookingPTError(err.data.message || "Failed to book PT session");
       }
       setBookingPTLoading(false);
     };
+    
+  // Handler for viewing PT session bookings
+  const handleViewPTBookings = async () => {
+    if (!user?.id) return;
+    setShowPTBookingsModal(true);
+    setPTBookingsLoading(true);
+    setPTBookingsError("");
+    try {
+      const data = await api.get(`/api/ptsessionbookings/member/${user.id}`);
+      if (Array.isArray(data.data?.bookings)) {
+        setPTBookings(data.data.bookings);
+      } else {
+        setPTBookings([]);
+        setPTBookingsError("No PT session bookings found");
+      }
+    } catch (err) {
+      console.error("Error fetching PT bookings:", err);
+      setPTBookings([]);
+      setPTBookingsError(err.message || "Failed to fetch PT session bookings");
+    }
+    setPTBookingsLoading(false);
+  };
+  
+  // Handler for navigating to admin PT booking page with member name
+  const handleGoToAdminPTBooking = () => {
+    if (!user?.name) return;
+    const memberName = encodeURIComponent(user.name);
+    router.push(`/admin/pt/booking?search=${memberName}`);
+  };
+  
   const [showClassModal, setShowClassModal] = useState(false);
   const [availableClasses, setAvailableClasses] = useState([]);
   const [classTotalRows, setClassTotalRows] = useState(0);
@@ -170,11 +205,8 @@ export default function BarcodePage() {
     try {
       const params = new URLSearchParams({ page, limit });
       if (search) params.append('search', search);
-      const res = await fetch(`${API_URL}/api/classes?today=true&${params.toString()}`, {
-        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-      });
-      const data = await res.json();
-      if (res.ok && Array.isArray(data.data?.classes)) {
+      const data = await api.get(`/api/classes?today=true&${params.toString()}`);
+      if (Array.isArray(data.data?.classes)) {
         setAvailableClasses(data.data.classes);
         setClassTotalRows(data.data.total || 0);
         setClassPage(data.data.page || 1);
@@ -243,28 +275,17 @@ export default function BarcodePage() {
       } else {
         checkedInAt = new Date().toISOString();
       }
-      const res = await fetch(`${API_URL}/api/classattendances`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({
-          class_id: classId,
-          member_id: user.id,
-          status: "Checked-in",
-          checked_in_at: checkedInAt
-        })
+      await api.post(`/api/classattendances`, {
+        class_id: classId,
+        member_id: user.id,
+        status: "Checked-in",
+        checked_in_at: checkedInAt
       });
-      if (res.ok) {
-        setBookingClassSuccess("Class booked successfully!");
-        // fetchAvailableClasses(classPage, classLimit);
-      } else {
-        const data = await res.json();
-        setBookingClassError(data.message || "Failed to book class");
-      }
+      setBookingClassSuccess("Class booked successfully!");
+      // Refresh data classes untuk update slot
+      fetchAvailableClasses(classPage, classLimit, classSearch);
     } catch (err) {
-      setBookingClassError("Failed to book class");
+      setBookingClassError(err.message || "Failed to book class");
     }
     setBookingClassLoading(false);
   };
@@ -315,21 +336,44 @@ export default function BarcodePage() {
     setLoading(true);
     setMessage('');
     setMessageType('success');
+    setPtSession(null); // Reset PT session setiap check-in baru
+    setPtSessionStatus(null); // Reset PT session status
     const { latitude, longitude } = getUserLocation();
     try {
-      const res = await fetch(`${API_URL}/api/checkins/checkin`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, },
-        body: JSON.stringify({ qr_code, latitude, longitude }),
-      });
-      const apiResult = await res.json();
+      const apiResult = await api.post(`/api/checkins/checkin`, { qr_code, latitude, longitude });
       setResult(apiResult);
-      if (res.status === 201 && apiResult.data) {
+      if (apiResult.data) {
         setUser(apiResult.data.user);
         setMessage(apiResult.message || 'Check-in successfully');
         setMessageType('success');
+        
+        // Fetch latest PT session (active or expired)
+        if (apiResult.data.user?.id) {
+          try {
+            const ptData = await api.get(`/api/personaltrainersessions/member/${apiResult.data.user.id}/latest`);
+            if (ptData.data) {
+              setPtSession(ptData.data);
+              // Check if PT session is active or not
+              if (ptData.data.status === 'active') {
+                setPtSessionStatus('active');
+              } else {
+                setPtSessionStatus('expired');
+              }
+            } else {
+              setPtSession(null);
+              setPtSessionStatus('never');
+            }
+          } catch (e) {
+            console.log('Error fetching PT session:', e);
+            // If error (404 or other), assume never registered
+            setPtSession(null);
+            setPtSessionStatus('never');
+          }
+        }
       } else {
         setUser(null);
+        setPtSession(null);
+        setPtSessionStatus(null);
         if (qr_code.startsWith("member")) {
           setMessage(apiResult.message || 'Member not found');
         } else if (qr_code.startsWith("pt")) {
@@ -341,8 +385,10 @@ export default function BarcodePage() {
       }
     } catch (err) {
       console.log("error: ", err);
+      setPtSession(null);
+      setPtSessionStatus(null);
       setUser(null);
-      setMessage('An error occurred during check-in');
+      setMessage(err.data.message || 'An error occurred during check-in');
       setMessageType('error');
     } finally {
       setLoading(false);
@@ -367,10 +413,22 @@ export default function BarcodePage() {
     }
   };
 
-  const handleLogout = () => {
-    if (confirm('Yakin ingin logout?')) {
+  const handleLogout = async () => {
+    const confirmLogout = await Swal.fire({
+      title: '⚠️ Logout Confirmation',
+      html: 'Are you sure you want to logout?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Logout!',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true
+    });
+    if (confirmLogout.isConfirmed) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      toast.success('Logged out successfully', { duration: 1500 });
       router.push('/login');
     }
   };  
@@ -393,11 +451,8 @@ export default function BarcodePage() {
     setMemberSearchLoading(true);
     setMemberSearchError("");
     try {
-      const res = await fetch(`${API_URL}/api/users?search=${encodeURIComponent(searchQuery)}&role=member&limit=20`, {
-        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-      });
-      const data = await res.json();
-      if (res.ok && Array.isArray(data.data?.users)) {
+      const data = await api.get(`/api/users?search=${encodeURIComponent(searchQuery)}&role=member&limit=20`);
+      if (Array.isArray(data.data?.users)) {
         setSearchedMembers(data.data.users);
       } else {
         setSearchedMembers([]);
@@ -443,11 +498,8 @@ export default function BarcodePage() {
     if (!showPTModal) return;
     const fetchPlans = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/ptsessionplans`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-        });
-        const data = await res.json();
-        if (res.ok && Array.isArray(data.data?.plans)) {
+        const data = await api.get(`/api/ptsessionplans?limit=10000`);
+        if (Array.isArray(data.data?.plans)) {
           setPlans(data.data.plans);
         } else {
           setPlans([]);
@@ -467,10 +519,7 @@ export default function BarcodePage() {
     }
     const fetchLatestCheckin = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/checkins/latest-time/${user.id}`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-        });
-        const data = await res.json();
+        const data = await api.get(`/api/checkins/latest-time/${user.id}`);
         if (data.status === 'success' && data.data?.checkin_time) {
           // Format datetime menggunakan date-fns
           // const formattedDate = `${data.data.checkin_time} || ${format(parseISO(data.data.checkin_time), "dd MMM yyyy, HH:mm", { locale: enUS })}`;
@@ -619,19 +668,40 @@ export default function BarcodePage() {
                 const { latitude, longitude } = getUserLocation();
                 let qr_code = decodedText;
                 try {
-                  const res = await fetch(`${API_URL}/api/checkins/checkin`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, },
-                    body: JSON.stringify({ qr_code, latitude, longitude }),
-                  });
-                  const result = await res.json();
+                  const result = await api.post(`/api/checkins/checkin`, { qr_code, latitude, longitude });
                   setResult(result);
-                  if (res.status === 201 && result.data) {
+                  if (result.data) {
                     setUser(result.data.user);
                     setMessage(result.message || 'Check-in successful');
                     setMessageType('success');
+                    
+                    // Fetch latest PT session (active or expired)
+                    if (result.data.user?.id) {
+                      try {
+                        const ptData = await api.get(`/api/personaltrainersessions/member/${result.data.user.id}/latest`);
+                        if (ptData.data) {
+                          setPtSession(ptData.data);
+                          // Check if PT session is active or not
+                          if (ptData.data.status === 'active') {
+                            setPtSessionStatus('active');
+                          } else {
+                            setPtSessionStatus('expired');
+                          }
+                        } else {
+                          setPtSession(null);
+                          setPtSessionStatus('never');
+                        }
+                      } catch (e) {
+                        console.log('Error fetching PT session:', e);
+                        // If error (404 or other), assume never registered
+                        setPtSession(null);
+                        setPtSessionStatus('never');
+                      }
+                    }
                   } else {
-                    setUser(null);  
+                    setUser(null);
+                    setPtSession(null);
+                    setPtSessionStatus(null);
                     if (qr_code.startsWith("member")) {
                       setMessage(result.message || 'Member not found');
                     } else if (qr_code.startsWith("pt")) {
@@ -647,7 +717,9 @@ export default function BarcodePage() {
                   setScanMode(false);
                 } catch (err) {
                   setUser(null);
-                  setMessage('An error occurred during check-in');
+                  setPtSession(null);
+                  setPtSessionStatus(null);
+                  setMessage(err.message || 'An error occurred during check-in');
                   setMessageType('error');
                   try { await html5QrCode.stop(); } catch (e) { console.error('Error stopping scanner after error:', e); }
                   setScanner(null);
@@ -750,18 +822,16 @@ export default function BarcodePage() {
         }
 
         setLoading(true);
-        const res = await fetch(`${API_URL}/api/users`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-        // const result = await res.json();
-        if (res.status === 401) {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          router.replace('/login');
+        try {
+          await api.get(`/api/users`);
+        } catch (err) {
+          if (err.message?.includes('401') || err.message?.includes('Unauthorized')) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            router.replace('/login');
+          } else {
+            throw err;
+          }
         }
       } catch (err) {
         setBackendError(true);
@@ -792,12 +862,50 @@ useEffect(() => {
   }
 
   // Helper untuk render info PT Session
-  const renderPTSessionInfo = (result) => {
-    // if (!result?.data?.type?.toLowerCase().includes('pt')) return null;
-    const ptsession = Array.isArray(result.data?.ptsessions) ? result.data.ptsessions[0] : null;
-    if (!ptsession) return null;
-    const ptplan = ptsession.ptplan;
-    const trainer = ptsession.trainer;
+  const renderPTSessionInfo = () => {
+    // If never registered for PT session
+    if (ptSessionStatus === 'never') {
+      return (
+        <div className="w-full mb-4 p-4 rounded-xl bg-gradient-to-br from-gray-50/80 to-blue-50/80 dark:from-gray-900/20 dark:to-blue-900/20 border border-gray-200/70 dark:border-gray-700/50 shadow-[0_8px_20px_rgba(147,51,234,0.15)]">
+          <div className="flex items-center gap-2 mb-3">
+            <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div className="text-sm font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wide">PT Session Info</div>
+          </div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="font-medium">Belum pernah registrasi PT session.</p>
+          </div>
+        </div>
+      );
+    }
+
+    // If has PT session but expired
+    if (ptSessionStatus === 'expired' && ptSession) {
+      const lastActiveDate = ptSession.start_date 
+        ? format(parseISO(ptSession.start_date), "dd MMM yyyy", { locale: enUS })
+        : "–";
+      return (
+        <div className="w-full mb-4 p-4 rounded-xl bg-gradient-to-br from-orange-50/80 to-red-50/80 dark:from-orange-900/20 dark:to-red-900/20 border border-orange-200/70 dark:border-orange-700/50 shadow-[0_8px_20px_rgba(147,51,234,0.15)]">
+          <div className="flex items-center gap-2 mb-3">
+            <svg className="w-5 h-5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div className="text-sm font-extrabold text-orange-700 dark:text-orange-300 uppercase tracking-wide">PT Session Info</div>
+          </div>
+          <div className="text-sm text-orange-600 dark:text-orange-400">
+            <p className="font-medium">PT session terakhir aktif pada tanggal <span className="font-bold">{lastActiveDate}</span>.</p>
+            <p className="mt-2 text-xs">Status: <span className="inline-block px-2 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300">{ptSession.status || 'expired'}</span></p>
+          </div>
+        </div>
+      );
+    }
+
+    // If active PT session exists
+    if (!ptSession) return null;
+    const ptsession = ptSession;
+    const ptplan = ptsession.pt_session_plan;
+    const trainer = ptsession.user_pt;
     // PT session period calculation
     let ptPeriod = "";
     let ptRemainingText = null;
@@ -835,31 +943,45 @@ useEffect(() => {
       }
     }
     return (
-      <div className="mt-6 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 shadow">
-        <div className="font-semibold text-gray-800 dark:text-amber-400 mb-2">PT Session Info</div>
-        {/* <div className="mb-1 text-gray-700 dark:text-gray-200"><span className="font-semibold">Session:</span> {ptsession.ptplan.name ? ptsession.ptplan.name : ""} - {ptsession.trainer.name ? ptsession.trainer.name : ""}</div> */}
-        <div className="mb-1 text-gray-700 dark:text-gray-200"><span className="font-semibold">Expired Period:</span> {ptPeriod}</div>
-        <div className="mb-1 text-gray-700 dark:text-gray-200"><span className="font-semibold">Trainer:</span> {trainer?.name}</div>
-        {/* <div className="mb-1 text-gray-700 dark:text-gray-200"><span className="font-semibold">Plan Duration:</span> {ptplan?.duration} days</div> */}
-        <div className="mb-1 text-gray-700 dark:text-gray-200"><span className="font-semibold">Max Session:</span> {ptplan?.max_session}</div>
-        <div className="mb-1 text-gray-700 dark:text-gray-200">
-          <span className="font-semibold">Session Status:</span> {' '}
-          {ptsession.status === 'active' && (
-            <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full font-bold">Active</span>
-          )}
-          {ptsession.status === 'pending' && (
-            <span className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-2 py-1 rounded-full font-bold">Finished</span>
-          )}
-          {/* {ptsession.status === 'expired' && (
-            <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full font-bold">Cancelled</span>
-          )} */}
-          {ptsession.status !== 'active' && ptsession.status !== 'selesai' && ptsession.status !== 'batal' && (
-            <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full font-bold">{ptsession.status}</span>
-          )}
+      <div className="w-full mb-4 p-4 rounded-xl bg-gradient-to-br from-amber-50/80 to-red-50/80 dark:from-amber-900/20 dark:to-red-900/20 border border-amber-200/70 dark:border-amber-700/50 shadow-[0_8px_20px_rgba(147,51,234,0.15)]">
+        <div className="flex items-center gap-2 mb-3">
+          <svg className="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          <div className="text-sm font-extrabold text-amber-700 dark:text-amber-300 uppercase tracking-wide">PT Session Active</div>
+        </div>
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between items-center">
+            <span className="text-amber-600/80 dark:text-amber-400/80 font-medium">Expired Period:</span>
+            <span className="font-bold text-amber-800 dark:text-amber-200">{ptPeriod || "–"}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-amber-600/80 dark:text-amber-400/80 font-medium">Trainer:</span>
+            <span className="font-bold text-amber-800 dark:text-amber-200">{trainer?.name || "–"}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-amber-600/80 dark:text-amber-400/80 font-medium">Max Session:</span>
+            <span className="font-bold text-amber-800 dark:text-amber-200">{ptplan?.max_session || "–"}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-amber-600/80 dark:text-amber-400/80 font-medium">Remaining:</span>
+            <span className="font-bold text-amber-800 dark:text-amber-200">{ptsession?.remaining_session ?? "–"}</span>
+          </div>
+          <div className="pt-2 border-t border-amber-200/50 dark:border-amber-700/50">
+            {ptsession.status === 'active' && (
+              <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">Active</span>
+            )}
+            {ptsession.status === 'pending' && (
+              <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600">Finished</span>
+            )}
+            {ptsession.status !== 'active' && ptsession.status !== 'pending' && ptsession.status !== 'selesai' && ptsession.status !== 'batal' && (
+              <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-300 dark:border-amber-700">{ptsession.status}</span>
+            )}
+          </div>
         </div>
         {ptRemainingText && (
-          <div className={`mt-3 font-bold text-lg ${ptDiffMs > 0 ? 'text-red-500 dark:text-red-400' : 'text-gray-600 dark:text-gray-500'}`}>
-            <span className="font-semibold">PT Session deadline:</span> {ptRemainingText}
+          <div className={`mt-3 pt-3 border-t border-amber-200/50 dark:border-amber-700/50 text-xs font-bold ${ptDiffMs > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-gray-500 dark:text-gray-400'}`}>
+            ⏰ Deadline: {ptRemainingText}
           </div>
         )}
       </div>
@@ -868,7 +990,7 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-2 py-8">
-      <div className="absolute top-4 right-6 flex gap-3">
+      <div className="w-full flex flex-wrap justify-center gap-3 px-2 lg:w-auto lg:flex-nowrap lg:justify-end lg:absolute lg:top-4 lg:right-6">
         <button
           onClick={handleOpenManualCheckin}
           className="flex items-center gap-2 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow-lg transition-all duration-200"
@@ -913,7 +1035,7 @@ useEffect(() => {
         </button>        
       </div>
 
-      <h1 className="text-4xl font-extrabold mb-8 text-gray-800 dark:text-amber-400 drop-shadow-lg tracking-tight text-center">
+      <h1 className="text-4xl font-extrabold mb-8 mt-6 lg:mt-0 text-gray-800 dark:text-amber-400 drop-shadow-lg tracking-tight text-center">
         <span className="inline-block align-middle mr-2">
           <svg width="40" height="40" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-camera"><rect x="3" y="7" width="34" height="26" rx="4" ry="4"/><circle cx="20" cy="22" r="7"/><path d="M8 7V5a4 4 0 0 1 4-4h4"/></svg>
         </span>
@@ -997,13 +1119,13 @@ useEffect(() => {
 
       {/* ===== Layout hasil scan (full width card, grid 3 kolom responsif) ===== */}
       {message && (
-        <div className={`bg-white dark:bg-gray-800 rounded-2xl shadow-2xl min-h-[75vh] w-full max-w-[1500px] border ${messageType === 'success' ? 'border-green-500' : 'border-red-500'} p-16 grid grid-cols-1 md:grid-cols-3 gap-20 justify-center items-center`}
+        <div className={`bg-white dark:bg-gray-800 rounded-2xl shadow-2xl min-h-[75vh] w-full max-w-[1500px] border ${messageType === 'success' ? 'border-green-500' : 'border-red-500'} p-12 grid grid-cols-1 md:grid-cols-3 gap-20 justify-center items-center`}
           style={{ minHeight: '75vh', minWidth: '340px' }}
         >
           {/* kolom kiri: foto (tampil hanya jika success) */}
           {messageType === 'success' ? (
             <div className="flex items-center justify-center h-full">
-              <div className="w-96 h-96 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center text-gray-500 dark:text-gray-400 font-medium overflow-hidden border-4 border-gray-600 dark:border-amber-400 shadow-2xl p-2">
+              <div className="w-96 h-96 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center text-gray-500 dark:text-gray-400 font-medium overflow-hidden border-1 border-amber-400 dark:border-amber-400 shadow-2xl p-2">
                 {user?.photo ? (
                   <img src={user.photo.startsWith('http') ? user.photo : `${API_URL?.replace(/\/$/, '')}${user.photo}`} alt="Foto Member" width={300} height={300} className="w-full h-full object-cover scale-105 rounded-xl" />
                 ) : (
@@ -1069,21 +1191,26 @@ useEffect(() => {
                     <span className="text-2xl font-bold text-pink-500 dark:text-pink-300 animate-bounce">Happy Birthday! 🎂</span>
                   </div>
                 )}
-                <p className="font-bold text-3xl text-gray-800 dark:text-amber-400 mb-4 leading-tight">{user?.name || '-'}</p>
-                <p className="mb-2 text-lg"><span className="font-semibold">Email:</span> {user?.email || '-'}</p>
-                <p className="mb-2 text-lg">
-                  {/* <span className="font-semibold whitespace-nowrap">Membership period:</span>
-                  <span className="whitespace-nowrap"> {startDate}{endDate ? ` - ${endDate}` : ""}</span> */}
-                  <span className="font-semibold whitespace-nowrap">Membership expired period:</span>
-                  <span className="whitespace-nowrap"> {endDate ? endDate : ""}</span>
-                </p>
-                <p className="mb-2 text-lg">
-                  <span className="font-semibold">Membership type: </span>
+                <p className="font-bold text-3xl text-gray-800 dark:text-amber-400 mb-2 leading-tight">{user?.name || '-'}</p>
+                
+                {/* Email */}
+                <div className="mb-1 p-3 rounded-lg bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/50">
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Email Address</p>
+                  <p className="text-base font-semibold text-slate-700 dark:text-slate-200 break-all">{user?.email || '-'}</p>
+                </div>
 
-                  <span
-                    className={`
-                      px-3 py-1 rounded-full font-semibold border
-                      ${
+                {/* Membership Expired Period */}
+                <div className="mb-1 p-3 rounded-lg bg-rose-50/70 dark:bg-rose-900/20 border border-rose-200/60 dark:border-rose-700/50">
+                  <p className="text-xs font-medium text-rose-600 dark:text-rose-400 mb-1">Membership Expired Period</p>
+                  <p className="text-base font-bold text-rose-700 dark:text-rose-300">{endDate ? endDate : "-"}</p>
+                </div>
+
+                {/* Membership Type */}
+                <div className="mb-1 p-3 rounded-lg bg-amber-50/70 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-700/50">
+                  <p className="text-xs font-medium text-amber-600 dark:text-amber-400 mb-1">Membership Type</p>
+                  <div className="flex flex-wrap gap-2">
+                    <span
+                      className={`inline-block px-3 py-1.5 rounded-full text-sm font-bold border break-words ${
                         user?.membership_plan?.name?.toLowerCase() === "platinum"
                           ? "bg-gray-100 text-gray-800 border-gray-300"
                         : user?.membership_plan?.name?.toLowerCase() === "gold"
@@ -1092,37 +1219,34 @@ useEffect(() => {
                           ? "bg-slate-100 text-slate-700 border-slate-300"
                         : user?.membership_plan?.name?.toLowerCase() === "trial"
                           ? "bg-blue-100 text-blue-700 border-blue-300"
-                        : "bg-gray-100 text-gray-500 border-gray-300"
-                      }
-                    `}
-                  >
-                    {user?.membership_plan?.name || "-"}
-                  </span>
-                </p>
-                {/* <p className="mb-2 text-lg"><span className="font-semibold">Membership status:</span> {user?.membership?.status === 'active' ? (
-                  <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full font-bold">Active</span>
-                ) : (
-                  <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full font-bold">Inactive</span>
-                )}</p> */}
-                <p className="mb-2 text-lg">
-                  <span className="font-semibold">Latest Checkin:</span> 
+                        : "bg-amber-100 text-amber-500 border-amber-300"
+                      }`}
+                      style={{ maxWidth: '100%', wordBreak: 'break-word' }}
+                    >
+                      {user?.membership_plan?.name || "-"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Latest Checkin */}
+                <div className="mb-1 p-3 rounded-lg bg-emerald-50/70 dark:bg-emerald-900/20 border border-emerald-200/60 dark:border-emerald-700/50">
+                  <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 mb-1">Latest Check-in</p>
                   {latestCheckin ? (
-                    <span className="text-green-600 dark:text-green-400 font-bold ml-1">{latestCheckin}</span>
+                    <p className="text-base font-bold text-emerald-700 dark:text-emerald-300">{latestCheckin}</p>
                   ) : (
-                    <span className="text-gray-500 dark:text-gray-400 ml-1">-</span>
+                    <p className="text-base font-semibold text-slate-400 dark:text-slate-500">No recent check-in</p>
                   )}
-                </p>
+                </div>
                 {diffMs > 0 && remainingDays <= 7 && (
                   <>
-                    <p className="text-red-500 dark:text-red-400 font-bold text-lg mt-4">
+                    <p className="text-red-500 dark:text-red-400 font-bold text-lg mt-1">
                        Membership deadline: {remainingText}
                     </p>
-                    <p className="mt-2 text-amber-600 dark:text-amber-400 text-base">
-                      Please renew your membership soon by contacting admin 08123123123
+                    <p className="mt-1 text-amber-600 dark:text-amber-400 text-base">
+                      Please renew your membership soon by contacting admin +62 857-8213-5542
                     </p>
                   </>
                 )}
-                {renderPTSessionInfo(result)}
               </>
             ) : (
               <div className="whitespace-pre-line text-gray-500 dark:text-gray-400 text-center">
@@ -1134,8 +1258,11 @@ useEffect(() => {
 
           {/* kolom kanan: tombol check-in / input manual / message */}
           <div className="flex flex-col text-lg items-center justify-center gap-4">
+            {/* PT Session Info */}
+            {renderPTSessionInfo()}
+            
             <button
-              className="flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 dark:bg-amber-400 dark:hover:bg-amber-500 text-white dark:text-gray-900 px-6 py-3 rounded-lg font-bold shadow-lg transition-all duration-200 text-lg w-full"
+              className="group relative flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-lg font-extrabold uppercase tracking-wider text-white shadow-[0_1px_12px_rgba(245,158,11,0.35)] transition-all duration-200 w-full bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-400 hover:via-orange-400 hover:to-rose-400 focus:outline-none focus:ring-2 focus:ring-amber-400/60 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800 hover:-translate-y-0.5"
               onClick={() => { setScanMode(true); setMessage(''); }}
               disabled={loading}
             >
@@ -1154,11 +1281,12 @@ useEffect(() => {
                 <path d="M5 7V5a2 2 0 0 1 2-2h2" />
               </svg>
               Scan Again
+              <span className="absolute inset-0 rounded-xl ring-1 ring-white/30" />
             </button>
             <input
               type="text"
               placeholder="Enter QR code manually"
-              className="w-full p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-gray-400 mb-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder:text-gray-400 shadow"
+              className="w-full p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-lg tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder:text-gray-400 shadow"
               value={buffer}
               onChange={(e) => handleBufferedInput(e.target.value)}
               autoFocus
@@ -1167,11 +1295,12 @@ useEffect(() => {
 
             {/* Tambahan tombol booking class dan PT session */}
             <button
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold shadow-lg transition w-full"
+              className="group relative w-full rounded-xl border border-emerald-300/70 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-6 py-3 text-lg font-extrabold uppercase tracking-wider text-white shadow-[0_12px_28px_rgba(16,185,129,0.35)] transition-all duration-200 hover:from-emerald-400 hover:via-teal-400 hover:to-cyan-400 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-emerald-300/70 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900"
               onClick={handleBookingClass}
               disabled={loading || !user}
             >
               Booking Class
+              <span className="absolute inset-0 rounded-xl ring-1 ring-white/25" />
             </button>
                   {/* Modal Booking Class */}
             <Modal
@@ -1304,19 +1433,21 @@ useEffect(() => {
               </div>
             </Modal>
             <button
-              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-bold shadow-lg transition w-full"
+              className="group relative w-full rounded-xl border border-blue-300/70 bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500 px-6 py-3 text-lg font-extrabold uppercase tracking-wider text-white shadow-[0_12px_28px_rgba(59,130,246,0.35)] transition-all duration-200 hover:from-sky-400 hover:via-blue-400 hover:to-indigo-400 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-300/70 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900"
               onClick={handleBookingPTSession}
               disabled={loading || !user}
             >
               Booking PT Session
+              <span className="absolute inset-0 rounded-xl ring-1 ring-white/25" />
             </button>
+            
             {/* Modal Booking PT Session */}
             <Modal
               isOpen={showPTModal}
               onRequestClose={() => setShowPTModal(false)}
               contentLabel="Booking PT Session"
               ariaHideApp={false}
-              className=" bg-white dark:bg-gray-800 rounded-xl max-w-[1200px] min-w-[750px] w-full mx-auto p-8 shadow-2xl outline-none max-h-[95vh] overflow-y-auto border border-gray-200 dark:border-gray-700 " overlayClassName="fixed inset-0 bg-black/70 flex items-center  justify-center z-[1000]" portalClassName="z-[1000]"
+              className=" bg-white dark:bg-gray-800 rounded-xl max-w-[1400px] min-w-[900px] w-full mx-auto p-8 shadow-2xl outline-none max-h-[95vh] overflow-y-auto border border-gray-200 dark:border-gray-700 " overlayClassName="fixed inset-0 bg-black/70 flex items-center  justify-center z-[1000]" portalClassName="z-[1000]"
             >
               <div className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-4 mb-6">
                 <h2 className="text-3xl font-extrabold text-amber-500 dark:text-amber-400">💪 Booking PT Session</h2>
@@ -1344,25 +1475,71 @@ useEffect(() => {
                   autoFocus
                 />
                 <span className="text-gray-500 dark:text-gray-400 text-sm">Press Enter or wait for 0.4 seconds</span>
+                <button
+                  className="ml-auto px-4 py-2 rounded-lg border border-violet-300/70 bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 text-white font-semibold shadow-md transition-all duration-200 hover:from-violet-400 hover:via-purple-400 hover:to-fuchsia-400 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-violet-300/70"
+                  onClick={handleViewPTBookings}
+                >
+                  📋 View PT Bookings
+                </button>
               </div>
               <div className="shadow-lg rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
                 <BookingDataTable
                   columns={[
                     // { name: 'Nama Session', selector: row => row.name, sortable: true },
-                    { name: 'Name', selector: row => {
+                    { name: 'Name', cell: row => {
                       const plan = plans.find(p => p.id === row.pt_session_plan_id);
                       return plan ? plan.name : '-';
                     }, sortable: true },
-                    { name: 'Start', selector: row => row.start_date ? row.start_date.slice(0, 16).replace('T', ' ') : '-', sortable: true },
-                    { name: 'End', selector: row => row.end_date ? row.end_date.slice(0, 16).replace('T', ' ') : '-', sortable: true },
-                    // { name: 'Status', selector: row => row.status, sortable: true },
-                    { name: 'Trainer', selector: row => row.name?.split(' - ')[1]?.split(' (')[0] || '-', sortable: true },
-                    { name: 'Remaining Session', selector: row => {
-                      const plan = plans.find(p => p.id === row.pt_session_plan_id);
-                      const max = plan ? plan.max_session : '...';
-                      const sisa = typeof row.remaining_session === 'number' ? row.remaining_session : '...';
-                      return `${sisa} of ${max} sessions remaining`;
-                    }, sortable: true },
+                    { name: 'Start', cell: row => row.start_date ? row.start_date.slice(0, 16).replace('T', ' ') : '-', sortable: true },
+                    { name: 'End', cell: row => row.end_date ? row.end_date.slice(0, 16).replace('T', ' ') : '-', sortable: true },
+                    // { name: 'Status', cell: row => row.status, sortable: true },
+                    { name: 'Trainer', cell: row => row.name?.split(' - ')[1]?.split(' (')[0] || '-', sortable: true },
+                    {
+                      name: 'Remaining Session',
+                      cell: row => {
+                        const plan = plans.find(p => p.id === row.pt_session_plan_id);
+                        const max = plan ? plan.max_session : '...';
+                        const sisa = typeof row.remaining_session === 'number'
+                          ? row.remaining_session
+                          : '...';
+
+                        return `${sisa} of ${max} sessions remaining`;
+                      },
+                      sortable: true,
+                    },
+                    {
+                      name: 'Booking Time',
+                      cell: row => {
+                        // Get the booking time for this row
+                        const storedTime = bookingTimes[row.id];
+                        let displayValue = '';
+                        
+                        if (storedTime) {
+                          // Convert UTC ISO string to local datetime-local format
+                          const date = new Date(storedTime);
+                          displayValue = new Date(date.getTime() - date.getTimezoneOffset() * 60000 ).toISOString().slice(0, 16);
+                        }
+                        
+                        return (
+                          <input
+                            type="datetime-local"
+                            className="p-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 min-w-[180px]"
+                            value={displayValue}
+                            onChange={(e) => {
+                              const localDateTime = e.target.value;
+                              if (localDateTime) {
+                                // Convert local datetime-local to UTC ISO string
+                                const isoString = new Date(localDateTime).toISOString();
+                                setBookingTimes(prev => ({...prev, [row.id]: isoString}));
+                              }
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        );
+                      },
+                      sortable: false,
+                      width: '200px',
+                    },
                     {
                       name: 'Action',
                       cell: row => (
@@ -1403,6 +1580,125 @@ useEffect(() => {
                 <button
                   className="bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 px-5 py-2 rounded-lg font-bold transition duration-200 shadow-md"
                   onClick={() => setShowPTModal(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </Modal>
+            
+            {/* Modal View PT Session Bookings */}
+            <Modal
+              isOpen={showPTBookingsModal}
+              onRequestClose={() => setShowPTBookingsModal(false)}
+              contentLabel="PT Session Bookings"
+              ariaHideApp={false}
+              className="bg-white dark:bg-gray-800 rounded-xl max-w-[900px] w-full mx-auto p-6 shadow-2xl outline-none max-h-[85vh] overflow-y-auto border border-gray-200 dark:border-gray-700"
+              overlayClassName="fixed inset-0 bg-black/60 flex items-center justify-center z-[2000]"
+              portalClassName="z-[2000]"
+            >
+              <div className="border-b border-gray-200 dark:border-gray-700 pb-3 mb-4">
+                <div className="flex justify-between items-center mb-3">
+                  <h2 className="text-2xl font-extrabold text-purple-600 dark:text-purple-400">
+                    📋 PT Session Bookings History
+                  </h2>
+                  <button
+                    onClick={() => setShowPTBookingsModal(false)}
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <button
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded-lg font-semibold transition duration-200 shadow-md flex items-center gap-2 text-sm"
+                  onClick={handleGoToAdminPTBooking}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  Go to Admin PT Booking
+                </button>
+              </div>
+              
+              {ptBookingsLoading && (
+                <div className="text-center py-8">
+                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+                  <p className="mt-4 text-gray-600 dark:text-gray-400">Loading PT session bookings...</p>
+                </div>
+              )}
+              
+              {ptBookingsError && !ptBookingsLoading && (
+                <div className="p-4 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-200 border-l-4 border-yellow-500 rounded-md mb-4">
+                  {ptBookingsError}
+                </div>
+              )}
+              
+              {!ptBookingsLoading && !ptBookingsError && ptBookings.length === 0 && (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  No PT session bookings found for this member.
+                </div>
+              )}
+              
+              {!ptBookingsLoading && ptBookings.length > 0 && (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Booking Time
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          PT Name
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Session Plan
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Status
+                        </th>
+                        {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Created At
+                        </th> */}
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                      {ptBookings.map((booking) => (
+                        <tr key={booking.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
+                            {booking.booking_time ? new Date(new Date(booking.booking_time).getTime() - 7 * 60 * 60 * 1000).toLocaleString('en-GB', { timeZone: 'Asia/Jakarta' }) : '-'}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
+                            {booking.personal_trainer_session?.user_pt?.name || '-'}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
+                            {booking.personal_trainer_session?.pt_session_plan?.name || '-'}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm">
+                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                              booking.status === 'completed' 
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                : booking.status === 'cancelled'
+                                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                            }`}>
+                              {booking.status}
+                            </span>
+                          </td>
+                          {/* <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            {booking.created_at ? new Date(new Date(booking.created_at).getTime() - 7 * 60 * 60 * 1000).toLocaleString('en-GB', { timeZone: 'Asia/Jakarta' }) : '-'}
+                          </td> */}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              
+              <div className="flex justify-end mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <button
+                  className="bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 px-5 py-2 rounded-lg font-bold transition duration-200 shadow-md"
+                  onClick={() => setShowPTBookingsModal(false)}
                 >
                   Close
                 </button>

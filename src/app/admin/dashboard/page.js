@@ -239,12 +239,14 @@ export default function AdminDashboardPage() {
         ]}
       />
 
-      {/* Weekly check-in chart */}
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6 mb-5">
-        <div className="mb-4 flex items-center justify-between">
-          <div className={`text-lg font-bold ${theme === 'dark' ? 'text-amber-700' : 'text-gray-800'} dark:text-amber-200`}>Member Check-ins per Day (Last 7 Days)</div>
-        </div>
-        <div className="w-full">
+      {/* Chart and Birthday Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-5">
+        {/* Weekly check-in chart */}
+        <div className="lg:col-span-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6">
+          <div className="mb-4 flex items-center justify-between">
+            <div className={`text-lg font-bold ${theme === 'dark' ? 'text-amber-700' : 'text-gray-800'} dark:text-amber-200`}>Member Check-ins per Day (Last 7 Days)</div>
+          </div>
+          <div className="w-full">
             <ApexChart
               type="bar"
               height={320}
@@ -295,111 +297,160 @@ export default function AdminDashboardPage() {
               }}
               series={[{ name: 'Member Checkin', data: chartData.data }]}
             />
+          </div>
+        </div>
+
+        {/* Member Birthday Card */}
+        <div className="lg:col-span-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400">
+              🎉 Member birthday this month
+            </h3>
+            <span className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-sm font-semibold">
+              {loading ? "-" : actionableLists.memberBirthdays.length}
+            </span>
+          </div>
+
+          <div className="space-y-3 max-h-82 overflow-y-auto">
+            {loading ? (
+              <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                Loading...
+              </p>
+            ) : actionableLists.memberBirthdays.length === 0 ? (
+              <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                No members with birthdays this month
+              </p>
+            ) : (
+              actionableLists.memberBirthdays.map((member, idx) => (
+                <div
+                  key={idx}
+                  className="bg-blue-50 dark:bg-gray-700 border border-blue-200 dark:border-blue-800 rounded-lg p-4"
+                >
+                  <div className="flex flex-col gap-2">
+                    <div className="flex justify-between items-start gap-2">
+                      <p className="font-bold text-gray-800 dark:text-gray-200 break-words flex-1 min-w-0">
+                        {member.name}
+                      </p>
+                      <p className="text-sm font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                        {dayjs(member.birthday).format("DD MMM YYYY")}
+                      </p>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 break-words">
+                      {member.phone}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 break-all">
+                      {member.email ? `${member.email}` : ""}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6 mt-5">
-        {/* ================= LEFT SIDE (6 SMALL CARDS) ================= */}
-        <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6 mt-7">
-          {/* Active Membership */}
-          <div 
-            onClick={() => router.push('/admin/membership/session?filter=active')}
-            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6 flex items-center gap-4 cursor-pointer hover:shadow-lg transition-shadow">
-            <div className="flex-shrink-0 bg-yellow-100 dark:bg-gray-300 rounded-full p-3">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"
-                className="w-10 h-10 text-yellow-600">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" />
-              </svg>
-            </div>
-            <div>
-              <div className="text-lg font-bold text-gray-700 dark:text-gray-300">
-                Active Memberships
-              </div>
-              <div className="text-3xl font-extrabold text-yellow-600">
-                {loading ? "-" : stats.activeMembership}
-              </div>
-            </div>
-          </div>
 
-          {/* Freeze Membership */}
-          <div 
-            onClick={() => router.push('/admin/membership/session?filter=frozen')}
-            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6 flex items-center gap-4 cursor-pointer hover:shadow-lg transition-shadow">
-            <div className="flex-shrink-0 bg-blue-100 dark:bg-gray-300 rounded-full p-3">
-              <FaSnowflake size={40} className="text-blue-500" />
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        {/* Active Membership */}
+        <div 
+          onClick={() => router.push('/admin/membership/session?filter=active')}
+          className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6 flex items-center gap-4 cursor-pointer hover:shadow-lg transition-shadow">
+          <div className="flex-shrink-0 bg-yellow-100 dark:bg-gray-300 rounded-full p-3">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"
+              className="w-10 h-10 text-yellow-600">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" />
+            </svg>
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm md:text-base lg:text-lg font-bold text-gray-700 dark:text-gray-300 break-words">
+              Active Memberships
             </div>
-            <div>
-              <div className="text-lg font-bold text-gray-700 dark:text-gray-300">
-                Freeze Memberships
-              </div>
-              <div className="text-3xl font-extrabold text-blue-500">
-                {loading ? "-" : stats.freezeMembership}
-              </div>
+            <div className="text-2xl md:text-3xl font-extrabold text-yellow-600">
+              {loading ? "-" : stats.activeMembership}
             </div>
           </div>
+        </div>
 
-          {/* Expired Membership */}
-          <div 
-            onClick={() => router.push('/admin/membership/session?filter=expired')}
-            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6 flex items-center gap-4 cursor-pointer hover:shadow-lg transition-shadow">
-            <div className="flex-shrink-0 bg-red-100 dark:bg-gray-300 rounded-full p-3">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5}
-                stroke="currentColor" className="w-10 h-10 text-red-600">
-                <path strokeLinecap="round" strokeLinejoin="round"
-                  d="M10 9v6m4-6v6M12 3a9 9 0 110 18 9 9 0 010-18z" />
-              </svg>
+        {/* Freeze Membership */}
+        <div 
+          onClick={() => router.push('/admin/membership/session?filter=frozen')}
+          className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6 flex items-center gap-4 cursor-pointer hover:shadow-lg transition-shadow">
+          <div className="flex-shrink-0 bg-blue-100 dark:bg-gray-300 rounded-full p-3">
+            <FaSnowflake size={40} className="text-blue-500" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm md:text-base lg:text-lg font-bold text-gray-700 dark:text-gray-300 break-words">
+              Freeze Memberships
             </div>
-            <div>
-              <div className="text-lg font-bold text-gray-700 dark:text-gray-300">
-                Expired / Pending Memberships
-              </div>
-              <div className="text-3xl font-extrabold text-red-600">
-                {loading ? "-" : stats.inactiveMembership}
-              </div>
+            <div className="text-2xl md:text-3xl font-extrabold text-blue-500">
+              {loading ? "-" : stats.freezeMembership}
             </div>
           </div>
+        </div>
 
-          {/* Conduct PT Today */}
-          <div 
-            onClick={() => router.push('/admin/pt/booking?bookingTimeFilter=today')}
-            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6 flex items-center gap-4 cursor-pointer hover:shadow-lg transition-shadow">
-            <div className="flex-shrink-0 bg-green-100 dark:bg-gray-300 rounded-full p-3">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5}
-                stroke="currentColor" className="w-10 h-10 text-green-600">
-                <path strokeLinecap="round" strokeLinejoin="round"
-                  d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+        {/* Expired Membership */}
+        <div 
+          onClick={() => router.push('/admin/membership/session?filter=expired')}
+          className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6 flex items-center gap-4 cursor-pointer hover:shadow-lg transition-shadow">
+          <div className="flex-shrink-0 bg-red-100 dark:bg-gray-300 rounded-full p-3">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5}
+              stroke="currentColor" className="w-10 h-10 text-red-600">
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M10 9v6m4-6v6M12 3a9 9 0 110 18 9 9 0 010-18z" />
+            </svg>
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm md:text-base lg:text-lg font-bold text-gray-700 dark:text-gray-300 break-words">
+              Expired / Pending Memberships
             </div>
-            <div>
-              <div className="text-lg font-bold text-gray-700 dark:text-gray-300">
-                Conduct PT Today
-              </div>
-              <div className="text-3xl font-extrabold text-green-600">
-                {loading ? "-" : stats.conductPTToday}
-              </div>
+            <div className="text-2xl md:text-3xl font-extrabold text-red-600">
+              {loading ? "-" : stats.inactiveMembership}
             </div>
           </div>
+        </div>
 
-          {/* Active PT Client */}
-          <div 
-            onClick={() => router.push('/admin/pt/session?filter=active')}
-            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6 flex items-center gap-4 cursor-pointer hover:shadow-lg transition-shadow">
-            <div className="flex-shrink-0 bg-amber-100 dark:bg-gray-300 rounded-full p-3">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-                className="w-10 h-10 text-amber-600">
-                <rect x="5" y="11" width="14" height="2" rx="0.5" />
-                <circle cx="4" cy="12" r="3" />
-                <circle cx="20" cy="12" r="3" />
-              </svg>
+        {/* Conduct PT Today */}
+        <div 
+          onClick={() => router.push('/admin/pt/booking?bookingTimeFilter=today')}
+          className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6 flex items-center gap-4 cursor-pointer hover:shadow-lg transition-shadow">
+          <div className="flex-shrink-0 bg-green-100 dark:bg-gray-300 rounded-full p-3">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5}
+              stroke="currentColor" className="w-10 h-10 text-green-600">
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm md:text-base lg:text-lg font-bold text-gray-700 dark:text-gray-300 break-words">
+              Conduct PT Today
             </div>
-            <div>
-              <div className="text-lg font-bold text-gray-700 dark:text-gray-300">
-                Active PT Client
-              </div>
-              <div className="text-3xl font-extrabold text-amber-600">
-                {loading ? "-" : stats.activePTClient}
-              </div>
+            <div className="text-2xl md:text-3xl font-extrabold text-green-600">
+              {loading ? "-" : stats.conductPTToday}
             </div>
           </div>
+        </div>
+
+        {/* Active PT Client */}
+        <div 
+          onClick={() => router.push('/admin/pt/session?filter=active')}
+          className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6 flex items-center gap-4 cursor-pointer hover:shadow-lg transition-shadow">
+          <div className="flex-shrink-0 bg-amber-100 dark:bg-gray-300 rounded-full p-3">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+              className="w-10 h-10 text-amber-600">
+              <rect x="5" y="11" width="14" height="2" rx="0.5" />
+              <circle cx="4" cy="12" r="3" />
+              <circle cx="20" cy="12" r="3" />
+            </svg>
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm md:text-base lg:text-lg font-bold text-gray-700 dark:text-gray-300 break-words">
+              Active PT Client
+            </div>
+            <div className="text-2xl md:text-3xl font-extrabold text-amber-600">
+              {loading ? "-" : stats.activePTClient}
+            </div>
+          </div>
+        </div>
 
           {/* Inactive PT Client */}
           <div 
@@ -423,56 +474,6 @@ export default function AdminDashboardPage() {
           </div>
 
         </div>
-        {/* ================= RIGHT SIDE (BIG CARD) ================= */}
-        <div className="lg:col-span-1 lg:row-span-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400">
-              🎉 Member birthday this month
-            </h3>
-            <span className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-sm font-semibold">
-              {loading ? "-" : actionableLists.memberBirthdays.length}
-            </span>
-          </div>
-
-          <div className="space-y-3 max-h-60 overflow-y-auto">
-            {loading ? (
-              <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-                Loading...
-              </p>
-            ) : actionableLists.memberBirthdays.length === 0 ? (
-              <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-                No members with birthdays this month
-              </p>
-            ) : (
-              actionableLists.memberBirthdays.map((member, idx) => (
-                <div
-                  key={idx}
-                  className="bg-blue-50 dark:bg-gray-700 border border-blue-200 dark:border-blue-800 rounded-lg p-4"
-                >
-                  <div className="flex justify-between items-start gap-4">
-                    <div>
-                      <p className="font-bold text-gray-800 dark:text-gray-200">
-                        {member.name}
-                      </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {member.phone}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                        {dayjs(member.birthday).format("DD MMM YYYY")}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {member.email ? `${member.email}` : ""}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
       {/* Actionable Lists for Sales Team */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-5">
         {/* Expiring Soon */}
