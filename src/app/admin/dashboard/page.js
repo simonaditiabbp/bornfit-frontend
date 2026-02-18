@@ -227,6 +227,61 @@ export default function AdminDashboardPage() {
     return <BackendErrorFallback onRetry={() => { setBackendError(false); window.location.reload(); }} />;
   }
 
+  // Skeleton Loading Components
+  const ChartSkeleton = () => (
+    <div className="animate-pulse">
+      <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/3 mb-4"></div>
+      <div className="h-80 bg-gray-200 dark:bg-gray-700 rounded"></div>
+    </div>
+  );
+
+  const CardSkeleton = () => (
+    <div className="animate-pulse bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6 flex items-center gap-4">
+      <div className="flex-shrink-0 bg-gray-300 dark:bg-gray-600 rounded-full w-16 h-16"></div>
+      <div className="flex-1">
+        <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-3/4 mb-2"></div>
+        <div className="h-8 bg-gray-300 dark:bg-gray-600 rounded w-1/2"></div>
+      </div>
+    </div>
+  );
+
+  const ListSkeleton = () => (
+    <div className="animate-pulse space-y-3">
+      {[...Array(3)].map((_, idx) => (
+        <div key={idx} className="bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+          <div className="flex justify-between items-start">
+            <div className="flex-1">
+              <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-2/3 mb-2"></div>
+              <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-1/2 mb-2"></div>
+              <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-1/3"></div>
+            </div>
+            <div className="text-right">
+              <div className="h-6 bg-gray-300 dark:bg-gray-600 rounded w-16 mb-1"></div>
+              <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-20"></div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const BirthdayListSkeleton = () => (
+    <div className="animate-pulse space-y-3">
+      {[...Array(3)].map((_, idx) => (
+        <div key={idx} className="bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+          <div className="flex flex-col gap-2">
+            <div className="flex justify-between items-start gap-2">
+              <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/2"></div>
+              <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24"></div>
+            </div>
+            <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-1/3"></div>
+            <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-2/3"></div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div className="p-5 bg-gray-50 dark:bg-gray-900 min-h-screen">
       {/* <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 p-6 mb-8">
@@ -243,10 +298,14 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-5">
         {/* Weekly check-in chart */}
         <div className="lg:col-span-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <div className={`text-lg font-bold ${theme === 'dark' ? 'text-amber-700' : 'text-gray-800'} dark:text-amber-200`}>Member Check-ins per Day (Last 7 Days)</div>
-          </div>
-          <div className="w-full">
+          {loading ? (
+            <ChartSkeleton />
+          ) : (
+            <>
+              <div className="mb-4 flex items-center justify-between">
+                <div className={`text-lg font-bold ${theme === 'dark' ? 'text-amber-700' : 'text-gray-800'} dark:text-amber-200`}>Member Check-ins per Day (Last 7 Days)</div>
+              </div>
+              <div className="w-full">
             <ApexChart
               type="bar"
               height={320}
@@ -297,7 +356,9 @@ export default function AdminDashboardPage() {
               }}
               series={[{ name: 'Member Checkin', data: chartData.data }]}
             />
-          </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Member Birthday Card */}
@@ -307,15 +368,17 @@ export default function AdminDashboardPage() {
               🎉 Member birthday this month
             </h3>
             <span className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-sm font-semibold">
-              {loading ? "-" : actionableLists.memberBirthdays.length}
+              {loading ? (
+                <span className="inline-block w-6 h-4 bg-blue-200 dark:bg-blue-700 rounded animate-pulse"></span>
+              ) : (
+                actionableLists.memberBirthdays.length
+              )}
             </span>
           </div>
 
           <div className="space-y-3 max-h-82 overflow-y-auto">
             {loading ? (
-              <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-                Loading...
-              </p>
+              <BirthdayListSkeleton />
             ) : actionableLists.memberBirthdays.length === 0 ? (
               <p className="text-gray-500 dark:text-gray-400 text-center py-4">
                 No members with birthdays this month
@@ -351,6 +414,17 @@ export default function AdminDashboardPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        {loading ? (
+          <>
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+          </>
+        ) : (
+          <>
         {/* Active Membership */}
         <div 
           onClick={() => router.push('/admin/membership/session?filter=active')}
@@ -366,7 +440,7 @@ export default function AdminDashboardPage() {
               Active Memberships
             </div>
             <div className="text-2xl md:text-3xl font-extrabold text-yellow-600">
-              {loading ? "-" : stats.activeMembership}
+              {stats.activeMembership}
             </div>
           </div>
         </div>
@@ -383,7 +457,7 @@ export default function AdminDashboardPage() {
               Freeze Memberships
             </div>
             <div className="text-2xl md:text-3xl font-extrabold text-blue-500">
-              {loading ? "-" : stats.freezeMembership}
+              {stats.freezeMembership}
             </div>
           </div>
         </div>
@@ -404,7 +478,7 @@ export default function AdminDashboardPage() {
               Expired / Pending Memberships
             </div>
             <div className="text-2xl md:text-3xl font-extrabold text-red-600">
-              {loading ? "-" : stats.inactiveMembership}
+              {stats.inactiveMembership}
             </div>
           </div>
         </div>
@@ -425,7 +499,7 @@ export default function AdminDashboardPage() {
               Conduct PT Today
             </div>
             <div className="text-2xl md:text-3xl font-extrabold text-green-600">
-              {loading ? "-" : stats.conductPTToday}
+              {stats.conductPTToday}
             </div>
           </div>
         </div>
@@ -447,7 +521,7 @@ export default function AdminDashboardPage() {
               Active PT Client
             </div>
             <div className="text-2xl md:text-3xl font-extrabold text-amber-600">
-              {loading ? "-" : stats.activePTClient}
+              {stats.activePTClient}
             </div>
           </div>
         </div>
@@ -468,10 +542,12 @@ export default function AdminDashboardPage() {
                 Inactive PT Client
               </div>
               <div className="text-3xl font-extrabold text-gray-600">
-                {loading ? "-" : stats.inactivePTClient}
+                {stats.inactivePTClient}
               </div>
             </div>
           </div>
+          </>
+        )}
 
         </div>
       {/* Actionable Lists for Sales Team */}
@@ -481,12 +557,16 @@ export default function AdminDashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-orange-600 dark:text-orange-400">⚠️ Expiring Soon (7-14 days)</h3>
             <span className="bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 px-3 py-1 rounded-full text-sm font-semibold">
-              {actionableLists.expiringSoon.length}
+              {loading ? (
+                <span className="inline-block w-6 h-4 bg-orange-200 dark:bg-orange-700 rounded animate-pulse"></span>
+              ) : (
+                actionableLists.expiringSoon.length
+              )}
             </span>
           </div>
           <div className="space-y-3 max-h-96 overflow-y-auto">
             {loading ? (
-              <p className="text-gray-500 dark:text-gray-400 text-center py-4">Loading...</p>
+              <ListSkeleton />
             ) : actionableLists.expiringSoon.length === 0 ? (
               <p className="text-gray-500 dark:text-gray-400 text-center py-4">No memberships expiring soon</p>
             ) : (
@@ -514,12 +594,16 @@ export default function AdminDashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-red-600 dark:text-red-400">🚨 Recently Expired (1-7 days)</h3>
             <span className="bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 px-3 py-1 rounded-full text-sm font-semibold">
-              {actionableLists.recentlyExpired.length}
+              {loading ? (
+                <span className="inline-block w-6 h-4 bg-red-200 dark:bg-red-700 rounded animate-pulse"></span>
+              ) : (
+                actionableLists.recentlyExpired.length
+              )}
             </span>
           </div>
           <div className="space-y-3 max-h-96 overflow-y-auto">
             {loading ? (
-              <p className="text-gray-500 dark:text-gray-400 text-center py-4">Loading...</p>
+              <ListSkeleton />
             ) : actionableLists.recentlyExpired.length === 0 ? (
               <p className="text-gray-500 dark:text-gray-400 text-center py-4">No recently expired memberships</p>
             ) : (
@@ -549,12 +633,16 @@ export default function AdminDashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-yellow-600 dark:text-yellow-400">😴 Inactive Members (30+ days)</h3>
             <span className="bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 px-3 py-1 rounded-full text-sm font-semibold">
-              {actionableLists.inactiveMembers.length}
+              {loading ? (
+                <span className="inline-block w-6 h-4 bg-yellow-200 dark:bg-yellow-700 rounded animate-pulse"></span>
+              ) : (
+                actionableLists.inactiveMembers.length
+              )}
             </span>
           </div>
           <div className="space-y-3 max-h-96 overflow-y-auto">
             {loading ? (
-              <p className="text-gray-500 dark:text-gray-400 text-center py-4">Loading...</p>
+              <ListSkeleton />
             ) : actionableLists.inactiveMembers.length === 0 ? (
               <p className="text-gray-500 dark:text-gray-400 text-center py-4">All members are active!</p>
             ) : (
@@ -582,12 +670,16 @@ export default function AdminDashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-green-600 dark:text-green-400">🎉 New Members This Month</h3>
             <span className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-3 py-1 rounded-full text-sm font-semibold">
-              {actionableLists.newMembers.length}
+              {loading ? (
+                <span className="inline-block w-6 h-4 bg-green-200 dark:bg-green-700 rounded animate-pulse"></span>
+              ) : (
+                actionableLists.newMembers.length
+              )}
             </span>
           </div>
           <div className="space-y-3 max-h-96 overflow-y-auto">
             {loading ? (
-              <p className="text-gray-500 dark:text-gray-400 text-center py-4">Loading...</p>
+              <ListSkeleton />
             ) : actionableLists.newMembers.length === 0 ? (
               <p className="text-gray-500 dark:text-gray-400 text-center py-4">No new members this month</p>
             ) : (
