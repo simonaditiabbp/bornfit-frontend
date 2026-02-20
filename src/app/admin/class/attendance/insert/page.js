@@ -13,10 +13,11 @@ export default function InsertAttendancePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedClassId = searchParams.get('class_id');
+  const memberIdFromQuery = searchParams.get('member_id') || '';
 
   const initialFormState = {
-    class_id: "",
-    member_id: "",
+    class_id: preselectedClassId || "",
+    member_id: memberIdFromQuery ? Number(memberIdFromQuery) : "",
     checked_in_at: nowPlus7.toISOString().slice(0,16),
     status: "booked",
     waiting_list_position: "",
@@ -136,6 +137,17 @@ export default function InsertAttendancePage() {
     };
     fetchAllMembers();
   }, []);
+
+  // Auto-select member if provided from query parameter
+  useEffect(() => {
+    if (memberIdFromQuery && members.length > 0 && !memberSearch) {
+      const selectedMember = members.find(m => m.id === Number(memberIdFromQuery));
+      if (selectedMember) {
+        setMemberSearch(selectedMember.name || selectedMember.email || `Member #${selectedMember.id}`);
+        setForm(prev => ({ ...prev, member_id: selectedMember.id }));
+      }
+    }
+  }, [memberIdFromQuery, members, memberSearch]);
 
   // Helper function to format class display
   const formatClassDisplay = useCallback((cls) => {
@@ -387,6 +399,7 @@ export default function InsertAttendancePage() {
             <div className="relative">
               <input
                 type="text"
+                name="member_id"
                 placeholder="Search member..."
                 className="w-full border border-gray-300 dark:border-gray-600 p-3 pr-10 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:border-amber-400"
                 value={memberSearch}

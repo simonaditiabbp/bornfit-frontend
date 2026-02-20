@@ -12,9 +12,8 @@ import BackendErrorFallback from '../../../components/BackendErrorFallback';
 import { FaPlus, FaSyncAlt, FaUser } from 'react-icons/fa';
 import CreateUserModal from '../../../components/CreateUserModal';
 import api from '@/utils/fetchClient';
+import UsersDataTable from "./DataTable";
 import { PageBreadcrumb, PageContainer, PageHeader, LoadingText } from '@/components/admin';
-
-const UsersDataTable = dynamic(() => import('./DataTable'), { ssr: false });
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -204,9 +203,8 @@ export default function AdminUsersPage() {
     { name: 'No', cell: (row, i) => startNo + i + 1, width: '70px', center: "true" },
     {
       name: 'Name',
-      selector: row => row.name,
-      sortable: true,
       cell: row => <span className="font-semibold">{row.name}</span>,
+      sortable: true,
     },
     {
       name: 'Email',
@@ -234,18 +232,24 @@ export default function AdminUsersPage() {
     {
       name: 'Actions',
       cell: row => (
-        <div className="flex gap-2 justify-center">
+        <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
           <button
-            className="bg-blue-600 text-white px-3 py-1 rounded-md font-semibold hover:bg-blue-700"
+            className="cursor-pointer bg-blue-600 text-white px-3 py-1 rounded-md font-semibold hover:bg-blue-700 "
             onClick={() => setQrUser(row)}
           >
             Generate QR
           </button>
           <button
-            className="bg-gray-400 text-white px-3 py-1 rounded-md font-semibold hover:bg-gray-500"
+            className="bg-gray-400 text-white px-3 py-1 rounded-md font-semibold hover:bg-gray-500 "
             onClick={() => router.push(`/admin/users/${row.id}`)}
           >
-            Detail
+            Edit
+          </button>
+          <button
+            className="bg-purple-600 text-white px-3 py-1 rounded-md font-semibold hover:bg-purple-700 "
+            onClick={() => router.push(`/admin/member-profile/${row.id}`)}
+          >
+            Details
           </button>
         </div>
       ),
@@ -253,6 +257,7 @@ export default function AdminUsersPage() {
     {
       name: 'Renewal',
       cell: row => <RenewalActionsCell row={row} membership={getMembership(row.id)} />,
+      width: '150px',
     },
   ];
 

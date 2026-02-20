@@ -1,12 +1,15 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { FaChalkboardTeacher } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import api from '@/utils/fetchClient';
 import { PageBreadcrumb, PageContainerInsert, FormInput, FormActions } from '@/components/admin';
 
 export default function PTBookingCreatePage() {
+  const searchParams = useSearchParams();
+  const memberIdFromQuery = searchParams.get('member_id') || '';
+
   const router = useRouter();
   const [members, setMembers] = useState([]);
   const [ptSessions, setPTSessions] = useState([]);
@@ -19,7 +22,7 @@ export default function PTBookingCreatePage() {
   };
   
   const initialFormState = {
-    user_member_id: '',
+    user_member_id: memberIdFromQuery ? Number(memberIdFromQuery) : '',
     personal_trainer_session_id: '',
     booking_time: getNowForDatetimeLocal(),
     status: 'booked'

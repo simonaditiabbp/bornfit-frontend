@@ -1,12 +1,14 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FaChalkboardTeacher } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import api from '@/utils/fetchClient';
 import { PageBreadcrumb, PageContainerInsert, FormInput, FormActions } from '@/components/admin';
 
 export default function PTSessionInsertPage() {
+  const searchParams = useSearchParams();
+  const memberIdFromQuery = searchParams.get('member_id') || '';
   const [plans, setPlans] = useState([]);
   const [members, setMembers] = useState([]);
   const [trainers, setTrainers] = useState([]);
@@ -30,7 +32,7 @@ export default function PTSessionInsertPage() {
   
   const initialFormState = {
     pt_session_plan_id: "",
-    user_member_id: "",
+    user_member_id: memberIdFromQuery ? Number(memberIdFromQuery) : "",
     user_pt_id: "",
     start_date: new Date().toISOString().slice(0, 10),
     status: "active"
