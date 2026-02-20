@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import Modal from 'react-modal';
 import BookingDataTable from './BookingDataTable';
 import Image from 'next/image';
+import Link from 'next/link';
 import Swal from 'sweetalert2';
 import toast from 'react-hot-toast';
 import { Html5Qrcode } from 'html5-qrcode';
@@ -1152,21 +1153,20 @@ useEffect(() => {
 
       {/* ===== Layout hasil scan (full width card, grid 3 kolom responsif) ===== */}
       {message && (
-        <div className={`bg-white dark:bg-gray-800 rounded-2xl shadow-2xl min-h-[75vh] w-full max-w-[1500px] border ${messageType === 'success' ? 'border-green-500' : 'border-red-500'} p-12 grid grid-cols-1 md:grid-cols-3 gap-20 justify-center items-center`}
+        <div className={`bg-white dark:bg-gray-800 rounded-2xl shadow-2xl min-h-[75vh] w-full max-w-[1500px] border ${messageType === 'success' ? 'border-green-500' : 'border-red-500'} p-4 sm:p-6 md:p-8 lg:p-12 grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-10 md:gap-20 justify-center items-center`}
           style={{ minHeight: '75vh', minWidth: '340px' }}
         >
           {/* kolom kiri: foto (tampil hanya jika success) */}
           {messageType === 'success' ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="w-96 h-96 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center text-gray-500 dark:text-gray-400 font-medium overflow-hidden border-1 border-amber-400 dark:border-amber-400 shadow-2xl p-2">
+            <div className="flex flex-col items-center justify-center h-full gap-4">
+              <div className="w-48 h-48 sm:w-64 sm:h-64 md:w-72 md:h-72 lg:w-96 lg:h-96 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center text-gray-500 dark:text-gray-400 font-medium overflow-hidden border-1 border-amber-400 dark:border-amber-400 shadow-2xl p-2">
                 {user?.photo ? (
                   <img src={user.photo.startsWith('http') ? user.photo : `${API_URL?.replace(/\/$/, '')}${user.photo}`} alt="Foto Member" width={300} height={300} className="w-full h-full object-cover scale-105 rounded-xl" />
                 ) : (
                   <div className="flex flex-col items-center justify-center gap-4 text-gray-500 dark:text-gray-400">
                     <svg
                       viewBox="0 0 24 24"
-                      width="120"
-                      height="120"
+                      className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28"
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="1.5"
@@ -1177,39 +1177,57 @@ useEffect(() => {
                       <path d="M4 20c0-4 4-6 8-6s8 2 8 6" /> {/* Body */}
                     </svg>
 
-                    <span className="text-lg font-medium">
+                    <span className="text-sm sm:text-base md:text-lg font-medium text-center px-2">
                       No photo available
                     </span>
 
                   </div>
                 )}
               </div>
+              <Link
+                href={`/admin/member-profile/${user?.id}`}
+                className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-2 sm:px-5 sm:py-2.5 md:px-6 md:py-3 rounded-xl text-sm sm:text-base font-bold hover:from-purple-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 w-full sm:w-auto justify-center"
+              >
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                View Member Profile
+              </Link>
             </div>
           ) : (
-            <div className="flex items-center justify-center h-full">
-              <div className="w-96 h-96 flex flex-col items-center justify-center gap-4 bg-gray-100 dark:bg-gray-700 rounded-2xl border-4 border-red-500 shadow-xl">
+            <div className="flex flex-col items-center justify-center h-full gap-4">
+              <div className="w-48 h-48 sm:w-64 sm:h-64 md:w-72 md:h-72 lg:w-96 lg:h-96 flex flex-col items-center justify-center gap-4 bg-gray-100 dark:bg-gray-700 rounded-2xl border-4 border-red-500 shadow-xl">
                 
                 <svg
                   viewBox="0 0 24 24"
-                  width="120"
-                  height="120"
+                  className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 text-red-400"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="text-red-400"
                 >
                   <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
                   <line x1="12" y1="9" x2="12" y2="13"/>
                   <line x1="12" y1="17" x2="12.01" y2="17"/>
                 </svg>
 
-                <span className="text-gray-500 dark:text-gray-400 text-lg text-center">
+                <span className="text-gray-500 dark:text-gray-400 text-sm sm:text-base md:text-lg text-center px-4">
                   No photo available
                 </span>
 
               </div>
+              {user?.id && (
+                <Link
+                  href={`/admin/member-profile/${user?.id}`}
+                  className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-2 sm:px-5 sm:py-2.5 md:px-6 md:py-3 rounded-xl text-sm sm:text-base font-bold hover:from-purple-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 w-full sm:w-auto justify-center"
+                >
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  View Member Profile
+                </Link>
+              )}
             </div>
           )}
 

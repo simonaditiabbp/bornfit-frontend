@@ -3,6 +3,7 @@ import DataTable from 'react-data-table-component';
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/contexts/ThemeContext';
+import { StyledDataTable } from '@/components/admin';
 
 export default function UsersDataTable({ columns, data, setQrUser, pagination, paginationServer, paginationTotalRows, paginationPerPage, currentPage, onChangePage, onChangeRowsPerPage, paginationRowsPerPageOptions }) {
   const router = useRouter();
@@ -135,7 +136,7 @@ export default function UsersDataTable({ columns, data, setQrUser, pagination, p
   });
 
   return (
-    <DataTable
+    <StyledDataTable
       columns={updatedColumns}
       data={data}
       pagination={pagination}

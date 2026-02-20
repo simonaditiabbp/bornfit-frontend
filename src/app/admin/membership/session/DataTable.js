@@ -53,7 +53,13 @@ export default function MembershipSessionDataTable({ data, pagination = false, p
         <div className="flex gap-2 justify-center">
           <Link href={`/admin/membership/session/edit?id=${row.id}`} 
           className="bg-gray-600 dark:bg-blue-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-700 dark:hover:bg-blue-700">
-            Detail
+            Edit
+          </Link>
+          <Link href={`/admin/member-profile/${row.user?.id}`}
+            className="bg-purple-600 text-white px-3 py-1 rounded font-semibold hover:bg-purple-700"
+            onClick={() => router.push(`/admin/member-profile/${row.id}`)}
+          >
+            Details
           </Link>
         </div>
       ),

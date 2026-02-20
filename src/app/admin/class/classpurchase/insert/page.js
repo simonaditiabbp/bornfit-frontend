@@ -8,13 +8,15 @@ import api from '@/utils/fetchClient';
 
 export default function ClassPurchaseInsertPage() {
   const searchParams = useSearchParams();
+  const memberIdFromQuery = searchParams.get('member_id') || '';
+
   const initialFormState = {
     userId: '',
     classId: '',
     price: ''
   };
   
-  const [userId, setUserId] = useState('');
+  const [userId, setUserId] = useState(memberIdFromQuery ? memberIdFromQuery : '');
   const [classId, setClassId] = useState('');
   const [users, setUsers] = useState([]);
   const [classes, setClasses] = useState([]);
