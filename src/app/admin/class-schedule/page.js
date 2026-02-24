@@ -295,7 +295,7 @@ export default function ClassSchedulePage() {
             </button>
             <Link
               href="/admin/class/session/insert"
-              className="bg-gray-500 hover:bg-amber-600 dark:bg-gray-500 dark:hover:bg-amber-700 text-white  px-4 py-2 rounded-lg font-semibold transition"
+              className="flex items-center gap-2 bg-gradient-to-r from-gray-500 to-gray-700 dark:from-amber-400 dark:to-amber-500 text-white dark:text-gray-900 px-4 py-2 rounded-lg font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 active:scale-95"
             >
               Create Class
             </Link>

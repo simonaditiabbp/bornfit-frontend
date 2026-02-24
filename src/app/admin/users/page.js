@@ -280,21 +280,14 @@ export default function AdminUsersPage() {
       />
       
         <PageContainer>
-          <div className="flex items-center justify-between mb-6">
-            <input
-              type="text"
-              placeholder="Search name/email..."
-              value={searchInput}
-              onChange={e => setSearchInput(e.target.value)}
-              className="w-full max-w-xs p-2 border text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-500 rounded focus:outline-none focus:border-amber-500 text-base"
-            />
-          <button 
-            onClick={() => setCreateUser(true)}
-            className="flex items-center gap-2 bg-gray-600 dark:bg-amber-400 text-white dark:text-gray-900 px-4 py-2 rounded-lg font-semibold hover:bg-gray-700 dark:hover:bg-amber-500">
-            <FaPlus className="inline-block" />
-            Create
-          </button>          
-        </div>
+          <PageHeader
+            searchPlaceholder="Search name/email..."
+            searchValue={search}
+            onSearchChange={e => setSearch(e.target.value)}
+            actionIcon={<FaPlus />}
+            actionText="Create User"
+            actionOnClick={() => setCreateUser(true)}
+          />
         {loading ? (
           <LoadingText />
         ) : (

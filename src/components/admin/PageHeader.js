@@ -19,7 +19,8 @@ export default function PageHeader({
   onSearchChange,
   actionHref,
   actionIcon,
-  actionText
+  actionText,
+  actionOnClick
 }) {
   return (
     <div className="flex items-center justify-between mb-6">
@@ -28,10 +29,11 @@ export default function PageHeader({
         value={searchValue}
         onChange={onSearchChange}
       />
-      {actionHref && (
+      {(actionHref || actionOnClick) && (
         <ActionButton 
           href={actionHref}
           icon={actionIcon}
+          onClick={actionOnClick}
         >
           {actionText}
         </ActionButton>
