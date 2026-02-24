@@ -440,7 +440,7 @@ export default function BarcodePage() {
       setManualQr('');
       // pastikan scanner tidak aktif
       if (scanner) {
-        try { scanner.stop(); } catch (e) {}
+        try { await scanner.stop(); } catch (e) { console.error('Error stopping scanner:', e); }
         setScanner(null);
         setScanMode(false);
       }
@@ -586,24 +586,28 @@ export default function BarcodePage() {
   }, [showClassModal, showPTModal, showManualCheckinModal]);
 
   // Cancel scan
-  const handleCancelScan = () => {
+  const handleCancelScan = async () => {
     setMessage('');
     if (scanner) {
       try {
-        scanner.stop();
-      } catch (e) {}
+        await scanner.stop();
+      } catch (e) {
+        console.error('Error stopping scanner:', e);
+      }
       setScanner(null);
     }
     setScanMode(false);
   };
 
   // Retry scan (stop lalu start ulang)
-  const handleRetryScan = () => {
+  const handleRetryScan = async () => {
     setMessage('');
     if (scanner) {
       try {
-        scanner.stop();
-      } catch (e) {}
+        await scanner.stop();
+      } catch (e) {
+        console.error('Error stopping scanner:', e);
+      }
       setScanner(null);
     }
     setScanMode(false);
@@ -675,7 +679,7 @@ export default function BarcodePage() {
     if (scanMode && !scanner) {
       // Pastikan scanner sebelumnya sudah di-stop sebelum inisialisasi baru
       if (scanner) {
-        try { scanner.stop(); } catch (e) { console.error('Error stopping previous scanner:', e); }
+        scanner.stop().catch(e => console.error('Error stopping previous scanner:', e));
         setScanner(null);
       }
       // delay agar elemen #qr-reader ter-render dulu
@@ -768,9 +772,11 @@ export default function BarcodePage() {
               // Suppress normal parse errors and noisy library errors
               if (
                 (typeof errorMessage === 'string' && errorMessage.includes('NotFoundException')) ||
-                (typeof errorMessage === 'string' && errorMessage.includes('No MultiFormat Readers'))
+                (typeof errorMessage === 'string' && errorMessage.includes('No MultiFormat Readers')) ||
+                (typeof errorMessage === 'string' && errorMessage.includes('IndexSizeError')) ||
+                (typeof errorMessage === 'string' && errorMessage.includes('getImageData'))
               ) {
-                // QR code not found or no readers available, normal during scanning, do not log or update state
+                // QR code not found, canvas not ready, or no readers available - normal during scanning, do not log
                 return;
               }
               setMessage('Failed to read QR code. Make sure your camera is not used by another app, or click Retry.');
@@ -797,9 +803,7 @@ export default function BarcodePage() {
     // cleanup ketika unmount atau scanMode berubah
     return () => {
       if (scanner) {
-        try {
-          scanner.stop();
-        } catch (e) {}
+        scanner.stop().catch(e => console.error('Error stopping scanner during cleanup:', e));
         setScanner(null);
       }
     };
@@ -900,15 +904,15 @@ useEffect(() => {
     // If never registered for PT session
     if (ptSessionStatus === 'never') {
       return (
-        <div className="w-full mb-4 p-4 rounded-xl bg-gradient-to-br from-gray-50/80 to-blue-50/80 dark:from-gray-900/20 dark:to-blue-900/20 border border-gray-200/70 dark:border-gray-700/50 shadow-[0_8px_20px_rgba(147,51,234,0.15)]">
+        <div className="w-full mb-4 p-4 rounded-xl bg-gradient-to-br from-red-50/80 to-red-50/80 dark:from-red-900/20 dark:to-red-900/20 border border-red-200/70 dark:border-red-700/50 shadow-[0_8px_20px_rgba(147,51,234,0.15)]">
           <div className="flex items-center gap-2 mb-3">
-            <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <div className="text-sm font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wide">PT Session Info</div>
+            <div className="text-sm font-extrabold text-red-700 dark:text-red-300 uppercase tracking-wide">PT Session Info</div>
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            <p className="font-medium">Belum pernah registrasi PT session.</p>
+          <div className="border border-red-200 dark:border-red-700 rounded-lg p-3 text-sm text-red-600 dark:text-red-400">
+            <p className="font-medium">No PT session registration found.</p>
           </div>
         </div>
       );
@@ -927,8 +931,8 @@ useEffect(() => {
             </svg>
             <div className="text-sm font-extrabold text-orange-700 dark:text-orange-300 uppercase tracking-wide">PT Session Info</div>
           </div>
-          <div className="text-sm text-orange-600 dark:text-orange-400">
-            <p className="font-medium">PT session terakhir aktif pada tanggal <span className="font-bold">{lastActiveDate}</span>.</p>
+          <div className="border border-orange-200 dark:border-orange-700 rounded-lg p-3 text-sm text-orange-600 dark:text-orange-400">
+            <p className="font-medium">Last PT session was active on <span className="font-bold">{lastActiveDate}</span>.</p>
             <p className="mt-2 text-xs">Status: <span className="inline-block px-2 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300">{ptSession.status || 'expired'}</span></p>
           </div>
         </div>
@@ -977,31 +981,31 @@ useEffect(() => {
       }
     }
     return (
-      <div className="w-full mb-4 p-4 rounded-xl bg-gradient-to-br from-amber-50/80 to-red-50/80 dark:from-amber-900/20 dark:to-red-900/20 border border-amber-200/70 dark:border-amber-700/50 shadow-[0_8px_20px_rgba(147,51,234,0.15)]">
+      <div className="w-full mb-4 p-4 rounded-xl bg-gradient-to-br from-emerald-50/80 to-red-50/80 dark:from-emerald-900/20 dark:to-red-900/20 border border-emerald-200/70 dark:border-emerald-700/50 shadow-[0_8px_20px_rgba(147,51,234,0.15)]">
         <div className="flex items-center gap-2 mb-3">
-          <svg className="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
-          <div className="text-sm font-extrabold text-amber-700 dark:text-amber-300 uppercase tracking-wide">PT Session Active</div>
+          <div className="text-sm font-extrabold text-emerald-700 dark:text-emerald-300 uppercase tracking-wide">PT Session Active</div>
         </div>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between items-center">
-            <span className="text-amber-600/80 dark:text-amber-400/80 font-medium">Expired Period:</span>
-            <span className="font-bold text-amber-800 dark:text-amber-200">{ptPeriod || "–"}</span>
+            <span className="text-emerald-600/80 dark:text-emerald-400/80 font-medium">Expired Period:</span>
+            <span className="font-bold text-emerald-800 dark:text-emerald-200">{ptPeriod || "–"}</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-amber-600/80 dark:text-amber-400/80 font-medium">Trainer:</span>
-            <span className="font-bold text-amber-800 dark:text-amber-200">{trainer?.name || "–"}</span>
+            <span className="text-emerald-600/80 dark:text-emerald-400/80 font-medium">Trainer:</span>
+            <span className="font-bold text-emerald-800 dark:text-emerald-200">{trainer?.name || "–"}</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-amber-600/80 dark:text-amber-400/80 font-medium">Max Session:</span>
-            <span className="font-bold text-amber-800 dark:text-amber-200">{ptplan?.max_session || "–"}</span>
+            <span className="text-emerald-600/80 dark:text-emerald-400/80 font-medium">Max Session:</span>
+            <span className="font-bold text-emerald-800 dark:text-emerald-200">{ptplan?.max_session || "–"}</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-amber-600/80 dark:text-amber-400/80 font-medium">Remaining:</span>
-            <span className="font-bold text-amber-800 dark:text-amber-200">{ptsession?.remaining_session ?? "–"}</span>
+            <span className="text-emerald-600/80 dark:text-emerald-400/80 font-medium">Remaining:</span>
+            <span className="font-bold text-emerald-800 dark:text-emerald-200">{ptsession?.remaining_session ?? "–"}</span>
           </div>
-          <div className="pt-2 border-t border-amber-200/50 dark:border-amber-700/50">
+          <div className="pt-2 border-t border-emerald-200/50 dark:border-emerald-700/50">
             {ptsession.status === 'active' && (
               <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">Active</span>
             )}

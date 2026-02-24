@@ -207,8 +207,8 @@ export default function MembershipSessionPage() {
               </button>
           </div>
           <a
-            href="/admin/membership/session/insert"
-            className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg font-semibold hover:bg-gray-700 transition-colors"
+            href="/admin/membership/session/insert"            
+            className="flex items-center gap-2 bg-gradient-to-r from-gray-500 to-gray-700 dark:from-amber-400 dark:to-amber-500 text-white dark:text-gray-900 px-4 py-2 rounded-lg font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 active:scale-95"
           >
             <FaPlus />
             Add Session
