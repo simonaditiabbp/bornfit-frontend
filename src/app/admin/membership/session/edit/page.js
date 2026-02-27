@@ -359,7 +359,14 @@ export default function EditMembershipSessionPage() {
           <div className="flex gap-3 mt-8 justify-start">
             {!edit ? (
               <>
-                <ActionButton onClick={() => setEdit(true)} variant="primary">Edit</ActionButton>
+                <ActionButton 
+                  onClick={() => setEdit(true)} 
+                  variant="primary"
+                  disabled={form.status === 'expired'}
+                  title={form.status === 'expired' ? 'Cannot edit expired membership' : 'Edit this membership'}
+                >
+                  Edit
+                </ActionButton>
                 <ActionButton onClick={handleDelete} variant="danger" disabled={formLoading}>Delete</ActionButton>
               </>
             ) : (

@@ -4,6 +4,7 @@ import {QRCodeCanvas, QRCodeSVG } from 'qrcode.react';
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import api from '@/utils/fetchClient';
+import toast from 'react-hot-toast';
 import BackendErrorFallback from "@/components/BackendErrorFallback";
 import { jsPDF } from "jspdf";
 import { FaChalkboardTeacher, FaPlus, FaSyncAlt } from 'react-icons/fa';
@@ -39,7 +40,7 @@ export default function PTSessionListPage() {
     const fetchMeta = async () => {
       try {
         const [plansData, membersData, trainersData] = await Promise.all([
-          api.get('/api/ptsessionplans'),
+          api.get('/api/ptsessionplans?limit=9999'),
           api.get('/api/users?role=member&limit=9999'),
           api.get('/api/users?role=trainer&limit=9999')
         ]);
@@ -123,12 +124,11 @@ export default function PTSessionListPage() {
         setSessions(sessionData.data?.sessions || []);
         setTotalRows(sessionData.data?.total || 0);
         
-        // Tampilkan notifikasi sukses (opsional)
-        alert('PT Session status has been successfully updated!');
+        toast.success('PT Session status has been successfully updated!');
       }
     } catch (err) {
       console.error('Error refreshing status:', err);
-      alert('Failed to update PT Session status. Please try again.');
+      toast.error('Failed to update PT Session status. Please try again.');
     }
     setRefreshing(false);
   };

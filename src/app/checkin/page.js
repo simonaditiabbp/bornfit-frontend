@@ -307,8 +307,6 @@ export default function BarcodePage() {
       // Check if user already purchased this class
       setBookingClassLoading(true);
       const response = await api.get(`/api/classpurchases?user_id=${user.id}&class_id=${classId}`);
-      console.log("response: ", response)
-      
       if (response.data && response.data.length > 0) {
         // Class already purchased
         Swal.fire({

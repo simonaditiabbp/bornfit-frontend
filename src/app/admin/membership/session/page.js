@@ -2,6 +2,8 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import api from '@/utils/fetchClient';
+import toast from 'react-hot-toast';
+import Swal from 'sweetalert2';
 import BackendErrorFallback from '../../../../components/BackendErrorFallback';
 import MembershipSessionDataTable from './DataTable';
 import { FaPlus, FaIdCard, FaSyncAlt, FaEnvelope } from 'react-icons/fa';
@@ -106,12 +108,11 @@ export default function MembershipSessionPage() {
         setSessions(data.data?.memberships || []);
         setTotalRows(data.data?.total || 0);
         
-        // Tampilkan notifikasi sukses (opsional)
-        alert('Membership status has been successfully updated!');
+        toast.success('Membership status has been successfully updated!');
       }
     } catch (err) {
       console.error('Error refreshing status:', err);
-      alert('Failed to update membership status. Please try again.');
+      toast.error(err.data?.message || 'Failed to update membership status. Please try again.');
     }
     setRefreshing(false);
   };
@@ -126,7 +127,7 @@ export default function MembershipSessionPage() {
       });
       
       if (!result || !result.data) {
-        alert('❌ Failed to queue job. Please try again.');
+        toast.error('Failed to queue bulk send job. Please try again.');
         setSendingBulk(false);
         setSendingText('Send Bulk Reminder');
         return;
@@ -135,10 +136,20 @@ export default function MembershipSessionPage() {
       const { jobId } = result.data;
       
       // Show success immediately - no waiting!
-      alert(`✅ Bulk email job queued successfully!\n\n` +
-        `Job ID: ${jobId}\n\n` +
-        `Emails will be sent in the background.\n` +
-        `Check audit logs (History) later for results.`);
+      await Swal.fire({
+        icon: 'success',
+        title: 'Bulk Email Job Queued Successfully!',
+        html: `
+          <div style="text-align: left;">
+            <p><strong>Job ID:</strong> ${jobId}</p>
+            <br>
+            <p>Emails will be sent in the background.</p>
+            <p>Check audit logs (History) later for results.</p>
+          </div>
+        `,
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#10b981'
+      });
       
       setSendingBulk(false);
       setSendingText('Send Bulk Reminder');
@@ -149,7 +160,7 @@ export default function MembershipSessionPage() {
       setSendingText('Send Bulk Reminder');
       
       const errorMessage = error?.data?.message || error?.message || 'Unknown error';
-      alert(`❌ Failed to queue bulk send job\n\n${errorMessage}`);
+      toast.error(`Failed to queue bulk send job: ${errorMessage}`);
     }
   };
 

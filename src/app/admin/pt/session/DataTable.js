@@ -33,10 +33,11 @@ export default function PTSessionDataTable({
       return pt ? pt.name : row.user_pt_id;
     }, sortable: true },
     { name: 'Start Date', cell: row => row.start_date?.slice(0,10), sortable: true },
+    { name: 'End Date', cell: row => row.end_date?.slice(0,10), sortable: true },
     {
       name: 'Remaining Session',
       cell: row => {
-        const plan = plans.find(p => p.id === row.pt_session_plan_id);
+        const plan = plans.find(p => Number(p.id) === Number(row.pt_session_plan_id));
         const max = plan ? plan.max_session : '...';
         const sisa = typeof row.remaining_session === 'number' ? row.remaining_session : '...';
         return `${sisa} of ${max} sessions remaining`;

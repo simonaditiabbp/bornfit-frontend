@@ -33,7 +33,6 @@ export default function PTBookingEditPage() {
     const fetchPTSessions = async () => {
       try {
         const data = await api.get(`/api/personaltrainersessions/member/${form.user_member_id}`);
-        console.log("Fetched PT sessions: ", data);
         setPTSessions(data.data.sessions || []);
       } catch {
         setPTSessions([]);
@@ -53,7 +52,6 @@ export default function PTBookingEditPage() {
       try {
         const data = await api.get(`/api/ptsessionbookings/${id}`);
         const bookingObj = data?.data;
-        console.log("bookingObj: ", bookingObj);
         setBooking(bookingObj || null);
         if (bookingObj) {
           setForm({
@@ -219,7 +217,14 @@ export default function PTBookingEditPage() {
         <div className="flex gap-3 mt-8 justify-start">
           {!edit ? (
             <>
-              <ActionButton onClick={handleEdit} variant="primary">Edit</ActionButton>
+              <ActionButton 
+                onClick={handleEdit} 
+                variant="primary" 
+                disabled={booking.status === 'cancelled'}
+                title={booking.status === 'cancelled' ? 'Cannot edit cancelled booking' : 'Edit this booking'}
+              >
+                Edit
+              </ActionButton>
               <ActionButton onClick={handleDelete} variant="danger" disabled={formLoading}>Delete</ActionButton>
             </>
           ) : (
