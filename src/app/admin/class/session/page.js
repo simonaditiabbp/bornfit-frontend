@@ -12,7 +12,6 @@ import api from '@/utils/fetchClient';
 
 export default function ClassSessionListPage() {
   const [qrSession, setQrSession] = useState(null);
-  console.log('[ClassSession] Render Parent');
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [scheduleTypeFilter, setScheduleTypeFilter] = useState('all'); // 'all', 'recurring_patterns', 'instances', 'single'
@@ -30,14 +29,12 @@ export default function ClassSessionListPage() {
   const handleChangePage = (newPage) => {
     const pageNum = typeof newPage === 'number' ? newPage : (Array.isArray(newPage) ? newPage[0] : Number(newPage));
     if (!pageNum || pageNum === page) return;
-    console.log('[ClassSession] handleChangePage ->', pageNum);
     setPage(pageNum);
   };
 
   const handleChangeRowsPerPage = (newPerPage, currentPageArg) => {
     const perPageNum = typeof newPerPage === 'number' ? newPerPage : (Array.isArray(newPerPage) ? newPerPage[0] : Number(newPerPage));
     if (!perPageNum || perPageNum === perPage) return;
-    console.log('[ClassSession] handleChangeRowsPerPage ->', perPageNum, 'currentPageArg=', currentPageArg);
     setPerPage(perPageNum);
     if (page !== 1) setPage(1);
   };
