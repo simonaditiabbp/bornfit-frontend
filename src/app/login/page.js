@@ -55,6 +55,11 @@ export default function LoginPage() {
         (err) => {
           setLatitude(null);
           setLongitude(null);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
         }
       );
     }
