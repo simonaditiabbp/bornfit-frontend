@@ -192,6 +192,10 @@ export default function HistoryPage() {
                 return 'bg-green-700 text-white';
             case 'verify':
                 return 'bg-pink-500 text-white';
+            case 'cron_job':
+                return 'bg-yellow-900 text-white';
+            case 'bulk_send_renewal_email':
+                return 'bg-yellow-700 text-white';
             default:
                 return 'bg-gray-500 text-white';
         }
