@@ -217,7 +217,7 @@ export default function MemberProfilePage() {
       cell: row => (
         <div className="flex gap-2">
           <button
-            onClick={() => router.push(`/admin/membership/session/edit/${row.id}`)}
+            onClick={() => router.push(`/admin/membership/session/edit?id=${row.id}`)}
             className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors shadow-sm text-xs font-medium"
             title="Edit Membership"
           >
