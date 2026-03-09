@@ -60,13 +60,20 @@ export default function ReportFilterSection({
     }
   };
 
+  // Determine grid columns based on number of fields
+  const totalItems = filterFields.length + 1; // +1 for reset button
+  const gridColsClass = totalItems === 5 ? 'md:grid-cols-5 lg:grid-cols-5' : 
+                        totalItems === 4 ? 'md:grid-cols-4 lg:grid-cols-4' :
+                        totalItems === 3 ? 'md:grid-cols-3 lg:grid-cols-3' :
+                        'md:grid-cols-2 lg:grid-cols-3';
+
   return (
     <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
       <div className="flex items-center gap-2 mb-3">
         <FaFilter className="text-amber-500 dark:text-amber-400" />
         <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">{title}</h3>
       </div>
-      <div className={`grid grid-cols-1 md:grid-cols-${Math.min(filterFields.length + 1, 5)} gap-4`}>
+      <div className={`grid grid-cols-1 ${gridColsClass} gap-4`}>
         {filterFields.map((field) => (
           <div key={field.key}>
             <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
