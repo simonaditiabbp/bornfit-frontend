@@ -123,14 +123,13 @@ export default function ClassReportPage() {
         <ReportFilterSection 
           title="Filter Data"
           filterFields={[
+            { key: 'class_type', label: 'Class Type', type: 'select', options: [
+              { value: 'membership_only', label: 'Membership Only' },
+              { value: 'free', label: 'Free' },
+              { value: 'both', label: 'Both' }
+            ]},
             { key: 'start_date', label: 'Start Date', type: 'date' },
             { key: 'end_date', label: 'End Date', type: 'date' },
-            { key: 'class_type', label: 'Class Type', type: 'select', options: [
-              { value: '', label: 'All Types' },
-              { value: 'Membership Only', label: 'Membership Only' },
-              { value: 'Free', label: 'Free' },
-              { value: 'Both', label: 'Both' }
-            ]},
             { key: 'search', label: 'Pencarian', type: 'text', placeholder: 'Cari nama, event, instruktur, dsb...' }
           ]}
           filters={filters}
@@ -172,8 +171,8 @@ export default function ClassReportPage() {
                     </td>
                     <td className="px-4 py-3 text-white">
                       <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                        item.class_type === 'Membership Only' ? 'bg-blue-600' :
-                        item.class_type === 'Free' ? 'bg-green-600' :
+                        item.class_type === 'membership_only' ? 'bg-blue-600' :
+                        item.class_type === 'free' ? 'bg-green-600' :
                         'bg-purple-600'
                       }`}>
                         {item.class_type}

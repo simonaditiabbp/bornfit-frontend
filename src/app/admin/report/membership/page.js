@@ -147,8 +147,8 @@ export default function MembershipReportPage() {
           title="Filter Data"
           filterFields={[
             { key: 'status', label: 'Status', type: 'select', options: [
-              { value: '', label: 'All Status' },
               { value: 'active', label: 'Active' },
+              { value: 'pending', label: 'Pending' },
               { value: 'expired', label: 'Expired' },
               { value: 'frozen', label: 'Frozen' }
             ]},

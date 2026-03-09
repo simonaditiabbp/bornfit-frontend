@@ -121,15 +121,16 @@ export default function PTSessionReportPage() {
         <ReportFilterSection 
           title="Filter Data"
           filterFields={[
-            { key: 'start_date', label: 'Start Date', type: 'date' },
-            { key: 'end_date', label: 'End Date', type: 'date' },
             { key: 'status', label: 'Status', type: 'select', options: [
-              { value: '', label: 'All Status' },
+              // { value: '', label: 'All Status' },
+              { value: 'booked', label: 'Booked' },
               { value: 'pending', label: 'Pending' },
               { value: 'confirmed', label: 'Confirmed' },
               { value: 'completed', label: 'Completed' },
               { value: 'cancelled', label: 'Cancelled' }
             ]},
+            { key: 'start_date', label: 'Start Date', type: 'date' },
+            { key: 'end_date', label: 'End Date', type: 'date' },
             { key: 'search', label: 'Pencarian', type: 'text', placeholder: 'Cari member, trainer, plan, dsb...' }
           ]}
           filters={filters}
