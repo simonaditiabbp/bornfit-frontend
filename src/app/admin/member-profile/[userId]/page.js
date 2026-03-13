@@ -10,6 +10,7 @@ import Swal from 'sweetalert2';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import LoadingSpin from '@/components/admin/LoadingSpin';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -636,7 +637,7 @@ export default function MemberProfilePage() {
           ]}
         />
         <PageContainer>
-          <LoadingText />
+          <LoadingSpin topPosition />
         </PageContainer>
       </div>
     );

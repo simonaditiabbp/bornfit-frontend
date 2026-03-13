@@ -122,7 +122,7 @@ export default function PTPlanEditPage() {
       <PageContainerInsert>
         <div className="flex items-center justify-between mb-8 border-b border-gray-700 pb-4">
           <h1 className="text-3xl font-bold text-gray-800 dark:text-amber-300">PT Session Plan Details</h1>
-          <ActionButton href="/admin/pt/plans" variant="gray">Back</ActionButton>
+          <ActionButton href="/admin/pt/plans" variant="back">Back</ActionButton>
         </div>
         {editForm ? (
           <div className="space-y-4">
@@ -198,20 +198,19 @@ export default function PTPlanEditPage() {
             <div className="flex gap-3 mt-8 justify-start">
               {!edit ? (
                 <>
-                  <ActionButton onClick={handleEdit} variant="primary">Edit</ActionButton>
-                  <ActionButton onClick={handleDelete} variant="danger">Delete</ActionButton>
+                  <ActionButton onClick={handleEdit} variant="edit">Edit</ActionButton>
+                  <ActionButton onClick={handleDelete} variant="delete" disabled={formLoading}>Delete</ActionButton>
                 </>
               ) : (
                 <>
-                  <button
-                    type="button"
-                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition"
+                  <ActionButton 
+                    variant="save" 
                     disabled={formLoading}
                     onClick={() => handleSave(editForm)}
                   >
-                    {formLoading ? "Saving..." : "Save"}
-                  </button>
-                  <ActionButton onClick={handleCancel} variant="gray">Cancel</ActionButton>
+                      {formLoading ? 'Saving...' : 'Save'}
+                  </ActionButton>
+                  <ActionButton onClick={handleCancel} variant="cancel">Cancel</ActionButton>
                 </>
               )}
             </div>

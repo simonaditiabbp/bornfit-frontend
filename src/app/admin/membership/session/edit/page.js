@@ -86,7 +86,7 @@ export default function EditMembershipSessionPage() {
   const handleDelete = async () => {
     const result = await Swal.fire({
       title: '⚠️ Delete Confirmation',
-      html: 'Are you sure you want to delete this membership session?',
+      html: 'Are you sure you want to delete \nthis membership session?',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#ef4444',
@@ -131,7 +131,7 @@ export default function EditMembershipSessionPage() {
             <h1 className="text-3xl font-bold text-gray-800 dark:text-amber-300">Membership Session Details</h1>
             <ActionButton
               href="/admin/membership/session"
-              variant="gray"
+              variant="back"
             >
               Back
             </ActionButton>
@@ -361,18 +361,24 @@ export default function EditMembershipSessionPage() {
               <>
                 <ActionButton 
                   onClick={() => setEdit(true)} 
-                  variant="primary"
+                  variant="edit"
                   disabled={form.status === 'expired'}
                   title={form.status === 'expired' ? 'Cannot edit expired membership' : 'Edit this membership'}
                 >
-                  Edit
+                    Edit
                 </ActionButton>
-                <ActionButton onClick={handleDelete} variant="danger" disabled={formLoading}>Delete</ActionButton>
+                <ActionButton onClick={handleDelete} variant="delete" disabled={formLoading}>Delete</ActionButton>
               </>
             ) : (
               <>
-                <button type="button" className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold bg-green-600 text-white hover:bg-green-700" onClick={handleSave} disabled={formLoading}>{formLoading ? 'Saving...' : 'Save'}</button>
-                <ActionButton onClick={() => setEdit(false)} variant="gray">Cancel</ActionButton>
+                <ActionButton 
+                  variant="save" 
+                  disabled={formLoading}
+                  onClick={handleSave}
+                >
+                    {formLoading ? 'Saving...' : 'Save'}
+                </ActionButton>
+                <ActionButton onClick={() => setEdit(false)} variant="cancel">Cancel</ActionButton>
               </>
             )}
           </div>

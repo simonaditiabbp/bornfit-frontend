@@ -227,7 +227,7 @@ export default function TransferMembershipEditPage() {
       <PageContainerInsert>
         <div className="flex items-center justify-between mb-8 border-b border-gray-700 pb-4">
           <h1 className="text-3xl font-bold text-gray-800 dark:text-amber-300">Transfer Membership Details</h1>
-          <ActionButton href="/admin/membership/transfer" variant="gray">Back</ActionButton>
+          <ActionButton href="/admin/membership/transfer" variant="back">Back</ActionButton>
         </div>
 
         <div className="space-y-4 mb-4">
@@ -340,24 +340,30 @@ export default function TransferMembershipEditPage() {
           
           <div className="flex gap-3 mt-8 justify-start">
             {!edit ? (
-              <>
-                <ActionButton onClick={handleEdit} variant="primary">Edit</ActionButton>
+              <>                
+                <ActionButton onClick={handleEdit} variant="edit">Edit</ActionButton>
                 {form?.status === 'pending' && (
                   <>
-                    <button type="button" className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition" onClick={handleApprove} disabled={formLoading}>
+                    <ActionButton variant="approve" onClick={handleApprove} disabled={formLoading}>
                       {formLoading ? "Processing..." : "Approve"}
-                    </button>
-                    <button type="button" className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg font-semibold transition" onClick={handleReject} disabled={formLoading}>
+                    </ActionButton>
+                    <ActionButton variant="reject" onClick={handleReject} disabled={formLoading}>
                       {formLoading ? "Processing..." : "Reject"}
-                    </button>
+                    </ActionButton>
                   </>
                 )}
-                <ActionButton onClick={handleDelete} variant="danger">Delete</ActionButton>
+                <ActionButton onClick={handleDelete} variant="delete" disabled={formLoading}>Delete</ActionButton>
               </>
             ) : (
               <>
-                <button type="button" className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition" disabled={formLoading} onClick={handleSave}>{formLoading ? "Saving..." : "Save"}</button>
-                <ActionButton onClick={handleCancel} variant="gray">Cancel</ActionButton>
+                <ActionButton 
+                  variant="save" 
+                  disabled={formLoading}
+                  onClick={handleSave}
+                >
+                    {formLoading ? 'Saving...' : 'Save'}
+                </ActionButton>
+                <ActionButton onClick={handleCancel} variant="cancel">Cancel</ActionButton>
               </>
             )}
           </div>

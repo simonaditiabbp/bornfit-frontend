@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { StyledDataTable } from '@/components/admin';
+import { FaInfoCircle } from 'react-icons/fa';
 
 export default function ClassPurchaseDataTable({ 
   data,
@@ -37,7 +38,12 @@ export default function ClassPurchaseDataTable({
       sortable: true
     },
     { name: 'Actions', cell: row => (
-      <Link href={`/admin/class/classpurchase/edit?id=${row.id}`} className="bg-gray-600 dark:bg-blue-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-700 dark:hover:bg-blue-700">Detail</Link>
+      <Link 
+        href={`/admin/class/classpurchase/edit?id=${row.id}`} 
+        className="flex items-center gap-1 px-3 py-1.5 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors shadow-sm text-xs font-medium">
+          <FaInfoCircle className="w-3 h-3" />
+          Details
+      </Link>
     ), ignoreRowClick: true }
   ];
 

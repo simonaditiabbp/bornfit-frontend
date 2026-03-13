@@ -6,6 +6,7 @@ import Link from "next/link";
 import { FaPlus, FaCog, FaAngleRight } from 'react-icons/fa';
 import { LoadingText, PageBreadcrumb, PageContainer, PageHeader } from "@/components/admin";
 import api from '@/utils/fetchClient';
+import LoadingSpin from "@/components/admin/LoadingSpin";
 
 export default function ClassPlansPage() {
   const [search, setSearch] = useState('');
@@ -98,7 +99,7 @@ export default function ClassPlansPage() {
           actionText="Add Plan"
         />
         {loading ? (
-          <LoadingText />
+          <LoadingSpin topPosition />
         ) : (
           <ClassPlansDataTable
             data={plans}

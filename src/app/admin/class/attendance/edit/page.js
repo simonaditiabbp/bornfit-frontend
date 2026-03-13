@@ -36,11 +36,12 @@ export default function EditAttendancePage() {
       try {
         const dataClasses = await api.get(`/api/classattendances/${id}`);
         const data = dataClasses.data;
+        const status = data.status?.toLowerCase().replace(/-/g, "_");
         const attForm = {
           class_id: data.class_id || "",
           member_id: data.member_id || "",
           checked_in_at: data.checked_in_at ? data.checked_in_at.slice(0, 16) : "",
-          status: data.status || "Booked",
+          status: status || "Booked",
           waiting_list_position: data.waiting_list_position || "",
           created_by: data.created_by || "",
           updated_by: data.updated_by || ""
@@ -374,7 +375,7 @@ export default function EditAttendancePage() {
         <div className="flex items-center justify-between mb-8 border-b border-gray-700 pb-4">
           <h1 className="text-3xl font-bold text-gray-800 dark:text-amber-300">Class Attendance Details</h1>
           <ActionButton
-            variant="gray"
+            variant="back"
             href="/admin/class/attendance"
           >
             Back
@@ -550,13 +551,25 @@ export default function EditAttendancePage() {
           <div className="flex gap-3 mt-8 justify-start">
             {!edit ? (
               <>
-                <ActionButton variant="primary" onClick={handleEdit}>Edit</ActionButton>
-                <ActionButton variant="danger" onClick={handleDelete} disabled={formLoading}>Delete</ActionButton>
+                <ActionButton 
+                  onClick={handleEdit} 
+                  variant="edit"
+                >
+                    Edit
+                </ActionButton>
+                <ActionButton onClick={handleDelete} variant="delete" disabled={formLoading}>Delete</ActionButton>
               </>
             ) : (
               <>
-                <ActionButton type="submit" disabled={formLoading}>{formLoading ? "Saving..." : "Save"}</ActionButton>
-                <ActionButton variant="gray" onClick={handleCancel}>Cancel</ActionButton>
+                <ActionButton 
+                  type="submit"
+                  variant="save" 
+                  disabled={formLoading}
+                  onClick={handleSave}
+                >
+                    {formLoading ? 'Saving...' : 'Save'}
+                </ActionButton>
+                <ActionButton onClick={handleCancel} variant="cancel">Cancel</ActionButton>
               </>
             )}
           </div>

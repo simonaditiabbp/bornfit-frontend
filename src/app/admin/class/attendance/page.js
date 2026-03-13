@@ -5,6 +5,7 @@ import ClassAttendanceDataTable from './DataTable';
 import { FaPlus, FaDumbbell, FaAngleRight } from 'react-icons/fa';
 import { LoadingText, PageBreadcrumb, PageContainer, PageHeader } from '@/components/admin';
 import api from '@/utils/fetchClient';
+import LoadingSpin from '@/components/admin/LoadingSpin';
 
 export default function ClassAttendancePage() {
   const [search, setSearch] = useState('');
@@ -81,7 +82,7 @@ export default function ClassAttendancePage() {
           actionText="Add Attendance"
         />
         {loading ? (
-          <LoadingText />
+          <LoadingSpin topPosition />
         ) : (
           <ClassAttendanceDataTable
             data={attendances}

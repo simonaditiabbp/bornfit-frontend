@@ -7,6 +7,7 @@ import { FaPlus, FaDumbbell, FaAngleRight } from 'react-icons/fa';
 import { LoadingText, PageBreadcrumb, PageContainer, PageHeader } from '@/components/admin';
 import ClassPurchaseDataTable from './DataTable';
 import api from '@/utils/fetchClient';
+import LoadingSpin from '@/components/admin/LoadingSpin';
 
 export default function ClassPurchaseListPage() {
   const [purchases, setPurchases] = useState([]);
@@ -89,7 +90,7 @@ export default function ClassPurchaseListPage() {
           actionText="Add Purchase"
         />
         {loading ? (
-          <LoadingText />
+          <LoadingSpin topPosition />
         ) : (
           <ClassPurchaseDataTable
             data={purchases}

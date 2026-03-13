@@ -173,7 +173,7 @@ export default function EditMembershipPlanPage() {
       <PageContainerInsert>
         <div className="flex items-center justify-between mb-8 border-b border-gray-700 pb-4">
           <h1 className="text-3xl font-bold text-gray-800 dark:text-amber-300">Edit Membership Plan</h1>
-          <ActionButton href="/admin/membership/plans" variant="gray">Back</ActionButton>
+          <ActionButton href="/admin/membership/plans" variant="back">Back</ActionButton>
         </div>
           
           <div className="space-y-4 mb-4">
@@ -328,13 +328,19 @@ export default function EditMembershipPlanPage() {
           <div className="flex gap-3 mt-8 justify-start">
             {!edit ? (
               <>
-                <ActionButton onClick={() => setEdit(true)} variant="primary">Edit</ActionButton>
-                <ActionButton onClick={handleDelete} variant="danger" disabled={formLoading}>Delete</ActionButton>
+                <ActionButton onClick={() => setEdit(true)} variant="edit">Edit</ActionButton>
+                <ActionButton onClick={handleDelete} variant="delete" disabled={formLoading}>Delete</ActionButton>
               </>
             ) : (
               <>
-                <button type="button" className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold bg-green-600 text-white hover:bg-green-700" onClick={handleSubmit} disabled={formLoading}>{formLoading ? 'Saving...' : 'Save'}</button>
-                <ActionButton onClick={() => setEdit(false)} variant="gray">Cancel</ActionButton>
+                <ActionButton 
+                  variant="save" 
+                  disabled={formLoading}
+                  onClick={handleSubmit}
+                >
+                    {formLoading ? 'Saving...' : 'Save'}
+                </ActionButton>
+                <ActionButton onClick={() => setEdit(false)} variant="cancel">Cancel</ActionButton>
               </>
             )}
           </div>

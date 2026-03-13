@@ -6,6 +6,7 @@ import api from '@/utils/fetchClient';
 import FreezeDataTable from "./DataTable";
 import BackendErrorFallback from "@/components/BackendErrorFallback";
 import { PageBreadcrumb, PageContainer, PageHeader, LoadingText } from '@/components/admin';
+import LoadingSpin from "@/components/admin/LoadingSpin";
 
 export default function FreezeMembershipPage() {
   const [search, setSearch] = useState('');
@@ -91,7 +92,7 @@ export default function FreezeMembershipPage() {
           actionText="Freeze Membership"
         />
         {loading ? (
-          <LoadingText />
+          <LoadingSpin topPosition />
         ) : (
           <FreezeDataTable
             data={freezes}

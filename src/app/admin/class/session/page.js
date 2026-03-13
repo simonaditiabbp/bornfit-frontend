@@ -9,6 +9,7 @@ import { jsPDF } from "jspdf";
 import { FaPlus, FaDumbbell, FaAngleRight } from 'react-icons/fa';
 import { LoadingText, PageBreadcrumb, PageContainer, PageHeader } from "@/components/admin";
 import api from '@/utils/fetchClient';
+import LoadingSpin from "@/components/admin/LoadingSpin";
 
 export default function ClassSessionListPage() {
   const [qrSession, setQrSession] = useState(null);
@@ -171,7 +172,7 @@ export default function ClassSessionListPage() {
           </div>
         </div>
         {loading ? (
-          <LoadingText />
+          <LoadingSpin topPosition />
         ) : (
           <ClassSessionDataTable
             data={sessions}

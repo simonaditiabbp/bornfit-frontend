@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { StyledDataTable } from '@/components/admin';
+import { FaInfoCircle } from 'react-icons/fa';
 
 export default function ClassAttendanceDataTable({ 
   data,
@@ -29,7 +30,7 @@ export default function ClassAttendanceDataTable({
     {
       name: 'Status',
       cell: row => {
-        const status = row.status?.toLowerCase();
+        const status = row.status?.toLowerCase().replace(/-/g, "_");
 
         const styleMap = {
           booked:   "bg-blue-100 text-blue-700",
@@ -54,9 +55,14 @@ export default function ClassAttendanceDataTable({
       sortable: true
     },
     {
-      name: 'Aksi',
+      name: 'Actions',
       cell: row => (
-        <Link href={`/admin/class/attendance/edit?id=${row.id}`} className="bg-gray-600 dark:bg-blue-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-700 dark:hover:bg-blue-700">Detail</Link>
+        <Link 
+          href={`/admin/class/attendance/edit?id=${row.id}`} 
+          className="flex items-center gap-1 px-3 py-1.5 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors shadow-sm text-xs font-medium">
+            <FaInfoCircle className="w-3 h-3" />
+            Details
+        </Link>
       )
     }
   ];
