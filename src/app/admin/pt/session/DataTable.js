@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { StyledDataTable } from '@/components/admin';
+import { FaInfoCircle } from 'react-icons/fa';
 
 export default function PTSessionDataTable({ 
   data, 
@@ -72,17 +73,13 @@ export default function PTSessionDataTable({
       sortable: true
     },
     {
-      name: 'Aksi',
-      cell: row => (
-        <div className="flex gap-2 justify-center">
-          {/* <button
-            className="bg-blue-600 text-white px-3 py-1 rounded font-semibold hover:bg-blue-700"
-            onClick={() => setQrSession && setQrSession(row)}
-          >
-            Generate QR
-          </button> */}
-          <Link href={`/admin/pt/session/edit?id=${row.id}`} className="bg-gray-600 dark:bg-blue-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-700 dark:hover:bg-blue-700">Detail</Link>
-        </div>
+      name: 'Actions',
+      cell: row => (          
+          <Link href={`/admin/pt/session/edit?id=${row.id}`} 
+          className="flex items-center gap-1 px-3 py-1.5 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors shadow-sm text-xs font-medium">
+            <FaInfoCircle className="w-3 h-3" />
+            Details
+          </Link>
       ),
       ignoreRowClick: true,
     },

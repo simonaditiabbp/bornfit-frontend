@@ -6,6 +6,7 @@ import PTPlansDataTable from "./DataTable";
 import Link from "next/link";
 import { FaCog, FaPlus } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainer, PageHeader, LoadingText, StyledDataTable } from '../../../../components/admin';
+import LoadingSpin from "@/components/admin/LoadingSpin";
 
 export default function PTPlansPage() {
   const [search, setSearch] = useState('');
@@ -101,7 +102,7 @@ export default function PTPlansPage() {
           actionText="Add Plan"
         />
         {loading ? (
-          <LoadingText />
+          <LoadingSpin topPosition />
         ) : (
           <PTPlansDataTable
             data={plans}

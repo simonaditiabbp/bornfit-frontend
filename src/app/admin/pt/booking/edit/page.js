@@ -152,7 +152,7 @@ export default function PTBookingEditPage() {
         <div className="flex items-center justify-between mb-8 border-b border-gray-700 pb-4">
           <h1 className="text-3xl font-bold text-gray-800 dark:text-amber-300">PT Booking Details</h1>
           <ActionButton
-            variant="gray"
+            variant="back"
             href="/admin/pt/booking"
           >
             Back
@@ -219,18 +219,18 @@ export default function PTBookingEditPage() {
             <>
               <ActionButton 
                 onClick={handleEdit} 
-                variant="primary" 
+                variant="edit" 
                 disabled={booking.status === 'cancelled'}
                 title={booking.status === 'cancelled' ? 'Cannot edit cancelled booking' : 'Edit this booking'}
               >
                 Edit
               </ActionButton>
-              <ActionButton onClick={handleDelete} variant="danger" disabled={formLoading}>Delete</ActionButton>
+              <ActionButton onClick={handleDelete} variant="delete" disabled={formLoading}>Delete</ActionButton>
             </>
           ) : (
             <>
-              <button type="button" className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold bg-green-600 text-white hover:bg-green-700" onClick={handleSave} disabled={formLoading}>{formLoading ? 'Saving...' : 'Save'}</button>
-              <ActionButton onClick={handleCancel} variant="gray">Cancel</ActionButton>
+              <ActionButton onClick={handleSave} variant="save" disabled={formLoading}>{formLoading ? 'Saving...' : 'Save'}</ActionButton>
+              <ActionButton onClick={handleCancel} variant="cancel">Cancel</ActionButton>
             </>
           )}
         </div>

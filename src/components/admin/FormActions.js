@@ -22,18 +22,17 @@ export default function FormActions({
     <div className="flex justify-start gap-3 mt-6">
       <ActionButton 
         type="submit"
-        variant="primary"
+        variant="submit"
         disabled={isSubmitting}
         onClick={onSubmit}
       >
-        {/* {isEdit ? 'Edit' : 'Submit'} */}
         {isSubmitting ? (isEdit ? 'Editing...' : 'Submitting...') : (isEdit ? 'Edit' : 'Submit')}
       </ActionButton>
       
       {onReset && (
         <ActionButton 
           type="reset"
-          variant="secondary"
+          variant="reset"
           onClick={onReset}
         >
           Reset
@@ -43,7 +42,7 @@ export default function FormActions({
       {cancelHref && (
         <ActionButton 
           href={cancelHref}
-          variant="gray"
+          variant="cancel"
         >
           Cancel
         </ActionButton>

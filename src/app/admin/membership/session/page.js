@@ -8,6 +8,7 @@ import BackendErrorFallback from '../../../../components/BackendErrorFallback';
 import MembershipSessionDataTable from './DataTable';
 import { FaPlus, FaIdCard, FaSyncAlt, FaEnvelope } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainer, PageHeader, LoadingText } from '../../../../components/admin';
+import LoadingSpin from '@/components/admin/LoadingSpin';
 
 export default function MembershipSessionPage() {
   const searchParams = useSearchParams();
@@ -219,14 +220,14 @@ export default function MembershipSessionPage() {
           </div>
           <a
             href="/admin/membership/session/insert"            
-            className="flex items-center gap-2 bg-gradient-to-r from-gray-500 to-gray-700 dark:from-amber-400 dark:to-amber-500 text-white dark:text-gray-900 px-4 py-2 rounded-lg font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 active:scale-95"
+            className="flex items-center gap-2 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-900 hover:from-amber-400 hover:to-amber-300 px-4 py-2 rounded-lg font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 active:scale-95"
           >
             <FaPlus />
             Add Session
           </a>
         </div>
         {loading ? (
-          <LoadingText />
+          <LoadingSpin topPosition />
         ) : (
           <MembershipSessionDataTable 
             data={sessions}

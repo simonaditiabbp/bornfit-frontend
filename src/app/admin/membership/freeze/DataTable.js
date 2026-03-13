@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { StyledDataTable } from '@/components/admin';
+import { FaInfoCircle } from "react-icons/fa";
 
 export default function FreezeDataTable({
   data,
@@ -53,6 +54,7 @@ export default function FreezeDataTable({
           active: 'bg-blue-100 text-blue-700',
           completed: 'bg-green-100 text-green-700',
           cancelled: 'bg-red-100 text-red-700',
+          deleted: 'bg-red-700 text-red-100',
         };
         return (
           <span className={`px-2 py-1 rounded-full text-xs font-semibold ${statusColors[status] || statusColors.active}`}>
@@ -67,9 +69,10 @@ export default function FreezeDataTable({
       cell: row => (
         <Link 
           href={`/admin/membership/freeze/edit?id=${row.id}`} 
-          className="bg-gray-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500"
+          className="flex items-center gap-1 px-3 py-1.5 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors shadow-sm text-xs font-medium"
         >
-          Detail
+          <FaInfoCircle className="w-3 h-3" />
+          Details
         </Link>
       ),
       ignoreRowClick: true,

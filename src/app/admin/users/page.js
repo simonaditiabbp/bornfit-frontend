@@ -9,11 +9,12 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import BackendErrorFallback from '../../../components/BackendErrorFallback';
-import { FaPlus, FaSyncAlt, FaUser } from 'react-icons/fa';
+import { FaCalendar, FaCalendarCheck, FaCalendarTimes, FaCheckCircle, FaClock, FaEdit, FaInfoCircle, FaMailBulk, FaPaperPlane, FaPlus, FaQrcode, FaSyncAlt, FaTimes, FaTimesCircle, FaUser, FaUserTimes, FaWhatsapp } from 'react-icons/fa';
 import CreateUserModal from '../../../components/CreateUserModal';
 import api from '@/utils/fetchClient';
 import UsersDataTable from "./DataTable";
 import { PageBreadcrumb, PageContainer, PageHeader, LoadingText } from '@/components/admin';
+import LoadingSpin from '@/components/admin/LoadingSpin';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -56,30 +57,33 @@ function RenewalActionsCell({ row, membership }) {
     alert(`WhatsApp renewal sent to ${row.phone || '-'} from 08123123`);
   };
   return (
-    <div className="flex flex-col items-center">
+    <div className="">
       <button
-        className={`bg-yellow-500 text-white px-3 py-1 rounded font-semibold hover:bg-yellow-600 ${isExpired && isMember ? '' : 'opacity-50 cursor-not-allowed'}`}
+        className={`flex items-center gap-1 px-3 py-1.5 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition-colors shadow-sm text-xs font-medium ${isExpired && isMember ? '' : 'opacity-50 cursor-not-allowed'}`}
         disabled={!(isExpired && isMember)}
         onClick={() => setShowActions(v => !v)}
       >
+        <FaCalendarCheck className="w-3 h-3" />
         Reminder
       </button>
       {showActions && (
         <div className="flex gap-2 mt-2">
           <button
-            className={`bg-blue-500 text-white px-2 py-1 rounded font-semibold hover:bg-blue-700 text-xs flex items-center justify-center ${emailLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+            className={`flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-700 transition-colors shadow-sm text-xs font-medium ${emailLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
             onClick={handleSendEmail}
             disabled={emailLoading}
           >
             {emailLoading ? (
               <svg className="animate-spin mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
             ) : null}
+            <FaPaperPlane className="w-3 h-3" />
             Send Email
           </button>
           <button
-            className="bg-green-500 text-white px-2 py-1 rounded font-semibold hover:bg-green-700 text-xs"
+            className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors shadow-sm text-xs font-medium"
             onClick={handleSendWA}
           >
+            <FaWhatsapp className="w-3 h-3" />
             Send WhatsApp
           </button>
         </div>
@@ -231,24 +235,28 @@ export default function AdminUsersPage() {
     },
     {
       name: 'Actions',
+      width: '350px',
       cell: row => (
-        <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
+        <div className="flex gap-2">
           <button
-            className="cursor-pointer bg-blue-600 text-white px-3 py-1 rounded-md font-semibold hover:bg-blue-700 "
+            className="cursor-pointer flex items-center gap-1 px-3 py-1.5 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors shadow-sm text-xs font-medium"
             onClick={() => setQrUser(row)}
           >
+            <FaQrcode className="w-3 h-3" />
             Generate QR
           </button>
           <button
-            className="bg-gray-400 text-white px-3 py-1 rounded-md font-semibold hover:bg-gray-500 "
+            className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors shadow-sm text-xs font-medium"
             onClick={() => router.push(`/admin/users/${row.id}`)}
           >
+            <FaEdit className="w-3 h-3" />
             Edit
           </button>
           <button
-            className="bg-purple-600 text-white px-3 py-1 rounded-md font-semibold hover:bg-purple-700 "
+            className="flex items-center gap-1 px-3 py-1.5 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors shadow-sm text-xs font-medium"
             onClick={() => router.push(`/admin/member-profile/${row.id}`)}
           >
+            <FaInfoCircle className="w-3 h-3" />
             Details
           </button>
         </div>
@@ -257,7 +265,7 @@ export default function AdminUsersPage() {
     {
       name: 'Renewal',
       cell: row => <RenewalActionsCell row={row} membership={getMembership(row.id)} />,
-      width: '150px',
+      width: '270px',
     },
   ];
 
@@ -289,7 +297,7 @@ export default function AdminUsersPage() {
             actionOnClick={() => setCreateUser(true)}
           />
         {loading ? (
-          <LoadingText />
+          <LoadingSpin topPosition />
         ) : (
           <>
             <UsersDataTable

@@ -1,11 +1,13 @@
 // DataTable untuk membership/session
 'use client';
 import Link from "next/link";
+import { useRouter } from 'next/navigation';
 import { StyledDataTable } from '@/components/admin';
 import { useTheme } from '@/contexts/ThemeContext';
+import { FaEdit, FaInfoCircle } from 'react-icons/fa';
 
 export default function MembershipSessionDataTable({ data, pagination = false, paginationServer = false, paginationTotalRows = 0, paginationPerPage = 10, currentPage, paginationDefaultPage, onChangePage = () => {}, onChangeRowsPerPage = () => {}, paginationRowsPerPageOptions = [10, 25, 50] }) {
-
+  const router = useRouter();
   const pageNo = paginationDefaultPage || currentPage || 1;
   const startNo = (pageNo - 1) * paginationPerPage;
 
@@ -50,20 +52,27 @@ export default function MembershipSessionDataTable({ data, pagination = false, p
     {
       name: 'Actions',
       cell: row => (
-        <div className="flex gap-2 justify-center">
-          <Link href={`/admin/membership/session/edit?id=${row.id}`} 
-          className="bg-gray-600 dark:bg-blue-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-700 dark:hover:bg-blue-700">
-            Edit
-          </Link>
-          <Link href={`/admin/member-profile/${row.user?.id}`}
-            className="bg-purple-600 text-white px-3 py-1 rounded font-semibold hover:bg-purple-700"
-            onClick={() => router.push(`/admin/member-profile/${row.id}`)}
+        <div className="flex gap-2">
+          <button
+            onClick={() => router.push(`/admin/membership/session/edit?id=${row.id}`)}
+            className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors shadow-sm text-xs font-medium"
+            title="Edit Membership"
           >
+            <FaEdit className="w-3 h-3" />
+            Edit
+          </button>
+          <button
+            onClick={() => router.push(`/admin/member-profile/${row.user?.id}`)}
+            className="flex items-center gap-1 px-3 py-1.5 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors shadow-sm text-xs font-medium"
+            title="View Details"
+          >
+            <FaInfoCircle className="w-3 h-3" />
             Details
-          </Link>
+          </button>
         </div>
       ),
       ignoreRowClick: true,
+      width: '180px',
     },
   ];
 

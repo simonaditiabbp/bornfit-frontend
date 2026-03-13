@@ -325,7 +325,7 @@ export default function ClassSessionEditPage() {
         <div className="flex items-center justify-between mb-8 border-b border-gray-700 pb-4">
           <h1 className="text-3xl font-bold text-gray-800 dark:text-amber-300">Class Session Details</h1>
           <ActionButton
-            variant="gray"
+            variant="back"
             href="/admin/class/session"
           >
             Back
@@ -538,13 +538,24 @@ export default function ClassSessionEditPage() {
         <div className="flex gap-3 mt-8 justify-start">
           {!edit ? (
             <>
-              <ActionButton variant="primary" onClick={handleEdit}>Edit</ActionButton>
-              <ActionButton variant="danger" onClick={handleDelete}>Delete</ActionButton>
+              <ActionButton 
+                onClick={handleEdit} 
+                variant="edit"
+              >
+                  Edit
+              </ActionButton>
+              <ActionButton onClick={handleDelete} variant="delete" disabled={formLoading}>Delete</ActionButton>
             </>
           ) : (
             <>
-              <ActionButton variant="primary" onClick={handleSave} disabled={formLoading}>{formLoading ? "Saving..." : "Save"}</ActionButton>
-              <ActionButton variant="gray" onClick={handleCancel}>Cancel</ActionButton>
+              <ActionButton 
+                variant="save" 
+                disabled={formLoading}
+                onClick={handleSave}
+              >
+                  {formLoading ? 'Saving...' : 'Save'}
+              </ActionButton>
+              <ActionButton onClick={handleCancel} variant="cancel">Cancel</ActionButton>
             </>
           )}
         </div>

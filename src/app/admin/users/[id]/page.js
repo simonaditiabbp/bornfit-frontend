@@ -11,7 +11,7 @@ import Swal from 'sweetalert2';
 import toast from 'react-hot-toast';
 import SendQRCodeModal from '../../../../components/SendQRCodeModal';
 import api from '@/utils/fetchClient';
-import { PageBreadcrumb, FormInput, FormInputGroup, PageContainer, PageHeader, LoadingText } from '@/components/admin';
+import { PageBreadcrumb, FormInput, FormInputGroup, PageContainer, PageHeader, LoadingText, ActionButton } from '@/components/admin';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -21,6 +21,7 @@ export default function UserDetailPage() {
   const [user, setUser] = useState(null);
   const [checkins, setCheckins] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [formLoading, setFormLoading] = useState(false);
   const [edit, setEdit] = useState(false);
   const [form, setForm] = useState({
     name: '',
@@ -82,6 +83,7 @@ export default function UserDetailPage() {
   };
 
   const handleSave = async () => {
+    setFormLoading(true);
     let userUpdateSuccess = false;
     try {
       let res, data;
@@ -151,6 +153,7 @@ export default function UserDetailPage() {
       toast.error(err.data?.message || 'Failed to update user');
       console.log("error: ", err);
     }
+    setFormLoading(false);
   };
 
   const handleDelete = async () => {
@@ -168,6 +171,7 @@ export default function UserDetailPage() {
 
     if (!result.isConfirmed) return;
     
+    setFormLoading(true);
     try {
       await api.delete(`/api/users/${id}`);
       toast.success('User deleted successfully!');
@@ -176,6 +180,7 @@ export default function UserDetailPage() {
       toast.error(err.data?.message || 'Failed to delete user');
       console.log("error: ", err);
     }
+    setFormLoading(false);
   };
 
   if (backendError) {
@@ -416,39 +421,33 @@ export default function UserDetailPage() {
             </div>
             {/* ACTION BUTTONS */}
             <div className="flex justify-between mt-8 ">
-              <div className="bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-800 dark:text-white px-6 py-2 rounded-lg font-semibold transition">
-                <Link href="/admin/users">Back</Link>
-              </div>
+              <ActionButton
+                href="/admin/users"
+                variant="back"
+              >
+                Back
+              </ActionButton>
               <div className="flex gap-3">
                 {!edit ? (
                   <>
-                    <button
-                      className="bg-gray-600 dark:bg-blue-600 hover:bg-gray-700 dark:hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition"
-                      onClick={handleEdit}
+                    <ActionButton 
+                      onClick={handleEdit} 
+                      variant="edit"
                     >
-                      Edit
-                    </button>
-                    <button
-                      className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition"
-                      onClick={handleDelete}
-                    >
-                      Delete
-                    </button>
+                        Edit
+                    </ActionButton>
+                    <ActionButton onClick={handleDelete} variant="delete" disabled={formLoading}>Delete</ActionButton>
                   </>
                 ) : (
                   <>
-                    <button
-                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition"
+                    <ActionButton 
+                      variant="save" 
+                      disabled={formLoading}
                       onClick={handleSave}
                     >
-                      Save
-                    </button>
-                    <button
-                      className="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold transition"
-                      onClick={handleCancel}
-                    >
-                      Cancel
-                    </button>
+                        {formLoading ? 'Saving...' : 'Save'}
+                    </ActionButton>
+                    <ActionButton onClick={handleCancel} variant="cancel">Cancel</ActionButton>
                   </>
                 )}
               </div>

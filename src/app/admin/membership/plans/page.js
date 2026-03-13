@@ -5,6 +5,7 @@ import BackendErrorFallback from '../../../../components/BackendErrorFallback';
 import MembershipPlansDataTable from './DataTable';
 import { FaPlus, FaCog } from 'react-icons/fa';
 import { PageBreadcrumb, PageContainer, PageHeader, LoadingText } from '../../../../components/admin';
+import LoadingSpin from '@/components/admin/LoadingSpin';
 
 export default function MembershipPlansPage() {
   const [plans, setPlans] = useState([]);
@@ -87,7 +88,7 @@ export default function MembershipPlansPage() {
           actionText="Add Plan"
         />
         {loading ? (
-          <LoadingText />
+          <LoadingSpin topPosition />
         ) : (
           <MembershipPlansDataTable 
             data={plans}

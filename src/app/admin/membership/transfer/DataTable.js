@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { StyledDataTable } from '@/components/admin';
+import { FaInfoCircle } from "react-icons/fa";
 
 export default function TransferDataTable({
   data,
@@ -67,9 +68,10 @@ export default function TransferDataTable({
       cell: row => (
         <Link 
           href={`/admin/membership/transfer/edit?id=${row.id}`} 
-          className="bg-gray-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-500"
+          className="flex items-center gap-1 px-3 py-1.5 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors shadow-sm text-xs font-medium"
         >
-          Detail
+          <FaInfoCircle className="w-3 h-3" />
+          Details
         </Link>
       ),
       ignoreRowClick: true,

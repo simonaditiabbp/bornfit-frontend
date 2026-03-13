@@ -1,6 +1,7 @@
 import { StyledDataTable } from "@/components/admin";
 import Link from "next/link";
 import DataTable from 'react-data-table-component';
+import { FaInfoCircle } from "react-icons/fa";
 
 export default function ClassSessionDataTable({ data, plans = [], members = [], instructors = [], pagination = false, paginationServer = false, paginationTotalRows = 0, paginationPerPage = 10, currentPage, paginationDefaultPage, onChangePage = () => {}, onChangeRowsPerPage = () => {}, paginationRowsPerPageOptions = [10, 25, 50]
 }) {
@@ -114,15 +115,12 @@ export default function ClassSessionDataTable({ data, plans = [], members = [], 
     {
       name: 'Aksi',
       cell: row => (
-        <div className="flex gap-2 justify-center">
-          {/* <button
-            className="bg-amber-400 text-gray-900 px-3 py-1 rounded font-semibold hover:bg-amber-500"
-            onClick={() => setQrSession && setQrSession(row)}
-          >
-            Generate QR
-          </button> */}
-          <Link href={`/admin/class/session/edit?id=${row.id}`} className="bg-gray-600 dark:bg-blue-600 text-white px-5 py-1 rounded font-semibold hover:bg-gray-700 dark:hover:bg-blue-700">Detail</Link>
-        </div>
+        <Link 
+          href={`/admin/class/session/edit?id=${row.id}`} 
+          className="flex items-center gap-1 px-3 py-1.5 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors shadow-sm text-xs font-medium">
+            <FaInfoCircle className="w-3 h-3" />
+            Details
+        </Link>        
       ),
       ignoreRowClick: true,
     },
