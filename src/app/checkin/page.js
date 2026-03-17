@@ -27,6 +27,7 @@ export default function BarcodePage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(''); // pesan dari backend atau status
   const [messageType, setMessageType] = useState('success'); // 'success' | 'error'
+  const [checkinStatus, setCheckinStatus] = useState(null); // 'active' | 'frozen' | 'pending' | null
   const [scanner, setScanner] = useState(null);
   const [manualQr, setManualQr] = useState('');
   const [latitude, setLatitude] = useState(null);
@@ -368,6 +369,7 @@ export default function BarcodePage() {
     setLoading(true);
     setMessage('');
     setMessageType('success');
+    setCheckinStatus(null); // Reset checkin status
     setPtSession(null); // Reset PT session setiap check-in baru
     setPtSessionStatus(null); // Reset PT session status
     const { latitude, longitude } = getUserLocation();
@@ -376,6 +378,10 @@ export default function BarcodePage() {
       setResult(apiResult);
       if (apiResult.data) {
         setUser(apiResult.data.user);
+        // Set checkin status dari response (frozen, pending, atau akan null untuk active checkin)
+        if (apiResult.data.checkin_status) {
+          setCheckinStatus(apiResult.data.checkin_status);
+        }
         setMessage(apiResult.message || 'Check-in successfully');
         setMessageType('success');
         
@@ -404,6 +410,7 @@ export default function BarcodePage() {
         }
       } else {
         setUser(null);
+        setCheckinStatus(null);
         setPtSession(null);
         setPtSessionStatus(null);
         if (qr_code.startsWith("member")) {
@@ -417,9 +424,10 @@ export default function BarcodePage() {
       }
     } catch (err) {
       console.log("error: ", err);
+      setUser(null);
+      setCheckinStatus(null);
       setPtSession(null);
       setPtSessionStatus(null);
-      setUser(null);
       setMessage(err.data.message || 'An error occurred during check-in');
       setMessageType('error');
     } finally {
@@ -1244,7 +1252,20 @@ useEffect(() => {
                     <span className="text-2xl font-bold text-pink-500 dark:text-pink-300 animate-bounce">Happy Birthday! 🎂</span>
                   </div>
                 )}
-                <p className="font-bold text-3xl text-gray-800 dark:text-amber-400 mb-2 leading-tight">{user?.name || '-'}</p>
+                <div className="flex items-center gap-3 mb-2">
+                  <p className="font-bold text-3xl text-gray-800 dark:text-amber-400 leading-tight">{user?.name || '-'}</p>
+                  {checkinStatus && (
+                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                      checkinStatus === 'frozen'
+                        ? 'bg-blue-100 text-blue-700 border border-blue-300 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700'
+                        : checkinStatus === 'pending'
+                        ? 'bg-amber-100 text-amber-700 border border-amber-300 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700'
+                        : 'bg-gray-100 text-gray-700 border border-gray-300 dark:bg-gray-700 dark:text-gray-300'
+                    }`}>
+                      {checkinStatus}
+                    </span>
+                  )}
+                </div>
                 
                 {/* Email */}
                 <div className="mb-1 p-3 rounded-lg bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/50">
@@ -1253,14 +1274,44 @@ useEffect(() => {
                 </div>
 
                 {/* Membership Expired Period */}
-                <div className="mb-1 p-3 rounded-lg bg-rose-50/70 dark:bg-rose-900/20 border border-rose-200/60 dark:border-rose-700/50">
-                  <p className="text-xs font-medium text-rose-600 dark:text-rose-400 mb-1">Membership Expired Period</p>
-                  <p className="text-base font-bold text-rose-700 dark:text-rose-300">{endDate ? endDate : "-"}</p>
+                <div className={`mb-1 p-3 rounded-lg border ${
+                  checkinStatus === 'frozen'
+                    ? 'bg-blue-50/70 dark:bg-blue-900/20 border-blue-200/60 dark:border-blue-700/50'
+                    : checkinStatus === 'pending'
+                    ? 'bg-amber-50/70 dark:bg-amber-900/20 border-amber-200/60 dark:border-amber-700/50'
+                    : 'bg-rose-50/70 dark:bg-rose-900/20 border-rose-200/60 dark:border-rose-700/50'
+                }`}>
+                  <p className={`text-xs font-medium mb-1 ${
+                    checkinStatus === 'frozen'
+                      ? 'text-blue-600 dark:text-blue-400'
+                      : checkinStatus === 'pending'
+                      ? 'text-amber-600 dark:text-amber-400'
+                      : 'text-rose-600 dark:text-rose-400'
+                  }`}>Membership Expired Period</p>
+                  <p className={`text-base font-bold ${
+                    checkinStatus === 'frozen'
+                      ? 'text-blue-700 dark:text-blue-300'
+                      : checkinStatus === 'pending'
+                      ? 'text-amber-700 dark:text-amber-300'
+                      : 'text-rose-700 dark:text-rose-300'
+                  }`}>{endDate ? endDate : "-"}</p>
                 </div>
 
                 {/* Membership Type */}
-                <div className="mb-1 p-3 rounded-lg bg-amber-50/70 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-700/50">
-                  <p className="text-xs font-medium text-amber-600 dark:text-amber-400 mb-1">Membership Type</p>
+                <div className={`mb-1 p-3 rounded-lg border ${
+                  checkinStatus === 'frozen'
+                    ? 'bg-blue-50/70 dark:bg-blue-900/20 border-blue-200/60 dark:border-blue-700/50'
+                    : checkinStatus === 'pending'
+                    ? 'bg-amber-50/70 dark:bg-amber-900/20 border-amber-200/60 dark:border-amber-700/50'
+                    : 'bg-amber-50/70 dark:bg-amber-900/20 border-amber-200/60 dark:border-amber-700/50'
+                }`}>
+                  <p className={`text-xs font-medium mb-1 ${
+                    checkinStatus === 'frozen'
+                      ? 'text-blue-600 dark:text-blue-400'
+                      : checkinStatus === 'pending'
+                      ? 'text-amber-600 dark:text-amber-400'
+                      : 'text-amber-600 dark:text-amber-400'
+                  }`}>Membership Type</p>
                   <div className="flex flex-wrap gap-2">
                     <span
                       className={`inline-block px-3 py-1.5 rounded-full text-sm font-bold border break-words ${
@@ -1299,6 +1350,29 @@ useEffect(() => {
                       Please renew your membership soon by contacting admin +62 857-8213-5542
                     </p>
                   </>
+                )}
+                {checkinStatus === 'frozen' && (
+                  <div className="mt-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700">
+                    <p className="text-sm font-bold text-blue-700 dark:text-blue-300">
+                      ⚠️ Membership Frozen
+                    </p>
+                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                      {user?.message || "Your membership is currently frozen. Please contact admin to unfreeze your account."}
+                    </p>
+                  </div>
+                )}
+                {checkinStatus === 'pending' && (
+                  <div className="mt-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700">
+                    <p className="text-sm font-bold text-amber-700 dark:text-amber-300">
+                      ⏳ Membership Pending
+                    </p>
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                      {user?.message || "Your membership is pending activation. It will become active soon."}
+                    </p>
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                      {startDate || ""}
+                    </p>
+                  </div>
                 )}
               </>
             ) : (
@@ -1348,9 +1422,9 @@ useEffect(() => {
 
             {/* Tambahan tombol booking class dan PT session */}
             <button
-              className="group relative w-full rounded-xl border border-emerald-300/70 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-6 py-3 text-lg font-extrabold uppercase tracking-wider text-white shadow-[0_12px_28px_rgba(16,185,129,0.35)] transition-all duration-200 hover:from-emerald-400 hover:via-teal-400 hover:to-cyan-400 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-emerald-300/70 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900"
+              className={`group relative w-full rounded-xl border border-emerald-300/70 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-6 py-3 text-lg font-extrabold uppercase tracking-wider text-white shadow-[0_12px_28px_rgba(16,185,129,0.35)] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-300/70 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 ${(loading || !user || checkinStatus === 'frozen' || checkinStatus === 'pending') ? 'opacity-50 cursor-not-allowed' : 'hover:from-emerald-400 hover:via-teal-400 hover:to-cyan-400 hover:-translate-y-0.5'}`}
               onClick={handleBookingClass}
-              disabled={loading || !user}
+              disabled={loading || !user || checkinStatus === 'frozen' || checkinStatus === 'pending'}
             >
               Booking Class
               <span className="absolute inset-0 rounded-xl ring-1 ring-white/25" />
@@ -1485,9 +1559,9 @@ useEffect(() => {
               </div>
             </Modal>
             <button
-              className="group relative w-full rounded-xl border border-blue-300/70 bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500 px-6 py-3 text-lg font-extrabold uppercase tracking-wider text-white shadow-[0_12px_28px_rgba(59,130,246,0.35)] transition-all duration-200 hover:from-sky-400 hover:via-blue-400 hover:to-indigo-400 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-300/70 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900"
+              className={`group relative w-full rounded-xl border border-blue-300/70 bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500 px-6 py-3 text-lg font-extrabold uppercase tracking-wider text-white shadow-[0_12px_28px_rgba(59,130,246,0.35)] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300/70 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 ${(loading || !user || checkinStatus === 'frozen' || checkinStatus === 'pending') ? 'opacity-50 cursor-not-allowed' : 'hover:from-sky-400 hover:via-blue-400 hover:to-indigo-400 hover:-translate-y-0.5'}`}
               onClick={handleBookingPTSession}
-              disabled={loading || !user}
+              disabled={loading || !user || checkinStatus === 'frozen' || checkinStatus === 'pending'}
             >
               Booking PT Session
               <span className="absolute inset-0 rounded-xl ring-1 ring-white/25" />
