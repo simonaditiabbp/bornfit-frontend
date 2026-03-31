@@ -41,7 +41,7 @@ export default function PTSessionListPage() {
     const fetchMeta = async () => {
       try {
         const [plansData, membersData, trainersData] = await Promise.all([
-          api.get('/api/ptsessionplans?limit=9999'),
+          api.get('/api/ptsessionplans?limit=9999&includeDeleted=true'),
           api.get('/api/users?role=member&limit=9999'),
           api.get('/api/users?role=trainer&limit=9999')
         ]);
