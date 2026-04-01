@@ -31,7 +31,7 @@ export default function PTSessionEditPage() {
     const fetchDropdownData = async () => {
       try {
         const [dataPlans, dataMember, dataTrainer] = await Promise.all([
-          api.get('/api/ptsessionplans?limit=10000'),
+          api.get('/api/ptsessionplans?limit=10000&includeDeleted=true'),
           api.get('/api/users?role=member&membership=active,pending&limit=10000'),
           api.get('/api/users?role=trainer&limit=10000')
         ]);
@@ -135,6 +135,7 @@ export default function PTSessionEditPage() {
   const selectedMember = members.length > 0 && form.user_member_id ? members.find(u => u.id === form.user_member_id) ?? null : null;
   const selectedPlan = plans.length > 0 && form.pt_session_plan_id ? plans.find(p => p.id === form.pt_session_plan_id) ?? null : null;
   const selectedTrainer = trainers.length > 0 && form.user_pt_id ? trainers.find(u => u.id === form.user_pt_id) ?? null : null;
+  const isExpired = String(session?.status ?? form?.status ?? '').toLowerCase() === 'expired';
 
   return (
     <div>
@@ -230,7 +231,7 @@ export default function PTSessionEditPage() {
         <div className="flex gap-3 mt-8 justify-start">
           {!edit ? (
             <>
-              <ActionButton onClick={handleEdit} variant="edit">Edit</ActionButton>
+              <ActionButton onClick={handleEdit} variant="edit" disabled={isExpired}>Edit</ActionButton>
               <ActionButton onClick={handleDelete} variant="delete" disabled={formLoading}>Delete</ActionButton>
             </>
           ) : (
