@@ -13,6 +13,8 @@ export default function PTSessionEditPage() {
   const [plans, setPlans] = useState([]);
   const [members, setMembers] = useState([]);
   const [trainers, setTrainers] = useState([]);
+  const [currentUserRole, setCurrentUserRole] = useState(null);
+  const [manualEndDateOverride, setManualEndDateOverride] = useState(false);
   const formatDateToISO = (val) => val ? (val.length === 16 ? val + ":00.000Z" : val) : "";
   const [session, setSession] = useState(null);
   const [form, setForm] = useState(null);
@@ -27,6 +29,16 @@ export default function PTSessionEditPage() {
   const formatDateForInput = (isoString) => isoString ? isoString.split("T")[0] : "";
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          const parsedUser = JSON.parse(userStr);
+          setCurrentUserRole(parsedUser?.role ?? null);
+        }
+      } catch {}
+    }
+
     // Fetch plans, members, and trainers for dropdown
     const fetchDropdownData = async () => {
       try {
@@ -53,6 +65,7 @@ export default function PTSessionEditPage() {
           user_member_id: dataPTSessions.data.user_member_id,
           user_pt_id: dataPTSessions.data.user_pt_id,
           start_date: dataPTSessions.data.start_date?.slice(0, 16),
+          end_date: dataPTSessions.data.end_date?.slice(0, 16),
           status: dataPTSessions.data.status
         });
       } catch (err) {
@@ -64,16 +77,19 @@ export default function PTSessionEditPage() {
   }, [id]);
 
   const handleEdit = () => {
+    setManualEndDateOverride(false);
     setEdit(true);
   };
 
   const handleCancel = () => {
     setEdit(false);
+    setManualEndDateOverride(false);
     setForm({
       pt_session_plan_id: session.pt_session_plan_id,
       user_member_id: session.user_member_id,
       user_pt_id: session.user_pt_id,
       start_date: session.start_date?.slice(0, 16),
+      end_date: session.end_date?.slice(0, 16),
       status: session.status
     });
   };  
@@ -86,6 +102,8 @@ export default function PTSessionEditPage() {
         user_member_id: Number(form.user_member_id),
         user_pt_id: Number(form.user_pt_id),
         start_date: formatDateToISO(form.start_date),
+        end_date: formatDateToISO(form.end_date),
+        manual_end_date_override: isAdmin ? manualEndDateOverride : false,
         status: form.status,
         id: Number(id)
       });
@@ -136,6 +154,7 @@ export default function PTSessionEditPage() {
   const selectedPlan = plans.length > 0 && form.pt_session_plan_id ? plans.find(p => p.id === form.pt_session_plan_id) ?? null : null;
   const selectedTrainer = trainers.length > 0 && form.user_pt_id ? trainers.find(u => u.id === form.user_pt_id) ?? null : null;
   const isExpired = String(session?.status ?? form?.status ?? '').toLowerCase() === 'expired';
+  const isAdmin = String(currentUserRole ?? '').toLowerCase() === 'admin';
 
   return (
     <div>
@@ -215,6 +234,24 @@ export default function PTSessionEditPage() {
             disabled={!edit}
           />
           <FormInput
+            label="End Date"
+            type="datetime-local"
+            value={form.end_date}
+            onChange={e => setForm(f => ({ ...f, end_date: e.target.value }))}
+            required
+            disabled={!edit}
+          />
+          {isAdmin && edit && (
+            <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+              <input
+                type="checkbox"
+                checked={manualEndDateOverride}
+                onChange={e => setManualEndDateOverride(e.target.checked)}
+              />
+              Admin override end date (skip auto-calculation)
+            </label>
+          )}
+          <FormInput
             label="Status"
             type="select"
             value={form.status}
@@ -231,7 +268,7 @@ export default function PTSessionEditPage() {
         <div className="flex gap-3 mt-8 justify-start">
           {!edit ? (
             <>
-              <ActionButton onClick={handleEdit} variant="edit" disabled={isExpired}>Edit</ActionButton>
+              <ActionButton onClick={handleEdit} variant="edit" disabled={isExpired && !isAdmin}>Edit</ActionButton>
               <ActionButton onClick={handleDelete} variant="delete" disabled={formLoading}>Delete</ActionButton>
             </>
           ) : (
