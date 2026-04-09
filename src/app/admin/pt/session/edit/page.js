@@ -60,6 +60,7 @@ export default function PTSessionEditPage() {
         const dataPTSessions = await api.get(`/api/personaltrainersessions/${id}`);
         console.log("data: ", dataPTSessions)
         setSession(dataPTSessions.data);
+        setManualEndDateOverride(Boolean(dataPTSessions.data.manual_end_date_override));
         setForm({
           pt_session_plan_id: dataPTSessions.data.pt_session_plan_id,
           user_member_id: dataPTSessions.data.user_member_id,
@@ -77,13 +78,13 @@ export default function PTSessionEditPage() {
   }, [id]);
 
   const handleEdit = () => {
-    setManualEndDateOverride(false);
+    setManualEndDateOverride(Boolean(session?.manual_end_date_override));
     setEdit(true);
   };
 
   const handleCancel = () => {
     setEdit(false);
-    setManualEndDateOverride(false);
+    setManualEndDateOverride(Boolean(session?.manual_end_date_override));
     setForm({
       pt_session_plan_id: session.pt_session_plan_id,
       user_member_id: session.user_member_id,
